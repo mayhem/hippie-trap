@@ -5307,6 +5307,7 @@ Copyright (c) Robert Kaye 2015</text>
 </sheets>
 <errors>
 <approved hash="113,1,32.916,41.806,FRAME1,,,,,"/>
+<approved hash="113,1,-47.1515,-7.66233,TP_GND,,,,,"/>
 </errors>
 </schematic>
 </drawing>
