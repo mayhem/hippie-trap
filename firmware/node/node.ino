@@ -66,9 +66,10 @@ void setup()
     Mirf.csnPin = 3;    
     Mirf.init();
     Mirf.setRADDR((byte *)"aaaaa");
+    Mirf.setTADDR((byte *)"aaaab");
     Mirf.payload = 3;
-    Mirf.channel = 110;
-    Mirf.configRegister(RF_SETUP,0x05);
+    Mirf.channel = 111;
+    Mirf.configRegister(RF_SETUP, 0b00100110); //0x05);
     //Mirf.configRegister(EN_AA, 0);      // turn off auto ack for all channels.
     Mirf.baseConfig = _BV(EN_CRC) | _BV(CRCO);
     Mirf.config();
