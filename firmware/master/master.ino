@@ -15,11 +15,11 @@ void setup()
     Mirf.cePin = 7;
     Mirf.csnPin = 3;    
     Mirf.init();
-    Mirf.setRADDR((byte *)"abcde");
+    Mirf.setRADDR((byte *)"aaaaa");
     Mirf.payload = 3;
-    Mirf.channel = 160;
+    Mirf.channel = 125;
     Mirf.configRegister(RF_SETUP,0x05); // 1mbps rate, HIGH transmit rate
-    //Mirf.configRegister(EN_AA, 0);      // turn off auto ack for all channels.
+    Mirf.configRegister(EN_AA, 0);      // turn off auto ack for all channels.
     Mirf.baseConfig = _BV(EN_CRC) | _BV(CRCO);
     Mirf.config();  
     delay(100);  
