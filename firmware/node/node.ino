@@ -2,7 +2,7 @@
 #include <Adafruit_NeoPixel.h>
 
 const uint8_t NUM_PIXELS = 8;
-const uint8_t OUT_PIN = 13;
+const uint8_t OUT_PIN = 2;
 const uint8_t MAX_PACKET_LEN = 32;
 
 Adafruit_NeoPixel pixels = Adafruit_NeoPixel(NUM_PIXELS, OUT_PIN, NEO_GRB + NEO_KHZ800);
