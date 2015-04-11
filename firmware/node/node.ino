@@ -1,14 +1,9 @@
-#include <SPI85.h>
-#include <Mirf.h>
-#include <nRF24L01.h>
-#include <MirfHardwareSpi85Driver.h>
+#include <util/crc16.h>
 #include <Adafruit_NeoPixel.h>
 
 const uint8_t NUM_PIXELS = 8;
-const uint8_t OUT_PIN = 1;
-const uint64_t ADDRESS = 0x45;
-byte addr[mirf_ADDR_LEN] = { ADDRESS, 0, 0, 0, 0 };
-
+const uint8_t OUT_PIN = 2;
+const uint8_t MAX_PACKET_LEN = 32;
 
 Adafruit_NeoPixel pixels = Adafruit_NeoPixel(NUM_PIXELS, OUT_PIN, NEO_GRB + NEO_KHZ800);
 
@@ -52,43 +47,81 @@ void startup_animation(void)
     show_color(0, 0, 0);
 }
 
-
 void setup()
-{
+{ 
     pixels.begin();
     startup_animation();
     
-    //Serial.begin(9600);
-    //Serial.println("node starting");
+    Serial.begin(38400);
+}
 
-    Mirf.spi = &MirfHardwareSpi85;
-    Mirf.cePin = 7;
-    Mirf.csnPin = 3;    
-    Mirf.init();
-    Mirf.setRADDR((byte *)"aaaaa");
-    Mirf.setTADDR((byte *)"aaaab");
-    Mirf.payload = 3;
-    Mirf.channel = 111;
-    Mirf.configRegister(RF_SETUP, 0b00100110); //0x05);
-    //Mirf.configRegister(EN_AA, 0);      // turn off auto ack for all channels.
-    Mirf.baseConfig = _BV(EN_CRC) | _BV(CRCO);
-    Mirf.config();
-    delay(100);  
-    //Serial.println("startup complete:" + String(Mirf.getStatus()));
+void handle_packet(uint8_t len, uint8_t *data)
+{
+    uint8_t            j;
+
+    for(int j=0; j < NUM_PIXELS; j++)
+        pixels.setPixelColor(j, pixels.Color(data[0], data[1], data[2]));
+
+    pixels.show();
 }
 
 void loop()
 {
-    byte data[Mirf.payload];
+    uint8_t            i, ch, data[3];
+    static uint8_t     recd = 0, found_header = 0, len = 0;
+    static uint16_t    crc = 0;
+    static uint8_t     packet[MAX_PACKET_LEN];
 
-    if (Mirf.dataReady())
-    {   
-        Mirf.getData(data);
-        //Serial.println("data: " + String(data[0]) + " " + String(data[1]) + " " + String(data[2]));
-        for(int i=0; i < NUM_PIXELS; i++)
+    if (Serial.available() > 0) 
+    {
+        ch = Serial.read();
+        if (!found_header)
         {
-            pixels.setPixelColor(i, pixels.Color(data[0], data[1], data[2]));
+            if (ch == 0xFF)
+            {
+                //show_color(255, 0, 255);
+                found_header = 1;
+            }
         }
-        pixels.show();
+        else
+        {
+            if (!len)
+            {
+                // We just found the header, now a realistic packet size must follow
+                if (ch > 0 && ch <= MAX_PACKET_LEN)
+                {
+                    len = ch;
+                    recd = 0;
+                }
+                else
+                    // Nope, that was no header, better keep looking.
+                    found_header = 0;
+            }
+            else
+            {
+                packet[recd++] = ch;
+
+                if (recd <= len - 2)
+                    crc = _crc16_update(crc, ch);
+
+                if (recd == len || recd == MAX_PACKET_LEN)
+                {
+                    uint16_t *pcrc;
+
+                    // if we received the right length, check the crc. If that matches, we have a packet!
+                    if (recd == len)
+                    {            
+                        pcrc = (uint16_t *)(packet + len - 2);
+                        if (crc == *pcrc)
+                            handle_packet(len - 2, packet);
+                    }
+
+                    len = 0;
+                    crc = 0;
+                    found_header = 0;
+                    recd = 0;
+                }
+            }
+        }
     }
 }
