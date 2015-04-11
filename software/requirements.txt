@@ -1,2 +1,1 @@
-spidev
-RPi.GPIO
+pyserial
