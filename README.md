@@ -1,5 +1,8 @@
 # led-chandelier
-LED bottle chandelier built for Nowhere
+LED bottle chandelier built for Nowhere 2015
+
+by Robert Kaye and David Martin
+
 
 Mock-up
 =======
