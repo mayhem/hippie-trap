@@ -5470,12 +5470,12 @@ Copyright (c) Robert Kaye 2015</text>
 <instance part="FRAME1" gate="G$1" x="-99.06" y="-48.26"/>
 <instance part="FRAME1" gate="G$2" x="63.5" y="-48.26"/>
 <instance part="C2" gate="G$1" x="109.22" y="30.48"/>
-<instance part="D1" gate="G$1" x="99.06" y="33.02" rot="R270"/>
+<instance part="D1" gate="G$1" x="99.06" y="27.94" rot="R90"/>
 <instance part="TP_GND" gate="G$1" x="134.62" y="78.74" rot="R90"/>
 <instance part="GND4" gate="1" x="144.78" y="73.66"/>
 <instance part="TP_LED" gate="G$1" x="134.62" y="88.9" rot="R90"/>
 <instance part="TP_RX" gate="G$1" x="134.62" y="99.06" rot="R90"/>
-<instance part="D2" gate="G$1" x="88.9" y="33.02" rot="R270"/>
+<instance part="D2" gate="G$1" x="88.9" y="27.94" rot="R90"/>
 <instance part="C3" gate="G$1" x="-38.1" y="5.08"/>
 <instance part="GND5" gate="1" x="-45.72" y="33.02"/>
 </instances>
@@ -5529,21 +5529,21 @@ Copyright (c) Robert Kaye 2015</text>
 <segment>
 <wire x1="81.28" y1="20.32" x2="88.9" y2="20.32" width="0.1524" layer="91"/>
 <wire x1="88.9" y1="20.32" x2="99.06" y2="20.32" width="0.1524" layer="91"/>
+<wire x1="99.06" y1="20.32" x2="109.22" y2="20.32" width="0.1524" layer="91"/>
 <wire x1="81.28" y1="35.56" x2="81.28" y2="20.32" width="0.1524" layer="91"/>
 <pinref part="S2B-PH-SM4" gate="G$1" pin="1"/>
 <wire x1="68.58" y1="35.56" x2="81.28" y2="35.56" width="0.1524" layer="91"/>
-<pinref part="D1" gate="G$1" pin="C"/>
-<wire x1="99.06" y1="30.48" x2="99.06" y2="20.32" width="0.1524" layer="91"/>
-<pinref part="D2" gate="G$1" pin="C"/>
-<wire x1="88.9" y1="30.48" x2="88.9" y2="20.32" width="0.1524" layer="91"/>
 <pinref part="C2" gate="G$1" pin="P$2"/>
 <wire x1="109.22" y1="27.94" x2="109.22" y2="20.32" width="0.1524" layer="91"/>
-<wire x1="109.22" y1="20.32" x2="99.06" y2="20.32" width="0.1524" layer="91"/>
-<junction x="88.9" y="20.32"/>
-<junction x="99.06" y="20.32"/>
 <pinref part="GND1" gate="1" pin="GND"/>
 <wire x1="109.22" y1="20.32" x2="109.22" y2="15.24" width="0.1524" layer="91"/>
 <junction x="109.22" y="20.32"/>
+<pinref part="D2" gate="G$1" pin="A"/>
+<wire x1="88.9" y1="25.4" x2="88.9" y2="20.32" width="0.1524" layer="91"/>
+<pinref part="D1" gate="G$1" pin="A"/>
+<wire x1="99.06" y1="25.4" x2="99.06" y2="20.32" width="0.1524" layer="91"/>
+<junction x="99.06" y="20.32"/>
+<junction x="88.9" y="20.32"/>
 </segment>
 <segment>
 <pinref part="C1" gate="G$1" pin="P$2"/>
@@ -5676,19 +5676,19 @@ Copyright (c) Robert Kaye 2015</text>
 <junction x="-10.16" y="99.06"/>
 </segment>
 <segment>
-<wire x1="99.06" y1="43.18" x2="109.22" y2="43.18" width="0.1524" layer="91"/>
 <wire x1="109.22" y1="35.56" x2="109.22" y2="43.18" width="0.1524" layer="91"/>
 <pinref part="C2" gate="G$1" pin="P$1"/>
-<pinref part="D1" gate="G$1" pin="A"/>
-<wire x1="99.06" y1="35.56" x2="99.06" y2="43.18" width="0.1524" layer="91"/>
-<junction x="99.06" y="43.18"/>
 <pinref part="S2B-PH-SM4" gate="G$1" pin="3"/>
 <wire x1="68.58" y1="40.64" x2="73.66" y2="40.64" width="0.1524" layer="91"/>
 <wire x1="73.66" y1="40.64" x2="73.66" y2="43.18" width="0.1524" layer="91"/>
 <wire x1="73.66" y1="43.18" x2="99.06" y2="43.18" width="0.1524" layer="91"/>
 <pinref part="P+2" gate="VCC" pin="VCC"/>
+<wire x1="99.06" y1="43.18" x2="109.22" y2="43.18" width="0.1524" layer="91"/>
 <wire x1="109.22" y1="43.18" x2="109.22" y2="48.26" width="0.1524" layer="91"/>
 <junction x="109.22" y="43.18"/>
+<pinref part="D1" gate="G$1" pin="C"/>
+<wire x1="99.06" y1="30.48" x2="99.06" y2="43.18" width="0.1524" layer="91"/>
+<junction x="99.06" y="43.18"/>
 </segment>
 <segment>
 <pinref part="P+3" gate="VCC" pin="VCC"/>
@@ -5756,8 +5756,8 @@ Copyright (c) Robert Kaye 2015</text>
 <pinref part="S2B-PH-SM4" gate="G$1" pin="2"/>
 <wire x1="68.58" y1="38.1" x2="88.9" y2="38.1" width="0.1524" layer="91"/>
 <label x="81.28" y="38.1" size="1.778" layer="95" rot="MR0"/>
-<pinref part="D2" gate="G$1" pin="A"/>
-<wire x1="88.9" y1="38.1" x2="88.9" y2="35.56" width="0.1524" layer="91"/>
+<pinref part="D2" gate="G$1" pin="C"/>
+<wire x1="88.9" y1="38.1" x2="88.9" y2="30.48" width="0.1524" layer="91"/>
 </segment>
 </net>
 </nets>
