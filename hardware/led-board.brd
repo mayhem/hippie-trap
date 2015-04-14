@@ -1849,7 +1849,7 @@ design rules under a new name.</description>
 <attribute name="MF" value="" x="90.92" y="8.58" size="1.778" layer="27" rot="R90" display="off"/>
 <attribute name="MPN" value="MCSH21B104K250CT" x="90.92" y="8.58" size="1.778" layer="27" rot="R90" display="off"/>
 </element>
-<element name="D1" library="SparkFun-DiscreteSemi" package="SMA-DIODE" value="BA340A" x="19.18" y="7.33" smashed="yes" rot="R90">
+<element name="D6" library="SparkFun-DiscreteSemi" package="SMA-DIODE" value="BA340A" x="19.18" y="7.33" smashed="yes" rot="R90">
 <attribute name="PROD_ID" value="DIO-09886" x="19.18" y="7.33" size="1.778" layer="27" rot="R90" display="off"/>
 <attribute name="NAME" x="17.954" y="10.594" size="0.6096" layer="25" rot="R180"/>
 <attribute name="OC_NEWARK" value="12T1463" x="19.18" y="7.33" size="1.778" layer="27" rot="R90" display="off"/>
@@ -1862,25 +1862,25 @@ design rules under a new name.</description>
 <attribute name="MF" value="" x="81.06" y="7.13" size="1.778" layer="27" display="off"/>
 <attribute name="MPN" value="" x="81.06" y="7.13" size="1.778" layer="27" display="off"/>
 </element>
-<element name="L1" library="adafruit" package="WS2812B" value="WS2812B" x="4" y="7.5" smashed="yes" rot="MR90">
+<element name="D1" library="adafruit" package="WS2812B" value="WS2812B" x="4" y="7.5" smashed="yes" rot="MR90">
 <attribute name="NAME" x="4.5125" y="10.3425" size="0.8128" layer="26" ratio="10" rot="MR0"/>
 <attribute name="OC_NEWARK" value="43Y4720" x="4" y="7.5" size="1.778" layer="28" rot="MR90" display="off"/>
 <attribute name="MF" value="" x="4" y="7.5" size="1.778" layer="28" rot="MR90" display="off"/>
 <attribute name="MPN" value="WS2812B" x="4" y="7.5" size="1.778" layer="28" rot="MR90" display="off"/>
 </element>
-<element name="L2" library="adafruit" package="WS2812B" value="WS2812B" x="65.333" y="7.5" smashed="yes" rot="MR90">
+<element name="D2" library="adafruit" package="WS2812B" value="WS2812B" x="65.333" y="7.5" smashed="yes" rot="MR90">
 <attribute name="NAME" x="65.8705" y="10.6675" size="0.8128" layer="26" ratio="10" rot="MR0"/>
 <attribute name="OC_NEWARK" value="43Y4720" x="65.333" y="7.5" size="1.778" layer="28" rot="MR90" display="off"/>
 <attribute name="MF" value="" x="65.333" y="7.5" size="1.778" layer="28" rot="MR90" display="off"/>
 <attribute name="MPN" value="WS2812B" x="65.333" y="7.5" size="1.778" layer="28" rot="MR90" display="off"/>
 </element>
-<element name="L3" library="adafruit" package="WS2812B" value="WS2812B" x="96" y="7.5" smashed="yes" rot="R90">
+<element name="D3" library="adafruit" package="WS2812B" value="WS2812B" x="96" y="7.5" smashed="yes" rot="R90">
 <attribute name="NAME" x="95.3875" y="10.6675" size="0.8128" layer="25" ratio="10"/>
 <attribute name="OC_NEWARK" value="43Y4720" x="96" y="7.5" size="1.778" layer="27" rot="R90" display="off"/>
 <attribute name="MF" value="" x="96" y="7.5" size="1.778" layer="27" rot="R90" display="off"/>
 <attribute name="MPN" value="WS2812B" x="96" y="7.5" size="1.778" layer="27" rot="R90" display="off"/>
 </element>
-<element name="L4" library="adafruit" package="WS2812B" value="WS2812B" x="34.666" y="7.5" smashed="yes" rot="R90">
+<element name="D4" library="adafruit" package="WS2812B" value="WS2812B" x="34.666" y="7.5" smashed="yes" rot="R90">
 <attribute name="NAME" x="34.0035" y="10.5925" size="0.8128" layer="25" ratio="10"/>
 <attribute name="OC_NEWARK" value="43Y4720" x="34.666" y="7.5" size="1.778" layer="27" rot="R90" display="off"/>
 <attribute name="MF" value="" x="34.666" y="7.5" size="1.778" layer="27" rot="R90" display="off"/>
@@ -1928,7 +1928,7 @@ design rules under a new name.</description>
 <attribute name="NAME" x="44.1518" y="7.0478" size="1.27" layer="25" ratio="10" rot="SR0"/>
 <attribute name="MF" value="" x="51.71" y="7.39" size="1.778" layer="27" rot="R90" display="off"/>
 </element>
-<element name="D2" library="SparkFun-DiscreteSemi" package="SMA-DIODE" value="BA340A" x="15.85" y="5.35" smashed="yes" rot="R90">
+<element name="D5" library="SparkFun-DiscreteSemi" package="SMA-DIODE" value="BA340A" x="15.85" y="5.35" smashed="yes" rot="R90">
 <attribute name="PROD_ID" value="DIO-09886" x="15.85" y="5.35" size="1.778" layer="27" rot="R90" display="off"/>
 <attribute name="NAME" x="14.624" y="8.714" size="0.6096" layer="25" rot="R180"/>
 <attribute name="OC_NEWARK" value="12T1463" x="15.85" y="5.35" size="1.778" layer="27" rot="R90" display="off"/>
@@ -1951,12 +1951,12 @@ design rules under a new name.</description>
 <signal name="GND">
 <contactref element="ISP" pad="6"/>
 <contactref element="TP_GND" pad="P$1"/>
-<contactref element="L1" pad="3-GND"/>
-<contactref element="L3" pad="3-GND"/>
+<contactref element="D1" pad="3-GND"/>
+<contactref element="D3" pad="3-GND"/>
 <contactref element="C8" pad="2"/>
-<contactref element="L4" pad="3-GND"/>
+<contactref element="D4" pad="3-GND"/>
 <contactref element="C6" pad="2"/>
-<contactref element="L2" pad="3-GND"/>
+<contactref element="D2" pad="3-GND"/>
 <contactref element="C5" pad="2"/>
 <contactref element="C7" pad="2"/>
 <contactref element="C2" pad="2"/>
@@ -1979,15 +1979,15 @@ design rules under a new name.</description>
 <contactref element="U1" pad="21"/>
 <contactref element="C3" pad="2"/>
 <via x="24.475" y="6.175" extent="1-16" drill="0.6"/>
-<contactref element="D2" pad="A"/>
-<contactref element="D1" pad="A"/>
+<contactref element="D5" pad="A"/>
+<contactref element="D6" pad="A"/>
 <via x="56.325" y="2.35" extent="1-16" drill="0.6"/>
 <via x="25.5" y="13" extent="1-16" drill="0.6"/>
 <via x="69.175" y="7.375" extent="1-16" drill="0.6"/>
 </signal>
 <signal name="N$2">
-<contactref element="L1" pad="2-DOUT"/>
-<contactref element="L2" pad="4-DIN"/>
+<contactref element="D1" pad="2-DOUT"/>
+<contactref element="D2" pad="4-DIN"/>
 <wire x1="39.2" y1="4.7" x2="39.5" y2="5" width="0.4064" layer="16"/>
 <wire x1="39.5" y1="5" x2="39.5" y2="6.5" width="0.4064" layer="16"/>
 <wire x1="39.5" y1="6.5" x2="40" y2="7" width="0.4064" layer="16"/>
@@ -2005,8 +2005,8 @@ design rules under a new name.</description>
 <wire x1="5.5" y1="9.8" x2="5.65" y2="9.95" width="0.4064" layer="16"/>
 </signal>
 <signal name="N$1">
-<contactref element="L3" pad="2-DOUT"/>
-<contactref element="L4" pad="4-DIN"/>
+<contactref element="D3" pad="2-DOUT"/>
+<contactref element="D4" pad="4-DIN"/>
 <wire x1="36.316" y1="5.05" x2="36.316" y2="6.884" width="0.4064" layer="1"/>
 <wire x1="36.316" y1="6.884" x2="36" y2="7.2" width="0.4064" layer="1"/>
 <wire x1="36" y1="7.2" x2="34.7" y2="7.2" width="0.4064" layer="1"/>
@@ -2068,9 +2068,9 @@ design rules under a new name.</description>
 <wire x1="44.65" y1="6.975" x2="47.5866" y2="6.975" width="0.4064" layer="1"/>
 <wire x1="47.5866" y1="6.975" x2="47.5952" y2="6.9836" width="0.4064" layer="1"/>
 </signal>
-<signal name="N$5">
-<contactref element="L2" pad="2-DOUT"/>
-<contactref element="L3" pad="4-DIN"/>
+<signal name="D3">
+<contactref element="D2" pad="2-DOUT"/>
+<contactref element="D3" pad="4-DIN"/>
 <wire x1="66.983" y1="9.95" x2="72.05" y2="9.95" width="0.4064" layer="16"/>
 <wire x1="73" y1="2.5" x2="89.3" y2="2.5" width="0.4064" layer="16"/>
 <wire x1="89.3" y1="2.5" x2="89.4" y2="2.6" width="0.4064" layer="16"/>
@@ -2085,7 +2085,7 @@ design rules under a new name.</description>
 </signal>
 <signal name="N$8">
 <contactref element="R1" pad="2"/>
-<contactref element="L1" pad="4-DIN"/>
+<contactref element="D1" pad="4-DIN"/>
 <via x="18.075" y="2.125" extent="1-16" drill="0.6"/>
 <wire x1="2.85" y1="2.075" x2="2.35" y2="2.575" width="0.4064" layer="16"/>
 <wire x1="2.35" y1="2.575" x2="2.35" y2="5.05" width="0.4064" layer="16"/>
@@ -2105,13 +2105,13 @@ design rules under a new name.</description>
 <signal name="VCC">
 <contactref element="ISP" pad="2"/>
 <contactref element="C8" pad="1"/>
-<contactref element="L1" pad="1-VDD"/>
+<contactref element="D1" pad="1-VDD"/>
 <contactref element="C7" pad="1"/>
 <contactref element="C6" pad="1"/>
-<contactref element="L4" pad="1-VDD"/>
+<contactref element="D4" pad="1-VDD"/>
 <contactref element="C5" pad="1"/>
-<contactref element="L2" pad="1-VDD"/>
-<contactref element="L3" pad="1-VDD"/>
+<contactref element="D2" pad="1-VDD"/>
+<contactref element="D3" pad="1-VDD"/>
 <contactref element="S2B-PH-SM4" pad="3"/>
 <contactref element="C2" pad="1"/>
 <wire x1="36.3" y1="13.1" x2="44.001290625" y2="13.0829625" width="0.4064" layer="1"/>
@@ -2148,7 +2148,7 @@ design rules under a new name.</description>
 <wire x1="36.316" y1="9.95" x2="39" y2="9.95" width="0.4064" layer="1"/>
 <wire x1="39.12" y1="8.43" x2="39.12" y2="9.83" width="0.4064" layer="1"/>
 <wire x1="39.12" y1="9.83" x2="39" y2="9.95" width="0.4064" layer="1"/>
-<contactref element="D1" pad="C"/>
+<contactref element="D6" pad="C"/>
 <wire x1="19.18" y1="9.48" x2="12" y2="9.5" width="0.4064" layer="1"/>
 <contactref element="TP_RX1" pad="P$1"/>
 <wire x1="29" y1="10" x2="29.001425" y2="10" width="0.4064" layer="1"/>
@@ -2243,7 +2243,7 @@ design rules under a new name.</description>
 <wire x1="47.549" y1="6.15" x2="47.5952" y2="6.1962" width="0.4064" layer="1"/>
 <wire x1="20.48" y1="7.5" x2="20.49" y2="7.51" width="0.4064" layer="1"/>
 <wire x1="8.28" y1="7.5" x2="7.97" y2="7.51" width="0.4064" layer="1"/>
-<contactref element="D2" pad="C"/>
+<contactref element="D5" pad="C"/>
 <wire x1="8.28" y1="7.5" x2="15.85" y2="7.5" width="0.4064" layer="1"/>
 <wire x1="15.85" y1="7.5" x2="20.48" y2="7.5" width="0.4064" layer="1"/>
 <wire x1="31.5" y1="3" x2="31" y2="3.5" width="0.4064" layer="1"/>
