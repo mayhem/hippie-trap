@@ -2,6 +2,8 @@
 
 import serial
 import struct
+import functions
+import generators
 from time import sleep
 
 BAUD_RATE = 38400
@@ -42,31 +44,17 @@ class Chandelier(object):
         packet = struct.pack("<BB", 255,  len(packet) + 2) + packet + struct.pack("<H", crc)
         self.ser.write(packet)
 
-def color_wheel(wheel_pos):
-    color = [0,0,0]
-    wheel_pos = 255 - wheel_pos
-    if wheel_pos < 85:
-        color[0] = int(255 - wheel_pos * 3)
-        color[1] = 0
-        color[2] = int(wheel_pos * 3)
-    elif wheel_pos < 170:
-        wheel_pos -= 85
-        color[0] = 0
-        color[1] = int(wheel_pos * 3)
-        color[2] = 255 - int(wheel_pos * 3)
-    else:
-        wheel_pos -= 170
-        color[0] = int(wheel_pos * 3)
-        color[1] = 255 - int(wheel_pos * 3)
-        color[2] = 0
-
-    return color
+STEP = .1
+DELAY = .02
 
 ch = Chandelier()
 ch.open("/dev/ttyAMA0")
 
+t = 0.0
+rainbow = functions.Rainbow(.05)
 while True:
-    for i in xrange(256 * 6):
-        col = color_wheel(i & 255)
-        ch.set_color(col[0], col[1], col[2])
-        sleep(.02)
+    col = rainbow[t]
+    #print col[0], col[1], col[2]
+    ch.set_color(col[0], col[1], col[2])
+    sleep(DELAY)
+    t += STEP

@@ -56,8 +56,7 @@ class Sawtooth(Generator):
         super(Sawtooth, self).__init__(period, phase)
 
     def __getitem__(self, t):
-        return (t * self.period) + self.phase
-
+        return (t * self.period + self.phase) % 1.0
 
 class Triangle(Generator):
 
