@@ -5404,12 +5404,12 @@ Standard 3-pin 0.1" header. Use with straight break away headers (SKU : PRT-0011
 </class>
 </classes>
 <parts>
-<part name="L1" library="adafruit" deviceset="WS2812B" device="">
+<part name="D1" library="adafruit" deviceset="WS2812B" device="">
 <attribute name="MF" value=""/>
 <attribute name="MPN" value="WS2812B"/>
 <attribute name="OC_NEWARK" value="43Y4720"/>
 </part>
-<part name="L2" library="adafruit" deviceset="WS2812B" device="">
+<part name="D2" library="adafruit" deviceset="WS2812B" device="">
 <attribute name="MF" value=""/>
 <attribute name="MPN" value="WS2812B"/>
 <attribute name="OC_NEWARK" value="43Y4720"/>
@@ -5426,12 +5426,12 @@ Standard 3-pin 0.1" header. Use with straight break away headers (SKU : PRT-0011
 <attribute name="MF" value=""/>
 <attribute name="OC_NEWARK" value="68T2717"/>
 </part>
-<part name="L3" library="adafruit" deviceset="WS2812B" device="">
+<part name="D3" library="adafruit" deviceset="WS2812B" device="">
 <attribute name="MF" value=""/>
 <attribute name="MPN" value="WS2812B"/>
 <attribute name="OC_NEWARK" value="43Y4720"/>
 </part>
-<part name="L4" library="adafruit" deviceset="WS2812B" device="">
+<part name="D4" library="adafruit" deviceset="WS2812B" device="">
 <attribute name="MF" value=""/>
 <attribute name="MPN" value="WS2812B"/>
 <attribute name="OC_NEWARK" value="43Y4720"/>
@@ -5482,12 +5482,12 @@ Standard 3-pin 0.1" header. Use with straight break away headers (SKU : PRT-0011
 <attribute name="OC_NEWARK" value="62M2341"/>
 </part>
 <part name="FRAME1" library="frames" deviceset="DINA4_L" device=""/>
-<part name="C2" library="microbuilder" deviceset="CAP_CERAMIC" device="0805" value="1uF">
+<part name="C2" library="microbuilder" deviceset="CAP_CERAMIC" device="1206" value="47uF">
 <attribute name="MF" value=""/>
 <attribute name="MPN" value="CC0805KKX7R7BB105"/>
 <attribute name="OC_NEWARK" value="68R4880"/>
 </part>
-<part name="D1" library="SparkFun-DiscreteSemi" deviceset="B340A" device="" value="BA340A">
+<part name="D6" library="SparkFun-DiscreteSemi" deviceset="B340A" device="" value="BA340A">
 <attribute name="MF" value=""/>
 <attribute name="MPN" value="B330A-13-F"/>
 <attribute name="OC_NEWARK" value="12T1463"/>
@@ -5508,7 +5508,7 @@ Standard 3-pin 0.1" header. Use with straight break away headers (SKU : PRT-0011
 <attribute name="MPN" value=""/>
 <attribute name="OC_NEWARK" value="unknown"/>
 </part>
-<part name="D2" library="SparkFun-DiscreteSemi" deviceset="B340A" device="" value="BA340A">
+<part name="D5" library="SparkFun-DiscreteSemi" deviceset="B340A" device="" value="BA340A">
 <attribute name="MF" value=""/>
 <attribute name="MPN" value="B330A-13-F"/>
 <attribute name="OC_NEWARK" value="12T1463"/>
@@ -5533,12 +5533,12 @@ Standard 3-pin 0.1" header. Use with straight break away headers (SKU : PRT-0011
 Copyright (c) Robert Kaye 2015</text>
 </plain>
 <instances>
-<instance part="L1" gate="G$1" x="-38.1" y="93.98">
+<instance part="D1" gate="G$1" x="-38.1" y="93.98">
 <attribute name="OC_NEWARK" x="-38.1" y="93.98" size="1.778" layer="96" rot="MR0" display="off"/>
 <attribute name="MF" x="-38.1" y="93.98" size="1.778" layer="96" rot="MR0" display="off"/>
 <attribute name="MPN" x="-38.1" y="93.98" size="1.778" layer="96" rot="MR0" display="off"/>
 </instance>
-<instance part="L2" gate="G$1" x="-17.78" y="93.98">
+<instance part="D2" gate="G$1" x="-17.78" y="93.98">
 <attribute name="OC_NEWARK" x="-17.78" y="93.98" size="1.778" layer="96" rot="MR0" display="off"/>
 <attribute name="MF" x="-17.78" y="93.98" size="1.778" layer="96" rot="MR0" display="off"/>
 <attribute name="MPN" x="-17.78" y="93.98" size="1.778" layer="96" rot="MR0" display="off"/>
@@ -5554,12 +5554,12 @@ Copyright (c) Robert Kaye 2015</text>
 <instance part="U1" gate="A" x="-10.16" y="27.94">
 <attribute name="MF" x="-10.16" y="27.94" size="1.778" layer="96" rot="MR0" display="off"/>
 </instance>
-<instance part="L3" gate="G$1" x="2.54" y="93.98">
+<instance part="D3" gate="G$1" x="2.54" y="93.98">
 <attribute name="OC_NEWARK" x="2.54" y="93.98" size="1.778" layer="96" rot="MR0" display="off"/>
 <attribute name="MF" x="2.54" y="93.98" size="1.778" layer="96" rot="MR0" display="off"/>
 <attribute name="MPN" x="2.54" y="93.98" size="1.778" layer="96" rot="MR0" display="off"/>
 </instance>
-<instance part="L4" gate="G$1" x="22.86" y="93.98">
+<instance part="D4" gate="G$1" x="22.86" y="93.98">
 <attribute name="OC_NEWARK" x="22.86" y="93.98" size="1.778" layer="96" rot="MR0" display="off"/>
 <attribute name="MF" x="22.86" y="93.98" size="1.778" layer="96" rot="MR0" display="off"/>
 <attribute name="MPN" x="22.86" y="93.98" size="1.778" layer="96" rot="MR0" display="off"/>
@@ -5616,7 +5616,7 @@ Copyright (c) Robert Kaye 2015</text>
 <attribute name="MF" x="109.22" y="30.48" size="1.778" layer="96" rot="MR0" display="off"/>
 <attribute name="MPN" x="109.22" y="30.48" size="1.778" layer="96" rot="MR0" display="off"/>
 </instance>
-<instance part="D1" gate="G$1" x="99.06" y="27.94" rot="R90">
+<instance part="D6" gate="G$1" x="99.06" y="27.94" rot="R90">
 <attribute name="OC_NEWARK" x="99.06" y="27.94" size="1.778" layer="96" rot="MR0" display="off"/>
 <attribute name="MF" x="99.06" y="27.94" size="1.778" layer="96" rot="MR0" display="off"/>
 <attribute name="MPN" x="99.06" y="27.94" size="1.778" layer="96" rot="MR0" display="off"/>
@@ -5637,7 +5637,7 @@ Copyright (c) Robert Kaye 2015</text>
 <attribute name="MF" x="134.62" y="99.06" size="1.778" layer="96" rot="MR0" display="off"/>
 <attribute name="MPN" x="134.62" y="99.06" size="1.778" layer="96" rot="MR0" display="off"/>
 </instance>
-<instance part="D2" gate="G$1" x="88.9" y="27.94" rot="R90">
+<instance part="D5" gate="G$1" x="88.9" y="27.94" rot="R90">
 <attribute name="OC_NEWARK" x="88.9" y="27.94" size="1.778" layer="96" rot="MR0" display="off"/>
 <attribute name="MF" x="88.9" y="27.94" size="1.778" layer="96" rot="MR0" display="off"/>
 <attribute name="MPN" x="88.9" y="27.94" size="1.778" layer="96" rot="MR0" display="off"/>
@@ -5679,13 +5679,13 @@ Copyright (c) Robert Kaye 2015</text>
 <wire x1="-5.08" y1="83.82" x2="2.54" y2="83.82" width="0.1524" layer="91"/>
 <wire x1="2.54" y1="83.82" x2="15.24" y2="83.82" width="0.1524" layer="91"/>
 <wire x1="15.24" y1="83.82" x2="22.86" y2="83.82" width="0.1524" layer="91"/>
-<pinref part="L4" gate="G$1" pin="GND"/>
+<pinref part="D4" gate="G$1" pin="GND"/>
 <wire x1="22.86" y1="88.9" x2="22.86" y2="83.82" width="0.1524" layer="91"/>
-<pinref part="L3" gate="G$1" pin="GND"/>
+<pinref part="D3" gate="G$1" pin="GND"/>
 <wire x1="2.54" y1="88.9" x2="2.54" y2="83.82" width="0.1524" layer="91"/>
-<pinref part="L2" gate="G$1" pin="GND"/>
+<pinref part="D2" gate="G$1" pin="GND"/>
 <wire x1="-17.78" y1="88.9" x2="-17.78" y2="83.82" width="0.1524" layer="91"/>
-<pinref part="L1" gate="G$1" pin="GND"/>
+<pinref part="D1" gate="G$1" pin="GND"/>
 <wire x1="-38.1" y1="88.9" x2="-38.1" y2="83.82" width="0.1524" layer="91"/>
 <junction x="-38.1" y="83.82"/>
 <pinref part="C5" gate="G$1" pin="P$2"/>
@@ -5713,9 +5713,9 @@ Copyright (c) Robert Kaye 2015</text>
 <pinref part="GND1" gate="1" pin="GND"/>
 <wire x1="109.22" y1="20.32" x2="109.22" y2="15.24" width="0.1524" layer="91"/>
 <junction x="109.22" y="20.32"/>
-<pinref part="D2" gate="G$1" pin="A"/>
+<pinref part="D5" gate="G$1" pin="A"/>
 <wire x1="88.9" y1="25.4" x2="88.9" y2="20.32" width="0.1524" layer="91"/>
-<pinref part="D1" gate="G$1" pin="A"/>
+<pinref part="D6" gate="G$1" pin="A"/>
 <wire x1="99.06" y1="25.4" x2="99.06" y2="20.32" width="0.1524" layer="91"/>
 <junction x="99.06" y="20.32"/>
 <junction x="88.9" y="20.32"/>
@@ -5745,15 +5745,15 @@ Copyright (c) Robert Kaye 2015</text>
 </net>
 <net name="N$2" class="0">
 <segment>
-<pinref part="L1" gate="G$1" pin="DOUT"/>
-<pinref part="L2" gate="G$1" pin="DIN"/>
+<pinref part="D1" gate="G$1" pin="DOUT"/>
+<pinref part="D2" gate="G$1" pin="DIN"/>
 <wire x1="-33.02" y1="93.98" x2="-22.86" y2="93.98" width="0.1524" layer="91"/>
 </segment>
 </net>
 <net name="N$1" class="0">
 <segment>
-<pinref part="L3" gate="G$1" pin="DOUT"/>
-<pinref part="L4" gate="G$1" pin="DIN"/>
+<pinref part="D3" gate="G$1" pin="DOUT"/>
+<pinref part="D4" gate="G$1" pin="DIN"/>
 <wire x1="7.62" y1="93.98" x2="17.78" y2="93.98" width="0.1524" layer="91"/>
 </segment>
 </net>
@@ -5798,17 +5798,17 @@ Copyright (c) Robert Kaye 2015</text>
 <label x="-53.34" y="10.16" size="1.778" layer="95"/>
 </segment>
 </net>
-<net name="N$5" class="0">
+<net name="D3" class="0">
 <segment>
-<pinref part="L2" gate="G$1" pin="DOUT"/>
-<pinref part="L3" gate="G$1" pin="DIN"/>
+<pinref part="D2" gate="G$1" pin="DOUT"/>
+<pinref part="D3" gate="G$1" pin="DIN"/>
 <wire x1="-12.7" y1="93.98" x2="-2.54" y2="93.98" width="0.1524" layer="91"/>
 </segment>
 </net>
 <net name="N$8" class="0">
 <segment>
 <pinref part="R1" gate="G$1" pin="2"/>
-<pinref part="L1" gate="G$1" pin="DIN"/>
+<pinref part="D1" gate="G$1" pin="DIN"/>
 <wire x1="-48.26" y1="93.98" x2="-43.18" y2="93.98" width="0.1524" layer="91"/>
 </segment>
 </net>
@@ -5821,14 +5821,14 @@ Copyright (c) Robert Kaye 2015</text>
 </segment>
 <segment>
 <wire x1="-45.72" y1="91.44" x2="-45.72" y2="99.06" width="0.1524" layer="91"/>
-<pinref part="L1" gate="G$1" pin="VDD"/>
+<pinref part="D1" gate="G$1" pin="VDD"/>
 <wire x1="-45.72" y1="99.06" x2="-38.1" y2="99.06" width="0.1524" layer="91"/>
-<pinref part="L2" gate="G$1" pin="VDD"/>
+<pinref part="D2" gate="G$1" pin="VDD"/>
 <wire x1="-38.1" y1="99.06" x2="-25.4" y2="99.06" width="0.1524" layer="91"/>
-<pinref part="L3" gate="G$1" pin="VDD"/>
+<pinref part="D3" gate="G$1" pin="VDD"/>
 <wire x1="-25.4" y1="99.06" x2="-17.78" y2="99.06" width="0.1524" layer="91"/>
 <wire x1="-17.78" y1="99.06" x2="-10.16" y2="99.06" width="0.1524" layer="91"/>
-<pinref part="L4" gate="G$1" pin="VDD"/>
+<pinref part="D4" gate="G$1" pin="VDD"/>
 <wire x1="-10.16" y1="99.06" x2="-5.08" y2="99.06" width="0.1524" layer="91"/>
 <wire x1="-5.08" y1="99.06" x2="2.54" y2="99.06" width="0.1524" layer="91"/>
 <wire x1="2.54" y1="99.06" x2="15.24" y2="99.06" width="0.1524" layer="91"/>
@@ -5861,7 +5861,7 @@ Copyright (c) Robert Kaye 2015</text>
 <wire x1="99.06" y1="43.18" x2="109.22" y2="43.18" width="0.1524" layer="91"/>
 <wire x1="109.22" y1="43.18" x2="109.22" y2="48.26" width="0.1524" layer="91"/>
 <junction x="109.22" y="43.18"/>
-<pinref part="D1" gate="G$1" pin="C"/>
+<pinref part="D6" gate="G$1" pin="C"/>
 <wire x1="99.06" y1="30.48" x2="99.06" y2="43.18" width="0.1524" layer="91"/>
 <junction x="99.06" y="43.18"/>
 </segment>
@@ -5936,7 +5936,7 @@ Copyright (c) Robert Kaye 2015</text>
 <pinref part="S2B-PH-SM4" gate="G$1" pin="2"/>
 <wire x1="68.58" y1="38.1" x2="88.9" y2="38.1" width="0.1524" layer="91"/>
 <label x="81.28" y="38.1" size="1.778" layer="95" rot="MR0"/>
-<pinref part="D2" gate="G$1" pin="C"/>
+<pinref part="D5" gate="G$1" pin="C"/>
 <wire x1="88.9" y1="38.1" x2="88.9" y2="30.48" width="0.1524" layer="91"/>
 </segment>
 </net>
@@ -5953,6 +5953,7 @@ Copyright (c) Robert Kaye 2015</text>
 <approved hash="113,1,132.122,79.8485,TP_GND,,,,,"/>
 <approved hash="113,1,132.122,89.7586,TP_LED,,,,,"/>
 <approved hash="113,1,132.122,99.4143,TP_RX,,,,,"/>
+<approved hash="113,1,132.122,110.079,TP_RX1,,,,,"/>
 </errors>
 </schematic>
 </drawing>
