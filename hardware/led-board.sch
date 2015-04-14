@@ -5482,7 +5482,7 @@ Standard 3-pin 0.1" header. Use with straight break away headers (SKU : PRT-0011
 <attribute name="OC_NEWARK" value="62M2341"/>
 </part>
 <part name="FRAME1" library="frames" deviceset="DINA4_L" device=""/>
-<part name="C2" library="microbuilder" deviceset="CAP_CERAMIC" device="0805" value="1uF">
+<part name="C2" library="microbuilder" deviceset="CAP_CERAMIC" device="1206" value="47uF">
 <attribute name="MF" value=""/>
 <attribute name="MPN" value="CC0805KKX7R7BB105"/>
 <attribute name="OC_NEWARK" value="68R4880"/>
@@ -5953,6 +5953,7 @@ Copyright (c) Robert Kaye 2015</text>
 <approved hash="113,1,132.122,79.8485,TP_GND,,,,,"/>
 <approved hash="113,1,132.122,89.7586,TP_LED,,,,,"/>
 <approved hash="113,1,132.122,99.4143,TP_RX,,,,,"/>
+<approved hash="113,1,132.122,110.079,TP_RX1,,,,,"/>
 </errors>
 </schematic>
 </drawing>
