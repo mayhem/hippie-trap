@@ -5528,7 +5528,7 @@ Standard 3-pin 0.1" header. Use with straight break away headers (SKU : PRT-0011
 <sheets>
 <sheet>
 <plain>
-<text x="157.48" y="-40.64" size="5.08" layer="97">4</text>
+<text x="157.48" y="-40.64" size="5.08" layer="97">5</text>
 <text x="66.548" y="-21.844" size="2.54" layer="97">Hue Chandelier LED Board
 Copyright (c) Robert Kaye 2015</text>
 </plain>
