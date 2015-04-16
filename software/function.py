@@ -2,57 +2,53 @@
 import abc
 import math
 import colorsys
-import generators
+import generator
+from common import Color, ChainLink
 
 # Generator -> Sawtooth, Sine, Cos, Square, Hilbert, Impulse
 # ColorSource -> given t: get color
 # Filter -> given t, color: return color
 
-#Generator(args)
-#ColorSource(Generator, args)
-#Filter(Time
-
-class Color(object):
-
-    def __init__(self, r, g, b):
-        self.color = [r, g, b]
-
-    def __str__(self):
-        return "Color(%d,%d,%d)" % (self.color[0], self.color[1], self.color[2])
-
-    @abc.abstractmethod
-    def __getitem__(self, i):
-        return self.color[i]
-
-class ColorSource(object):
+class ColorSource(ChainLink):
 
     def __init__(self, generator):
+        super(ColorSource, self).__init__()
         self.g = generator
+        self.next = None
 
     @abc.abstractmethod
     def __getitem__(self, t):
         pass
 
+class ConstantColor(ColorSource):
+
+    def __init__(self, color):
+        self.color = color
+        super(ConstantColor, self).__init__(None)
+
+    def __getitem__(self, t):
+        return self.call_next(t, self.color)
+
 class ColorWheel(ColorSource):
 
-    def __init__(self, period = 1.0, phase = 0.0, generator = None):
+    def __init__(self, period = 1.0, phase = 0.0, gen = None):
         if generator:
-            g = generator
+            g = gen
         else:
-            g = generators.Sawtooth(period, phase)
+            g = generator.Sawtooth(period, phase)
         super(Rainbow, self).__init__(g)
 
     def __getitem__(self, t):
         col = colorsys.hsv_to_rgb(self.g[t], 1, 1)
-        return Color(int(col[0] * 255), int(col[1] * 255), int(col[2] * 255))
+        return self.call_next(t, Color(int(col[0] * 255), int(col[1] * 255), int(col[2] * 255)))
 
 class Rainbow(ColorSource):
 
-    def __init__(self, period = 1.0, phase = 0.0, generator = None):
+    def __init__(self, period = 1.0, phase = 0.0, gen = None):
         if generator:
-            g = generator
+            g = gen
         else:
-            g = generators.Sawtooth(period, phase)
+            g = generator.Sawtooth(period, phase)
         super(Rainbow, self).__init__(g)
 
     def __getitem__(self, t):
@@ -74,4 +70,4 @@ class Rainbow(ColorSource):
             color[1] = 255 - int(wheel_pos * 3)
             color[2] = 0
 
-        return Color(color[0], color[1], color[2])
+        return self.call_next(t, Color(color[0], color[1], color[2]))

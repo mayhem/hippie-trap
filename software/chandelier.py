@@ -2,9 +2,11 @@
 
 import serial
 import struct
-import functions
-import generators
-from time import sleep
+import function
+import generator
+import filter
+from time import sleep, time
+from common import Color
 
 BAUD_RATE = 38400
 
@@ -44,17 +46,21 @@ class Chandelier(object):
         packet = struct.pack("<BB", 255,  len(packet) + 2) + packet + struct.pack("<H", crc)
         self.ser.write(packet)
 
-STEP = .1
+    def run(self, function, delay):
+        while True:
+            col = function[time() - start_t]
+            ch.set_color(col[0], col[1], col[2])
+            sleep(delay)
+
 DELAY = .02
 
 ch = Chandelier()
 ch.open("/dev/ttyAMA0")
 
-t = 0.0
-rainbow = functions.Rainbow(.05)
-while True:
-    col = rainbow[t]
-    #print col[0], col[1], col[2]
-    ch.set_color(col[0], col[1], col[2])
-    sleep(DELAY)
-    t += STEP
+start_t = time()
+#rainbow = function.Rainbow(.05)
+#rainbow.chain(filter.FadeIn(2))
+purple = function.ConstantColor(Color(128, 0, 128))
+purple.chain(filter.FadeIn(2.0))
+purple.chain(filter.FadeOut(4.0, 2.0))
+ch.run(purple, DELAY)

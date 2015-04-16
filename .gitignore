@@ -4,3 +4,4 @@ ve
 *.b#?
 *.s#?
 .DS_Store
+*.swp
