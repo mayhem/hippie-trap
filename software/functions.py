@@ -39,7 +39,6 @@ class ColorWheel(ColorSource):
         if generator:
             g = generator
         else:
-            print period, phase
             g = generators.Sawtooth(period, phase)
         super(Rainbow, self).__init__(g)
 
@@ -53,7 +52,6 @@ class Rainbow(ColorSource):
         if generator:
             g = generator
         else:
-            print period, phase
             g = generators.Sawtooth(period, phase)
         super(Rainbow, self).__init__(g)
 
