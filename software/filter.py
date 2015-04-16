@@ -50,3 +50,12 @@ class FadeOut(Filter):
 
         return self.call_next(t, color)
 
+class Brightness(Filter):
+
+    def __init__(self, gen):
+        self.gen = gen
+        super(Brightness, self).__init__()
+
+    def filter(self, t, color):
+        percent = self.gen[t]
+        return self.call_next(t, Color(int(color[0] * percent), int(color[1] * percent), int(color[2] * percent)))

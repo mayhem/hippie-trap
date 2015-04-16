@@ -46,6 +46,9 @@ class Chandelier(object):
         packet = struct.pack("<BB", 255,  len(packet) + 2) + packet + struct.pack("<H", crc)
         self.ser.write(packet)
 
+# TODO:     packet = chr(red) + chr(green) + chr(blue);
+#    ValueError: chr() arg not in range(256)
+
     def run(self, function, delay):
         while True:
             col = function[time() - start_t]
@@ -60,7 +63,10 @@ ch.open("/dev/ttyAMA0")
 start_t = time()
 #rainbow = function.Rainbow(.05)
 #rainbow.chain(filter.FadeIn(2))
-purple = function.ConstantColor(Color(128, 0, 128))
-purple.chain(filter.FadeIn(2.0))
-purple.chain(filter.FadeOut(4.0, 2.0))
-ch.run(purple, DELAY)
+#purple = function.ConstantColor(Color(128, 0, 128))
+#purple.chain(filter.FadeIn(2.0))
+#purple.chain(filter.FadeOut(4.0, 2.0))
+
+red_wobble = function.ConstantColor(Color(128, 0, 0))
+red_wobble.chain(filter.Brightness(generator.Sin(20, 0, .75, .25)))
+ch.run(red_wobble, DELAY)
