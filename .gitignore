@@ -1,2 +1,6 @@
 *.pyc
 ve
+*.job
+*.b#?
+*.s#?
+.DS_Store
