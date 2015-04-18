@@ -16,11 +16,12 @@ class Generator(object):
 
 class Sin(Generator):
 
-    def __init__(self, period = 1.0, phase = 0.0, offset = 0.5, amplitude = .5):
+    def __init__(self, period = 1.0, phase = 0.0, offset = .0, amplitude = .0):
         super(Sin, self).__init__(period, phase, offset, amplitude)
 
     def __getitem__(self, t):
-        return math.sin(t * self.period + self.phase) * self.amplitude + self.offset
+        v = math.sin(t * self.period + self.phase) * self.amplitude + self.offset
+        return v
 
 # TODO: Review implementation
 class Square(Generator):
@@ -29,11 +30,11 @@ class Square(Generator):
         super(Square, self).__init__(period, phase, offset, amplitude)
 
     def __getitem__(self, t):
-        v = (t * self.period) + self.phase
+        v = (t / self.period) + self.phase
         if float(v) % 1 >= .5:
-            return 1.0
+            return self.amplitude + self.offset
         else:
-            return 0.0
+            return self.offset
 
 class Sawtooth(Generator):
 

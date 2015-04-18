@@ -1,7 +1,8 @@
 #!/usr/bin/python
 import abc
 import math
-from common import Color, ChainLink
+from common import ChainLink
+from color import Color
 
 class Filter(ChainLink):
 

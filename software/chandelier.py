@@ -1,12 +1,13 @@
 #!/usr/bin/python
 
+import math
 import serial
 import struct
 import function
 import generator
 import filter
 from time import sleep, time
-from common import Color
+from color import Color, RandomColorSequence
 
 BAUD_RATE = 38400
 
@@ -49,24 +50,32 @@ class Chandelier(object):
 # TODO:     packet = chr(red) + chr(green) + chr(blue);
 #    ValueError: chr() arg not in range(256)
 
-    def run(self, function, delay):
+    def run(self, function, delay, duration = 0.0):
+        start_t = time()
         while True:
-            col = function[time() - start_t]
+            t = time() - start_t
+            col = function[t]
             ch.set_color(col[0], col[1], col[2])
             sleep(delay)
+
+            if duration > 0 and t > duration:
+                break
 
 DELAY = .02
 
 ch = Chandelier()
 ch.open("/dev/ttyAMA0")
 
-start_t = time()
 #rainbow = function.Rainbow(.05)
 #rainbow.chain(filter.FadeIn(2))
 #purple = function.ConstantColor(Color(128, 0, 128))
 #purple.chain(filter.FadeIn(2.0))
 #purple.chain(filter.FadeOut(4.0, 2.0))
 
-red_wobble = function.ConstantColor(Color(128, 0, 0))
-red_wobble.chain(filter.Brightness(generator.Sin(20, 0, .75, .25)))
-ch.run(red_wobble, DELAY)
+rand_col = RandomColorSequence()
+while True:
+    wobble = function.ConstantColor(rand_col.get())
+    period_s = 1
+    g = generator.Sin((math.pi * 2) / period_s, -math.pi/2, .5, .5)
+    wobble.chain(filter.Brightness(g))
+    ch.run(wobble, DELAY, period_s)

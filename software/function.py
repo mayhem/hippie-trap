@@ -3,11 +3,8 @@ import abc
 import math
 import colorsys
 import generator
-from common import Color, ChainLink
-
-# Generator -> Sawtooth, Sine, Cos, Square, Hilbert, Impulse
-# ColorSource -> given t: get color
-# Filter -> given t, color: return color
+from color import Color
+from common import ChainLink
 
 class ColorSource(ChainLink):
 
