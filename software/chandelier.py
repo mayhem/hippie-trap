@@ -10,6 +10,11 @@ from time import sleep, time
 from color import Color, RandomColorSequence
 
 BAUD_RATE = 38400
+NUM_PIXELS = 8
+
+PACKET_SINGLE_COLOR = 0
+PACKET_COLOR_ARRAY = 1
+BROADCAST = 255
 
 def crc16_update(crc, a):
     crc ^= a
@@ -39,8 +44,18 @@ class Chandelier(object):
             print "Cant open serial port: %s" % device
             sys.exit(-1)
 
-    def set_color(self, red, green, blue):
-        packet = chr(red) + chr(green) + chr(blue);
+    def set_color(self, dest, col):
+        packet = chr(dest) + chr(PACKET_SINGLE_COLOR) + chr(col[0]) + chr(col[1]) + chr(col[2])
+        crc = 0
+        for ch in packet:
+            crc = crc16_update(crc, ord(ch))
+        packet = struct.pack("<BB", 255,  len(packet) + 2) + packet + struct.pack("<H", crc)
+        self.ser.write(packet)
+
+    def set_color_array(self, dest, colors):
+        packet = chr(dest) + chr(PACKET_COLOR_ARRAY)
+        for col in colors:
+            packet += chr(col[0]) + chr(col[1]) + chr(col[2]);
         crc = 0
         for ch in packet:
             crc = crc16_update(crc, ord(ch))
@@ -55,7 +70,11 @@ class Chandelier(object):
         while True:
             t = time() - start_t
             col = function[t]
-            ch.set_color(col[0], col[1], col[2])
+            array = []
+            for i in xrange(NUM_PIXELS):
+                array.append(col)
+
+            ch.set_color_array(BROADCAST, array)
             sleep(delay)
 
             if duration > 0 and t > duration:
