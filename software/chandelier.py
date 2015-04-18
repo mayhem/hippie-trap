@@ -1,8 +1,13 @@
 #!/usr/bin/python
 
+import math
 import serial
 import struct
-from time import sleep
+import function
+import generator
+import filter
+from time import sleep, time
+from color import Color, RandomColorSequence
 
 BAUD_RATE = 38400
 
@@ -42,31 +47,35 @@ class Chandelier(object):
         packet = struct.pack("<BB", 255,  len(packet) + 2) + packet + struct.pack("<H", crc)
         self.ser.write(packet)
 
-def color_wheel(wheel_pos):
-    color = [0,0,0]
-    wheel_pos = 255 - wheel_pos
-    if wheel_pos < 85:
-        color[0] = int(255 - wheel_pos * 3)
-        color[1] = 0
-        color[2] = int(wheel_pos * 3)
-    elif wheel_pos < 170:
-        wheel_pos -= 85
-        color[0] = 0
-        color[1] = int(wheel_pos * 3)
-        color[2] = 255 - int(wheel_pos * 3)
-    else:
-        wheel_pos -= 170
-        color[0] = int(wheel_pos * 3)
-        color[1] = 255 - int(wheel_pos * 3)
-        color[2] = 0
+# TODO:     packet = chr(red) + chr(green) + chr(blue);
+#    ValueError: chr() arg not in range(256)
 
-    return color
+    def run(self, function, delay, duration = 0.0):
+        start_t = time()
+        while True:
+            t = time() - start_t
+            col = function[t]
+            ch.set_color(col[0], col[1], col[2])
+            sleep(delay)
+
+            if duration > 0 and t > duration:
+                break
+
+DELAY = .02
 
 ch = Chandelier()
 ch.open("/dev/ttyAMA0")
 
+#rainbow = function.Rainbow(.05)
+#rainbow.chain(filter.FadeIn(2))
+#purple = function.ConstantColor(Color(128, 0, 128))
+#purple.chain(filter.FadeIn(2.0))
+#purple.chain(filter.FadeOut(4.0, 2.0))
+
+rand_col = RandomColorSequence()
 while True:
-    for i in xrange(256 * 6):
-        col = color_wheel(i & 255)
-        ch.set_color(col[0], col[1], col[2])
-        sleep(.02)
+    wobble = function.ConstantColor(rand_col.get())
+    period_s = 1
+    g = generator.Sin((math.pi * 2) / period_s, -math.pi/2, .5, .5)
+    wobble.chain(filter.Brightness(g))
+    ch.run(wobble, DELAY, period_s)
