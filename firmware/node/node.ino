@@ -1,11 +1,20 @@
 #include <util/crc16.h>
+#include <EEPROM.h>
 #include <Adafruit_NeoPixel.h>
 
 const uint8_t NUM_PIXELS = 8;
 const uint8_t OUT_PIN = 2;
 const uint8_t MAX_PACKET_LEN = 32;
 
+const uint8_t BROADCAST = 255;
+const uint8_t PACKET_SINGLE_COLOR = 0;
+const uint8_t PACKET_COLOR_ARRAY= 1;
+
 Adafruit_NeoPixel pixels = Adafruit_NeoPixel(NUM_PIXELS, OUT_PIN, NEO_GRB + NEO_KHZ800);
+
+// where in EEPROM our node id is stored
+const int id_address = 0;
+uint8_t g_node_id = 0;
 
 void show_color(uint8_t r, uint8_t g, uint8_t b)
 {
@@ -53,14 +62,33 @@ void setup()
     startup_animation();
     
     Serial.begin(38400);
+    
+    g_node_id = EEPROM.read(id_address);
 }
 
-void handle_packet(uint8_t len, uint8_t *data)
+void handle_packet(uint8_t len, uint8_t *packet)
 {
-    uint8_t            j;
+    uint8_t j, type, target;
+    uint8_t *data;
 
-    for(int j=0; j < NUM_PIXELS; j++)
-        pixels.setPixelColor(j, pixels.Color(data[0], data[1], data[2]));
+    target = packet[0];
+    if (target != BROADCAST && target != g_node_id)
+         return;
+    
+    type = packet[1];
+    data = &packet[2];
+    switch(type)
+    {
+        case PACKET_SINGLE_COLOR:
+            for(int j=0; j < NUM_PIXELS; j++)
+                pixels.setPixelColor(j, pixels.Color(data[0], data[1], data[2]));
+            break;
+            
+        case PACKET_COLOR_ARRAY:
+            for(int j=0; j < NUM_PIXELS; j++, data += 3)
+                pixels.setPixelColor(j, pixels.Color(data[0], data[1], data[2]));      
+            break;  
+    }
 
     pixels.show();
 }
