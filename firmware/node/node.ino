@@ -28,7 +28,7 @@ void show_color(uint8_t r, uint8_t g, uint8_t b)
 void startup_animation(void)
 {
     uint8_t i, j;
-    uint8_t col1[3] = { 128, 70, 0 };
+    uint8_t col1[3] = { 128, 40, 0 };
     uint8_t col2[3] = { 128, 0, 128 };
 
     for(i = 0; i < 10; i++)
