@@ -31,7 +31,7 @@ class ConstantColor(ColorSource):
         super(ConstantColor, self).__init__(None)
 
     def describe(self, level = 0):
-        print "%s()" % (self.__class__.__name__)
+        print "%s()" % (self.__class__.__name__),
         self.describe_next()
 
     def __getitem__(self, t):
@@ -58,15 +58,16 @@ class RandomColorSequence(ColorSource):
 class ColorWheel(ColorSource):
 
     def __init__(self, period = 1.0, phase = 0.0, gen = None):
-        if generator:
+        if gen:
             g = gen
         else:
             g = generator.Sawtooth(period, phase)
         super(Rainbow, self).__init__(g)
 
     def describe(self, level = 0):
-        print "%s(%.3f, %.3f, " % (self.__class__.__name__),
-        self.g.describe(level+1)
+        print "%s(" % (self.__class__.__name__),
+        if self.g:
+            self.g.describe(level+1)
         print ")",
         self.describe_next()
 
@@ -77,14 +78,14 @@ class ColorWheel(ColorSource):
 class Rainbow(ColorSource):
 
     def __init__(self, period = 1.0, phase = 0.0, gen = None):
-        if generator:
+        if gen:
             g = gen
         else:
             g = generator.Sawtooth(period, phase)
         super(Rainbow, self).__init__(g)
 
     def describe(self, level = 0):
-        print "%s(%.3f, %.3f, " % (self.__class__.__name__),
+        print "%s(" % (self.__class__.__name__),
         if self.g:
             self.g.describe(level+1)
         print ")",

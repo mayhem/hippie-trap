@@ -86,17 +86,24 @@ DELAY = .02
 ch = Chandelier()
 ch.open("/dev/ttyAMA0")
 
-#rainbow = function.Rainbow(.05)
-#rainbow.chain(filter.FadeIn(2))
-#purple = function.ConstantColor(Color(128, 0, 128))
-#purple.chain(filter.FadeIn(2.0))
-#purple.chain(filter.FadeOut(4.0, 2.0))
-
 random.seed()
 period_s = 1
+
+rainbow = function.Rainbow(.05)
+rainbow.chain(filter.FadeIn(1))
+rainbow.chain(filter.FadeOut(5.0, 1.0))
+
+purple = function.ConstantColor(Color(128, 0, 128))
+purple.chain(filter.FadeIn(1.0))
+purple.chain(filter.FadeOut(5.0, 1.0))
+
 wobble = function.RandomColorSequence(period_s, random.randint(0, 255))
 g = generator.Sin((math.pi * 2) / period_s, -math.pi/2, .5, .5)
 wobble.chain(filter.Brightness(g))
-wobble.describe()
-print
-ch.run(wobble, DELAY)
+
+funcs = [rainbow, purple, wobble]
+while True:
+    for f in funcs:
+        f.describe()
+        print
+        ch.run(f, DELAY, 6)
