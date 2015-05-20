@@ -11,7 +11,7 @@ class Generator(object):
         self.amplitude = amplitude
 
     @abc.abstractmethod
-    def describe(self, level = 0):
+    def describe(self):
         pass
 
     @abc.abstractmethod
@@ -23,7 +23,7 @@ class Sin(Generator):
     def __init__(self, period = 1.0, phase = 0.0, offset = .0, amplitude = .0):
         super(Sin, self).__init__(period, phase, offset, amplitude)
 
-    def describe(self, level = 0):
+    def describe(self):
         print "%s(%.3f, %.3f, %.3f, %.3f)" % (self.__class__.__name__, self.period, self.phase, self.offset, self.amplitude),
 
     def __getitem__(self, t):
@@ -36,7 +36,7 @@ class Square(Generator):
     def __init__(self, period = 1.0, phase = 0.0, offset = 0.0, amplitude = 1.0):
         super(Square, self).__init__(period, phase, offset, amplitude)
 
-    def describe(self, level = 0):
+    def describe(self):
         print "%s(%.3f, %.3f, %.3f, %.3f)" % (self.__class__.__name__, self.period, self.phase, self.offset, self.amplitude),
 
     def __getitem__(self, t):
@@ -51,7 +51,7 @@ class Sawtooth(Generator):
     def __init__(self, period = 1.0, phase = 0.0, offset = 0.0, amplitude = 1.0):
         super(Sawtooth, self).__init__(period, phase, offset, amplitude)
 
-    def describe(self, level = 0):
+    def describe(self):
         print "%s(%.3f, %.3f, %.3f, %.3f)" % (self.__class__.__name__, self.period, self.phase, self.offset, self.amplitude),
 
     def __getitem__(self, t):

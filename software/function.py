@@ -14,10 +14,10 @@ class ColorSource(ChainLink):
         self.g = generator
         self.next = None
 
-    def describe(self, level = 0):
+    def describe(self):
         print "%s(" % self.__class__.__name__,
         if self.g:
-            self.g.describe(level+1)
+            self.g.describe()
         print ")",
 
     @abc.abstractmethod
@@ -30,8 +30,8 @@ class ConstantColor(ColorSource):
         self.color = color
         super(ConstantColor, self).__init__(None)
 
-    def describe(self, level = 0):
-        print "%s()" % (self.__class__.__name__),
+    def describe(self):
+        print "%s()" % (self.__class__.__name__)
         self.describe_next()
 
     def __getitem__(self, t):
@@ -47,8 +47,8 @@ class RandomColorSequence(ColorSource):
         self.seed = seed
         super(RandomColorSequence, self).__init__(None)
 
-    def describe(self, level = 0):
-        print "%s(%.3f, %.3f)" % (self.__class__.__name__, self.period, self.seed),
+    def describe(self):
+        print "%s(%.3f, %.3f)" % (self.__class__.__name__, self.period, self.seed)
         self.describe_next()
 
     def __getitem__(self, t):
@@ -64,11 +64,11 @@ class ColorWheel(ColorSource):
             g = generator.Sawtooth(period, phase)
         super(Rainbow, self).__init__(g)
 
-    def describe(self, level = 0):
+    def describe(self):
         print "%s(" % (self.__class__.__name__),
         if self.g:
-            self.g.describe(level+1)
-        print ")",
+            self.g.describe()
+        print ")"
         self.describe_next()
 
     def __getitem__(self, t):
@@ -77,18 +77,14 @@ class ColorWheel(ColorSource):
 
 class Rainbow(ColorSource):
 
-    def __init__(self, period = 1.0, phase = 0.0, gen = None):
-        if gen:
-            g = gen
-        else:
-            g = generator.Sawtooth(period, phase)
-        super(Rainbow, self).__init__(g)
+    def __init__(self, gen):
+        super(Rainbow, self).__init__(gen)
 
-    def describe(self, level = 0):
+    def describe(self):
         print "%s(" % (self.__class__.__name__),
         if self.g:
-            self.g.describe(level+1)
-        print ")",
+            self.g.describe()
+        print ")"
         self.describe_next()
 
     def __getitem__(self, t):

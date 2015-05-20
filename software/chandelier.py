@@ -89,7 +89,7 @@ ch.open("/dev/ttyAMA0")
 random.seed()
 period_s = 1
 
-rainbow = function.Rainbow(.05)
+rainbow = function.Rainbow(generator.Sawtooth(.25))
 rainbow.chain(filter.FadeIn(1))
 rainbow.chain(filter.FadeOut(5.0, 1.0))
 

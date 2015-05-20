@@ -21,7 +21,7 @@ class ChainLink(object):
             return self.next.filter(t, col)
         return col 
 
-    def describe_next(self, level=0):
-        print "--",
+    def describe_next(self):
+        print "  ",
         if self.next:
-            return self.next.describe(level+1)
+            return self.next.describe()
