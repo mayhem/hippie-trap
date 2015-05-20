@@ -26,6 +26,10 @@ class FadeIn(Filter):
         self.offset = offset
         super(FadeIn, self).__init__()
 
+    def describe(self, level = 0):
+        print "%s(%.3f, %.3f)" % (self.__class__.__name__, self.duration, self.offset),
+        self.describe_next(level+1)
+
     def filter(self, t, color):
         if t < self.offset:
             return Color(0,0,0)
@@ -42,6 +46,10 @@ class FadeOut(Filter):
         self.offset = offset
         super(FadeOut, self).__init__()
 
+    def describe(self, level = 0):
+        print "%s(%.3f, %.3f)" % (self.__class__.__name__, self.duration, self.offset),
+        self.describe_next(level+1)
+
     def filter(self, t, color):
         if t > self.offset + self.duration:
             return Color(0,0,0)
@@ -56,6 +64,12 @@ class Brightness(Filter):
     def __init__(self, gen):
         self.gen = gen
         super(Brightness, self).__init__()
+
+    def describe(self, level=0):
+        print "%s("% self.__class__.__name__,
+        self.gen.describe(level+1)
+        print ")",
+        self.describe_next(level+1)
 
     def filter(self, t, color):
         percent = self.gen[t]

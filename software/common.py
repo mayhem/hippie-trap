@@ -7,6 +7,9 @@ class ChainLink(object):
     def __init__(self):
         self.next = None
 
+    def describe(self):
+        pass
+
     def chain(self, next):
         if not self.next:
             self.next = next
@@ -18,3 +21,7 @@ class ChainLink(object):
             return self.next.filter(t, col)
         return col 
 
+    def describe_next(self, level=0):
+        print "--",
+        if self.next:
+            return self.next.describe(level+1)

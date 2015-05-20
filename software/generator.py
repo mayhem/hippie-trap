@@ -11,6 +11,10 @@ class Generator(object):
         self.amplitude = amplitude
 
     @abc.abstractmethod
+    def describe(self, level = 0):
+        pass
+
+    @abc.abstractmethod
     def __getitem__(self, t):
         pass
 
@@ -18,6 +22,9 @@ class Sin(Generator):
 
     def __init__(self, period = 1.0, phase = 0.0, offset = .0, amplitude = .0):
         super(Sin, self).__init__(period, phase, offset, amplitude)
+
+    def describe(self, level = 0):
+        print "%s(%.3f, %.3f, %.3f, %.3f)" % (self.__class__.__name__, self.period, self.phase, self.offset, self.amplitude),
 
     def __getitem__(self, t):
         v = math.sin(t * self.period + self.phase) * self.amplitude + self.offset
@@ -28,6 +35,9 @@ class Square(Generator):
 
     def __init__(self, period = 1.0, phase = 0.0, offset = 0.0, amplitude = 1.0):
         super(Square, self).__init__(period, phase, offset, amplitude)
+
+    def describe(self, level = 0):
+        print "%s(%.3f, %.3f, %.3f, %.3f)" % (self.__class__.__name__, self.period, self.phase, self.offset, self.amplitude),
 
     def __getitem__(self, t):
         v = (t / self.period) + self.phase
@@ -40,6 +50,9 @@ class Sawtooth(Generator):
 
     def __init__(self, period = 1.0, phase = 0.0, offset = 0.0, amplitude = 1.0):
         super(Sawtooth, self).__init__(period, phase, offset, amplitude)
+
+    def describe(self, level = 0):
+        print "%s(%.3f, %.3f, %.3f, %.3f)" % (self.__class__.__name__, self.period, self.phase, self.offset, self.amplitude),
 
     def __getitem__(self, t):
         return (t * self.period + self.phase) % 1.0 + self.offset
