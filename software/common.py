@@ -23,13 +23,13 @@ def make_function(id, args):
     for i, arg in enumerate(args):
         flags |= arg << (i * 2);
 
-    return pack("<BH", (id << 4) | len(args), flags)
+    return bytearray(pack("<BH", (id << 4) | len(args), flags))
 
 def pack_fixed(value):
-    return pack("<h", int(value * 100))
+    return bytearray(pack("<h", int(value * 100)))
 
 def pack_color(col):
-    return pack("<BBB", col[0], col[1], col[2])
+    return bytearray(pack("<BBB", col[0], col[1], col[2]))
 
 class ChainLink(object):
 
@@ -55,4 +55,4 @@ class ChainLink(object):
         print "  ",
         if self.next:
             return self.next.describe()
-        return ""
+        return bytearray([])

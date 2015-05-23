@@ -72,7 +72,7 @@ class Brightness(Filter):
         super(Brightness, self).__init__()
 
     def describe(self):
-        desc = common.make_function(common.FUNC_BRIGHTNESS, (common.ARG_VALUE, common.ARG_VALUE))
+        desc = common.make_function(common.FUNC_BRIGHTNESS, (common.ARG_FUNC,))
         print "%s("% self.__class__.__name__,
         desc += self.gen.describe()
         print ")"
