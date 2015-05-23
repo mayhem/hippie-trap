@@ -1,10 +1,10 @@
 #!/usr/bin/python
 import abc
 import math
-from common import ChainLink
+import common
 from color import Color
 
-class Filter(ChainLink):
+class Filter(common.ChainLink):
 
     def __init__(self):
         self.next = None
@@ -27,8 +27,11 @@ class FadeIn(Filter):
         super(FadeIn, self).__init__()
 
     def describe(self):
+        desc = common.make_function(common.FUNC_FADE_IN, (common.ARG_VALUE, common.ARG_VALUE))
+        desc += common.pack_fixed(self.duration)
+        desc += common.pack_fixed(self.offset)
         print "%s(%.3f, %.3f)" % (self.__class__.__name__, self.duration, self.offset)
-        self.describe_next()
+        return desc + self.describe_next()
 
     def filter(self, t, color):
         if t < self.offset:
@@ -47,8 +50,11 @@ class FadeOut(Filter):
         super(FadeOut, self).__init__()
 
     def describe(self):
+        desc = common.make_function(common.FUNC_FADE_OUT, (common.ARG_VALUE, common.ARG_VALUE))
+        desc += common.pack_fixed(self.duration)
+        desc += common.pack_fixed(self.offset)
         print "%s(%.3f, %.3f)" % (self.__class__.__name__, self.duration, self.offset)
-        self.describe_next()
+        return desc + self.describe_next()
 
     def filter(self, t, color):
         if t > self.offset + self.duration:
@@ -66,10 +72,11 @@ class Brightness(Filter):
         super(Brightness, self).__init__()
 
     def describe(self):
+        desc = common.make_function(common.FUNC_BRIGHTNESS, (common.ARG_VALUE, common.ARG_VALUE))
         print "%s("% self.__class__.__name__,
-        self.gen.describe()
+        desc += self.gen.describe()
         print ")"
-        self.describe_next()
+        return desc + self.describe_next()
 
     def filter(self, t, color):
         percent = self.gen[t]

@@ -5,20 +5,14 @@ import colorsys
 import generator
 import random
 from color import Color, hueToColor
-from common import ChainLink
+import common
 
-class ColorSource(ChainLink):
+class ColorSource(common.ChainLink):
 
     def __init__(self, generator):
         super(ColorSource, self).__init__()
         self.g = generator
         self.next = None
-
-    def describe(self):
-        print "%s(" % self.__class__.__name__,
-        if self.g:
-            self.g.describe()
-        print ")",
 
     @abc.abstractmethod
     def __getitem__(self, t):
@@ -31,8 +25,10 @@ class ConstantColor(ColorSource):
         super(ConstantColor, self).__init__(None)
 
     def describe(self):
+        desc = common.make_function(common.FUNC_CONSTANT_COLOR, (common.ARG_COLOR,))
+        desc += common.pack_color(self.color)
         print "%s()" % (self.__class__.__name__)
-        self.describe_next()
+        return desc + self.describe_next()
 
     def __getitem__(self, t):
         return self.call_next(t, self.color)
@@ -48,8 +44,11 @@ class RandomColorSequence(ColorSource):
         super(RandomColorSequence, self).__init__(None)
 
     def describe(self):
+        desc = common.make_function(common.FUNC_RAND_COL_SEQ, (common.ARG_VALUE,common.ARG_VALUE))
+        desc += common.pack_fixed(self.period)
+        desc += common.pack_fixed(self.seed)
         print "%s(%.3f, %.3f)" % (self.__class__.__name__, self.period, self.seed)
-        self.describe_next()
+        return desc + self.describe_next()
 
     def __getitem__(self, t):
         random.seed(self.seed + (int)(t / self.period))
@@ -65,11 +64,14 @@ class ColorWheel(ColorSource):
         super(Rainbow, self).__init__(g)
 
     def describe(self):
+        desc = common.make_function(common.FUNC_COLOR_WHEEL, (common.ARG_VALUE,common.ARG_VALUE,common.ARG_FUNC))
+        desc += common.pack_fixed(self.period)
+        desc += common.pack_fixed(self.seed)
         print "%s(" % (self.__class__.__name__),
         if self.g:
-            self.g.describe()
+            desc += self.g.describe()
         print ")"
-        self.describe_next()
+        return desc + self.describe_next()
 
     def __getitem__(self, t):
         col = colorsys.hsv_to_rgb(self.g[t], 1, 1)
@@ -81,11 +83,12 @@ class Rainbow(ColorSource):
         super(Rainbow, self).__init__(gen)
 
     def describe(self):
+        desc = common.make_function(common.FUNC_RAINBOW, (common.ARG_FUNC,))
         print "%s(" % (self.__class__.__name__),
         if self.g:
-            self.g.describe()
+            desc += self.g.describe()
         print ")"
-        self.describe_next()
+        return desc + self.describe_next()
 
     def __getitem__(self, t):
         color = [0,0,0]

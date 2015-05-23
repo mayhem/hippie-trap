@@ -1,12 +1,42 @@
 #!/usr/bin/python
 
 import abc
+from struct import pack
+
+FUNC_FADE_IN           = 0
+FUNC_FADE_OUT          = 1
+FUNC_BRIGHTNESS        = 2
+FUNC_SIN               = 3
+FUNC_SQUARE            = 4
+FUNC_SAWTOOTH          = 5
+FUNC_CONSTANT_COLOR    = 6
+FUNC_RAND_COL_SEQ      = 7
+FUNC_COLOR_WHEEL       = 8
+FUNC_RAINBOW           = 9
+
+ARG_VALUE              = 0
+ARG_FUNC               = 1
+ARG_COLOR              = 2
+
+def make_function(id, args):
+    flags = 0
+    for i, arg in enumerate(args):
+        flags |= arg << (i * 2);
+
+    return pack("<BH", (id << 4) | len(args), flags)
+
+def pack_fixed(value):
+    return pack("<h", int(value * 100))
+
+def pack_color(col):
+    return pack("<BBB", col[0], col[1], col[2])
 
 class ChainLink(object):
 
     def __init__(self):
         self.next = None
 
+    @abc.abstractmethod
     def describe(self):
         pass
 
@@ -25,3 +55,4 @@ class ChainLink(object):
         print "  ",
         if self.next:
             return self.next.describe()
+        return ""

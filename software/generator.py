@@ -1,6 +1,7 @@
 #!/usr/bin/python
 import abc
 import math
+import common
 
 class Generator(object):
 
@@ -24,7 +25,13 @@ class Sin(Generator):
         super(Sin, self).__init__(period, phase, offset, amplitude)
 
     def describe(self):
+        desc = common.make_function(common.FUNC_SIN, (common.ARG_VALUE, common.ARG_VALUE, common.ARG_VALUE, common.ARG_VALUE))
+        desc += common.pack_fixed(self.period)
+        desc += common.pack_fixed(self.phase)
+        desc += common.pack_fixed(self.offset)
+        desc += common.pack_fixed(self.amplitude)
         print "%s(%.3f, %.3f, %.3f, %.3f)" % (self.__class__.__name__, self.period, self.phase, self.offset, self.amplitude),
+        return desc
 
     def __getitem__(self, t):
         v = math.sin(t * self.period + self.phase) * self.amplitude + self.offset
@@ -37,7 +44,13 @@ class Square(Generator):
         super(Square, self).__init__(period, phase, offset, amplitude)
 
     def describe(self):
+        desc = common.make_function(common.FUNC_SQUARE, (common.ARG_VALUE, common.ARG_VALUE, common.ARG_VALUE, common.ARG_VALUE))
+        desc += common.pack_fixed(self.period)
+        desc += common.pack_fixed(self.phase)
+        desc += common.pack_fixed(self.offset)
+        desc += common.pack_fixed(self.amplitude)
         print "%s(%.3f, %.3f, %.3f, %.3f)" % (self.__class__.__name__, self.period, self.phase, self.offset, self.amplitude),
+        return desc
 
     def __getitem__(self, t):
         v = (t / self.period) + self.phase
@@ -52,16 +65,13 @@ class Sawtooth(Generator):
         super(Sawtooth, self).__init__(period, phase, offset, amplitude)
 
     def describe(self):
+        desc = common.make_function(common.FUNC_SAWTOOTH, (common.ARG_VALUE, common.ARG_VALUE, common.ARG_VALUE, common.ARG_VALUE))
+        desc += common.pack_fixed(self.period)
+        desc += common.pack_fixed(self.phase)
+        desc += common.pack_fixed(self.offset)
+        desc += common.pack_fixed(self.amplitude)
         print "%s(%.3f, %.3f, %.3f, %.3f)" % (self.__class__.__name__, self.period, self.phase, self.offset, self.amplitude),
+        return desc
 
     def __getitem__(self, t):
         return (t * self.period + self.phase) % 1.0 + self.offset
-
-# TODO: Review implementation
-#class Triangle(Generator):
-#
-#    def __init__(self, period = 1.0, phase = 0.0, offset = 0.0):
-#        super(Triangle, self).__init__(period, phase, offset)
-#
-#    def __getitem__(self, t):
-#        return math.fabs(t % (self.period * 2) - self.period) + self.phase

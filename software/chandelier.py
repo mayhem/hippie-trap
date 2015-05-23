@@ -89,7 +89,7 @@ ch.open("/dev/ttyAMA0")
 random.seed()
 period_s = 1
 
-rainbow = function.Rainbow(generator.Sawtooth(.25))
+rainbow = function.Rainbow(generator.Sawtooth(.55))
 rainbow.chain(filter.FadeIn(1))
 rainbow.chain(filter.FadeOut(5.0, 1.0))
 
@@ -101,9 +101,13 @@ wobble = function.RandomColorSequence(period_s, random.randint(0, 255))
 g = generator.Sin((math.pi * 2) / period_s, -math.pi/2, .5, .5)
 wobble.chain(filter.Brightness(g))
 
-funcs = [rainbow, purple, wobble]
+funcs = [rainbow, wobble]
+#funcs = [wobble]
 while True:
     for f in funcs:
-        f.describe()
-        print
+        data = f.describe()
+        out = open("function.bin", "w")
+        out.write(data)
+        out.close()
+        print "\nlen: %d" % len(data)
         ch.run(f, DELAY, 6)
