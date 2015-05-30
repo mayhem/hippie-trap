@@ -21,7 +21,7 @@ class Generator(object):
 
 class Sin(Generator):
 
-    def __init__(self, period = 1.0, phase = 0.0, offset = .0, amplitude = .0):
+    def __init__(self, period = 1.0, phase = 0.0, offset = .0, amplitude = 1):
         super(Sin, self).__init__(period, phase, offset, amplitude)
 
     def describe(self):
@@ -74,4 +74,4 @@ class Sawtooth(Generator):
         return desc
 
     def __getitem__(self, t):
-        return (t * self.period + self.phase) % 1.0 + self.offset
+        return (t * self.period + self.phase) % 1.0 * self.amplitude + self.offset
