@@ -42,6 +42,17 @@ float float_square(float t, float period, float phase, float amplitude, float of
     return offset;
 }
 
+int32_t function_sawtooth(uint32_t t, int32_t period, int32_t phase, int32_t amplitude, int32_t offset)
+{
+    int32_t v = (((int32_t)t * period / SCALE_FACTOR) + phase) % SCALE_FACTOR;
+    return v * amplitude / SCALE_FACTOR + offset;
+}
+
+float float_sawtooth(float t, float period, float phase, float amplitude, float offset)
+{
+    return fmod(t * period + phase, 1.0) * amplitude + offset;
+}
+
 #define TEST_ERR_THRES .1
 int test(int test_id, 
          int32_t (*i_func)(uint32_t, int32_t, int32_t, int32_t, int32_t),
@@ -83,6 +94,14 @@ int test(int test_id,
 
 int main(int argc, char *argv[])
 {
+    printf("Sawtooth tests\n");
+    test(0, function_sawtooth, float_sawtooth, 1, 0, 0, 1, 10, .1);
+    test(1, function_sawtooth, float_sawtooth, 2, 0, 0, 1, 10, .1);
+    test(2, function_sawtooth, float_sawtooth, .5, 0, 0, 1, 10, .1);
+    test(3, function_sawtooth, float_sawtooth, 1, .5, 1, 5, 900, .1);
+    test(4, function_sawtooth, float_sawtooth, 2, .5, 3, .1, 900, .1);
+    test(5, function_sawtooth, float_sawtooth, .5, .5, 10, 2, 900, .1);
+#if 0
     printf("Square tests\n");
     test(0, function_square, float_square, 1, 0, 0, 1, 10, .1);
     test(1, function_square, float_square, 2, 0, 0, 1, 10, .1);
@@ -91,7 +110,6 @@ int main(int argc, char *argv[])
     test(4, function_square, float_square, 2, .5, 3, .1, 900, .1);
     test(5, function_square, float_square, .5, .5, 10, 2, 900, .1);
 
-#if 0
     printf("Sin tests\n");
     test(0, function_sin, float_sin, 1, 0, 0, 1, 10, .1);
     test(1, function_sin, float_sin, .5, S_PI, 0, 1, 10, .1);
