@@ -1,14 +1,14 @@
 ch_test: generator.o test.o sin_table.o
-	gcc -o ch_test generator.o test.o sin_table.o
+	g++ -o ch_test generator.o test.o sin_table.o
 
-generator.o: generator.c generator.h defs.h
-	gcc -c generator.c
+generator.o: generator.cc generator.h defs.h
+	g++ -c generator.cc
 
-test.o: test.c defs.h
-	gcc -c test.c
+test.o: test.cc defs.h
+	g++ -c test.cc
 
-sin_table.o: sin_table.c sin_table.h
-	gcc -c sin_table.c
+sin_table.o: sin_table.cc sin_table.h
+	g++ -c sin_table.cc
 
 clean: 
 	rm -f *.o ch_test
