@@ -13,10 +13,12 @@ FUNC_CONSTANT_COLOR    = 6
 FUNC_RAND_COL_SEQ      = 7
 FUNC_COLOR_WHEEL       = 8
 FUNC_RAINBOW           = 9
+FUNC_STEP              = 10
 
 ARG_VALUE              = 0
 ARG_FUNC               = 1
 ARG_COLOR              = 2
+ARG_CONSTANT           = 3
 
 def make_function(id, args):
     flags = 0

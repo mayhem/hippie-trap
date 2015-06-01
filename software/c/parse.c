@@ -2,11 +2,12 @@
 #include <stdlib.h>
 #include <stdint.h>
 
-#define MAX_CODE_LEN 1024
-#define VALUE_SIZE      2
-#define ARG_VALUE       0
-#define ARG_FUNC        1
-#define ARG_COLOR       2
+#define MAX_CODE_LEN      512
+#define VALUE_SIZE          2
+#define ARG_VALUE           0
+#define ARG_FUNC            1
+#define ARG_COLOR           2
+#define ARG_BOTTLE_SUPPLIED 3
 
 uint8_t parse_func(char *code, int len, int index)
 {
