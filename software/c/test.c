@@ -78,36 +78,36 @@ int test(int test_id,
 int main(int argc, char *argv[])
 {
     printf("Step tests\n");
-    test(0, function_step, float_step, 1, 0, 0, 1, 10, .1);
-    test(1, function_step, float_step, 2, 0, 0, 1, 10, .1);
-    test(2, function_step, float_step, 1, -2, 1, .5, 10, .1);
-    test(3, function_step, float_step, 1, .5, 1, 5, 900, .1);
-    test(4, function_step, float_step, 2, .5, 3, .1, 900, .1);
-    test(5, function_step, float_step, .5, .5, 10, 2, 900, .1);
+    test(0, generator_step, float_step, 1, 0, 0, 1, 10, .1);
+    test(1, generator_step, float_step, 2, 0, 0, 1, 10, .1);
+    test(2, generator_step, float_step, 1, -2, 1, .5, 10, .1);
+    test(3, generator_step, float_step, 1, .5, 1, 5, 900, .1);
+    test(4, generator_step, float_step, 2, .5, 3, .1, 900, .1);
+    test(5, generator_step, float_step, .5, .5, 10, 2, 900, .1);
 #if 0
     printf("Sawtooth tests\n");
-    test(0, function_sawtooth, float_sawtooth, 1, 0, 0, 1, 10, .1);
-    test(1, function_sawtooth, float_sawtooth, 2, 0, 0, 1, 10, .1);
-    test(2, function_sawtooth, float_sawtooth, .5, 0, 0, 1, 10, .1);
-    test(3, function_sawtooth, float_sawtooth, 1, .5, 1, 5, 900, .1);
-    test(4, function_sawtooth, float_sawtooth, 2, .5, 3, .1, 900, .1);
-    test(5, function_sawtooth, float_sawtooth, .5, .5, 10, 2, 900, .1);
+    test(0, generator_sawtooth, float_sawtooth, 1, 0, 0, 1, 10, .1);
+    test(1, generator_sawtooth, float_sawtooth, 2, 0, 0, 1, 10, .1);
+    test(2, generator_sawtooth, float_sawtooth, .5, 0, 0, 1, 10, .1);
+    test(3, generator_sawtooth, float_sawtooth, 1, .5, 1, 5, 900, .1);
+    test(4, generator_sawtooth, float_sawtooth, 2, .5, 3, .1, 900, .1);
+    test(5, generator_sawtooth, float_sawtooth, .5, .5, 10, 2, 900, .1);
     printf("Square tests\n");
-    test(0, function_square, float_square, 1, 0, 0, 1, 10, .1);
-    test(1, function_square, float_square, 2, 0, 0, 1, 10, .1);
-    test(2, function_square, float_square, .5, 0, 0, 1, 10, .1);
-    test(3, function_square, float_square, 1, .5, 1, 5, 900, .1);
-    test(4, function_square, float_square, 2, .5, 3, .1, 900, .1);
-    test(5, function_square, float_square, .5, .5, 10, 2, 900, .1);
+    test(0, generator_square, float_square, 1, 0, 0, 1, 10, .1);
+    test(1, generator_square, float_square, 2, 0, 0, 1, 10, .1);
+    test(2, generator_square, float_square, .5, 0, 0, 1, 10, .1);
+    test(3, generator_square, float_square, 1, .5, 1, 5, 900, .1);
+    test(4, generator_square, float_square, 2, .5, 3, .1, 900, .1);
+    test(5, generator_square, float_square, .5, .5, 10, 2, 900, .1);
 
     printf("Sin tests\n");
-    test(0, function_sin, float_sin, 1, 0, 0, 1, 10, .1);
-    test(1, function_sin, float_sin, .5, S_PI, 0, 1, 10, .1);
-    test(2, function_sin, float_sin, 2, -S_PI, 0, 1, 10, .1);
-    test(3, function_sin, float_sin, 1, S_PI, 0, 1, 900, .1);
-    test(4, function_sin, float_sin, 1, 0, 10, 10, 10, .1);
-    test(5, function_sin, float_sin, .5, S_PI, 10, .1, 10, .1);
-    test(6, function_sin, float_sin, 2, -S_PID2, 50, 1, 10, .1);
-    test(7, function_sin, float_sin, 1, S_PID2, 10, 2, 900, .1);
+    test(0, generator_sin, float_sin, 1, 0, 0, 1, 10, .1);
+    test(1, generator_sin, float_sin, .5, S_PI, 0, 1, 10, .1);
+    test(2, generator_sin, float_sin, 2, -S_PI, 0, 1, 10, .1);
+    test(3, generator_sin, float_sin, 1, S_PI, 0, 1, 900, .1);
+    test(4, generator_sin, float_sin, 1, 0, 10, 10, 10, .1);
+    test(5, generator_sin, float_sin, .5, S_PI, 10, .1, 10, .1);
+    test(6, generator_sin, float_sin, 2, -S_PID2, 50, 1, 10, .1);
+    test(7, generator_sin, float_sin, 1, S_PID2, 10, 2, 900, .1);
 #endif
 }

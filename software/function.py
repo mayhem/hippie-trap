@@ -9,9 +9,11 @@ import common
 
 class ColorSource(common.ChainLink):
 
-    def __init__(self, generator):
+    def __init__(self, gen, gen2 = None, gen3 = None):
         super(ColorSource, self).__init__()
-        self.g = generator
+        self.g = gen
+        self.g2 = gen2
+        self.g3 = gen3
         self.next = None
 
     @abc.abstractmethod
@@ -54,14 +56,10 @@ class RandomColorSequence(ColorSource):
         random.seed(self.seed + (int)(t / self.period))
         return self.call_next(t, hueToColor(random.random()))
 
-class ColorWheel(ColorSource):
+class HSV(ColorSource):
 
-    def __init__(self, period = 1.0, phase = 0.0, gen = None):
-        if gen:
-            g = gen
-        else:
-            g = generator.Sawtooth(period, phase)
-        super(Rainbow, self).__init__(g)
+    def __init__(self, gen, gen2 = None, gen3 = None):
+        super(HSV, self).__init__(g, gen2, gen3)
 
     def describe(self):
         desc = common.make_function(common.FUNC_COLOR_WHEEL, (common.ARG_VALUE,common.ARG_VALUE,common.ARG_FUNC))
@@ -74,7 +72,12 @@ class ColorWheel(ColorSource):
         return desc + self.describe_next()
 
     def __getitem__(self, t):
-        col = colorsys.hsv_to_rgb(self.g[t], 1, 1)
+        if self.gen2 and self.gen3:
+            col = colorsys.hsv_to_rgb(self.g[t], self.gen2[t], self.gen3[t])
+        elif self.gen2:
+            col = colorsys.hsv_to_rgb(self.g[t], self.gen2[t], 1)
+        else:
+            col = colorsys.hsv_to_rgb(self.g[t], 1, 1)
         return self.call_next(t, Color(int(col[0] * 255), int(col[1] * 255), int(col[2] * 255)))
 
 class Rainbow(ColorSource):
