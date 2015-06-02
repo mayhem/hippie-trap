@@ -5,6 +5,7 @@
 #include <stdlib.h>
 
 #include "sin_table.h"
+#include "function.h"
 #include "generator.h"
 #include "defs.h"
 
@@ -38,7 +39,7 @@ float float_step(float t, float period, float phase, float amplitude, float offs
 
 #define TEST_ERR_THRES .1
 int test(int test_id, 
-         int32_t (*i_func)(uint32_t, int32_t, int32_t, int32_t, int32_t),
+         Generator *gen,
          float (*f_func)(float, float, float, float, float),
          float period, 
          float phase, 
@@ -53,7 +54,7 @@ int test(int test_id,
     for(t = 0; t < end; t += step)
     {
         f_val = f_func(t, period, phase, amplitude, offset);
-        i_val = (float)i_func(
+        i_val = (float)gen->calculate(
                  (uint32_t)(t * SCALE_FACTOR), 
                  (int32_t)(period * SCALE_FACTOR), 
                  (int32_t)(phase * SCALE_FACTOR), 

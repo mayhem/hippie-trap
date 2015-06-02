@@ -1,8 +1,5 @@
-ch_test: generator.o test.o sin_table.o
-	g++ -o ch_test generator.o test.o sin_table.o
-
-generator.o: generator.cc generator.h defs.h
-	g++ -c generator.cc
+ch_test: test.o sin_table.o
+	g++ -o ch_test test.o sin_table.o
 
 test.o: test.cc defs.h
 	g++ -c test.cc
