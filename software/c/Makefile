@@ -1,8 +1,8 @@
-ch_test: test.o sin_table.o
-	g++ -o ch_test test.o sin_table.o
+ch_test: parse.o sin_table.o
+	g++ -o ch_test parse.o sin_table.o
 
-test.o: test.cc defs.h
-	g++ -c test.cc
+parse.o: parse.cc defs.h
+	g++ -c parse.cc
 
 sin_table.o: sin_table.cc sin_table.h
 	g++ -c sin_table.cc

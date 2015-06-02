@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <stdint.h>
 
+#include "filter.cc"
+
 #define MAX_CODE_LEN      512
 #define VALUE_SIZE          2
 #define ARG_VALUE           0

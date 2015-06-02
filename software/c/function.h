@@ -93,27 +93,27 @@ class FunctionRainbow : public Function
         {
             uint8_t wheel_pos;
 
-            wheel_pos = 255 - int(255 * gen->calculate(t))
+            wheel_pos = 255 - int(255 * gen->calculate(t) / SCALE_FACTOR);
             if (wheel_pos < 85)
             {
-                color[0] = int(255 - wheel_pos * 3);
-                color[1] = 0;
-                color[2] = int(wheel_pos * 3);
+                col.c[0] = int(255 - wheel_pos * 3);
+                col.c[1] = 0;
+                col.c[2] = int(wheel_pos * 3);
             }
             else
             if (wheel_pos < 170)
             {
                 wheel_pos -= 85;
-                color[0] = 0;
-                color[1] = int(wheel_pos * 3);
-                color[2] = 255 - int(wheel_pos * 3);
+                col.c[0] = 0;
+                col.c[1] = int(wheel_pos * 3);
+                col.c[2] = 255 - int(wheel_pos * 3);
             }
             else
             {
                 wheel_pos -= 170;
-                color[0] = int(wheel_pos * 3);
-                color[1] = 255 - int(wheel_pos * 3);
-                color[2] = 0;
+                col.c[0] = int(wheel_pos * 3);
+                col.c[1] = 255 - int(wheel_pos * 3);
+                col.c[2] = 0;
             }
         };
 
