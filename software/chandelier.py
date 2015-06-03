@@ -97,15 +97,13 @@ purple = function.ConstantColor(Color(128, 0, 128))
 purple.chain(filter.FadeIn(1.0))
 purple.chain(filter.FadeOut(5.0, 1.0))
 
-wobble = function.RandomColorSequence(period_s, random.randint(0, 255))
-g = generator.Sin((math.pi * 2) / period_s, -math.pi/2, .5, .5)
-wobble.chain(filter.Brightness(g))
-wobble.chain(filter.FadeIn(1.0))
-wobble.chain(filter.FadeOut(5.0, 1.0))
-
 #funcs = [rainbow, wobble]
-funcs = [wobble]
 while True:
+    wobble = function.RandomColorSequence(period_s, random.randint(0, 255))
+    g = generator.Sin((math.pi * 2) / period_s, -math.pi/2, .5, .5)
+    wobble.chain(filter.Brightness(g))
+    funcs = [wobble]
+
     for f in funcs:
         data = f.describe()
         out = open("function.bin", "wb")

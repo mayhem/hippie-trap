@@ -11,6 +11,18 @@
 #define ARG_COLOR           2
 #define ARG_BOTTLE_SUPPLIED 3
 
+#define FUNC_FADE_IN           0
+#define FUNC_FADE_OUT          1
+#define FUNC_BRIGHTNESS        2
+#define FUNC_SIN               3
+#define FUNC_SQUARE            4
+#define FUNC_SAWTOOTH          5
+#define FUNC_CONSTANT_COLOR    6
+#define FUNC_RAND_COL_SEQ      7
+#define FUNC_COLOR_WHEEL       8
+#define FUNC_RAINBOW           9
+#define FUNC_STEP              10
+
 uint8_t parse_func(char *code, int len, int index)
 {
     uint8_t id, num_args, i, arg;
@@ -50,7 +62,47 @@ uint8_t parse_func(char *code, int len, int index)
             printf("  unknown ");
     }
     if (arg_index < len)
+    {
         arg_index = parse_func(code, len, arg_index);
+
+        switch()
+        {
+            case FUNC_FADE_IN           :
+
+                break;
+
+            case FUNC_FADE_OUT          :
+                break;
+
+            case FUNC_BRIGHTNESS        :
+                break;
+
+            case FUNC_SIN               :
+                break;
+
+            case FUNC_SQUARE            :
+                break;
+
+            case FUNC_SAWTOOTH          :
+                break;
+
+            case FUNC_CONSTANT_COLOR    :
+                break;
+
+            case FUNC_RAND_COL_SEQ      :
+                break;
+
+            case FUNC_COLOR_WHEEL       :
+                break;
+
+            case FUNC_RAINBOW           :
+                break;
+
+            case FUNC_STEP              :
+                break;
+
+        }
+    }
 
     return arg_index;
 }

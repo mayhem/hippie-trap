@@ -1,60 +1,44 @@
-#ifndef __FUNCTION_H__
-#define __FUNCTION_H__
-
 #include <stdlib.h>
-#include "generator.h"
-#include "defs.h"
+//#include "generator.h"
+#include "source.h"
 
-void hsv_to_rgb(int32_t hue, int32_t sat, int32_t value, color_t &color)
+void hsv_to_rgb(int32_t hue, int32_t sat, int32_t value, color_t *color)
 {
 }
 
-class Function
+void s_constant_color_init(s_constant_color_t *self, color_t *color)
 {
-    public:
+    self->color.c[0] = color->c[0];
+    self->color.c[1] = color->c[1];
+    self->color.c[2] = color->c[2];
+    self->method = s_constant_color_get;
+    self->next = NULL; 
+}
 
-        virtual void calculate(uint32_t t, color_t &col) = 0;
-};
-
-class FunctionConstantColor : public Function
+void s_constant_color_get(s_constant_color_t *self, uint32_t t, color_t *dest)
 {
-    public:
+    dest->c[0] = self->color.c[0];
+    dest->c[1] = self->color.c[1];
+    dest->c[2] = self->color.c[2];
+}
 
-        FunctionConstantColor(color_t &col)
-        {
-            color = col;
-        };
-        void calculate(uint32_t t, color_t &col)
-        {
-            col = color;
-        }
+//--
 
-    protected:
-
-        color_t color;
-};
-
-class FunctionRandomColorSequence : public Function
+void s_random_color_seq_init(s_random_color_seq_t *self, int32_t period, uint32_t seed)
 {
-    public:
+    self->period = period;
+    self->seed = seed;
+    self->method = s_random_color_seq_get;
+    self->next = NULL; 
+}
 
-        FunctionRandomColorSequence(int32_t _period, uint32_t _seed)
-        {
-            period = _period;
-            seed = _seed;
-        };
-        void calculate(uint32_t t, color_t col)
-        {
-            srand((uint32_t)(t * SCALE_FACTOR / period));
-            hsv_to_rgb(rand() % SCALE_FACTOR, SCALE_FACTOR, SCALE_FACTOR, col);
-        }
+void s_random_color_seq_get(s_random_color_seq_t *self, uint32_t t, color_t *dest)
+{
+    srand(self->seed + (uint32_t)(t * SCALE_FACTOR / self->period));
+    hsv_to_rgb(rand() % SCALE_FACTOR, SCALE_FACTOR, SCALE_FACTOR, dest);
+}
 
-    protected:
-
-        int32_t  period;
-        uint32_t seed;
-};
-
+#if 0
 class FunctionHSV : public Function
 {
     public:
