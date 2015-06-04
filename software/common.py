@@ -11,7 +11,7 @@ FUNC_SQUARE            = 4
 FUNC_SAWTOOTH          = 5
 FUNC_CONSTANT_COLOR    = 6
 FUNC_RAND_COL_SEQ      = 7
-FUNC_COLOR_WHEEL       = 8
+FUNC_HSV               = 8
 FUNC_RAINBOW           = 9
 FUNC_STEP              = 10
 

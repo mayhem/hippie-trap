@@ -1,5 +1,5 @@
 #include <stdlib.h>
-//#include "generator.h"
+#include "generator.h"
 #include "source.h"
 
 void hsv_to_rgb(int32_t hue, int32_t sat, int32_t value, color_t *color)

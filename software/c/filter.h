@@ -1,0 +1,42 @@
+#ifndef __FILTER_H__
+#define __FILTER_H__
+
+#include <stdlib.h>
+#include "generator.h"
+#include "defs.h"
+
+typedef void (*f_method)(void *self, uint32_t t, color_t *src, color_t *dest);
+
+typedef struct f_fade_in_t
+{
+    f_method   method;
+    void      *next;
+    int32_t    duration;
+    int32_t    offset;
+} f_fade_in_t;
+
+void f_fade_in_init(f_fade_in_t *self, int32_t duration, int32_t offset);
+void f_fade_in_get(void *self, uint32_t t, color_t *src, color_t *dest);
+
+typedef struct f_fade_out_t
+{
+    f_method   method;
+    void      *next;
+    int32_t    duration;
+    int32_t    offset;
+} f_fade_out_t;
+
+void f_fade_out_init(f_fade_out_t *self, int32_t duration, int32_t offset);
+void f_fade_out_get(void *self, uint32_t t, color_t *src, color_t *dest);
+
+typedef struct f_brightness_t
+{
+    f_method   method;
+    void      *next;
+    g_method   gen;
+} f_brightness_t;
+
+void f_brightness_init(f_brightness_t *self, g_method gen);
+void f_brightness_get(void *self, uint32_t t, color_t *src, color_t *dest);
+
+#endif

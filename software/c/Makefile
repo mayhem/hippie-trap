@@ -1,11 +1,22 @@
-ch_test: parse.o sin_table.o
-	g++ -o ch_test parse.o sin_table.o
+CFLAGS = -c -g 
 
-parse.o: parse.cc defs.h
-	g++ -c parse.cc
+ch_test: parse.o sin_table.o filter.o source.o generator.o
+	gcc -o ch_test parse.o sin_table.o filter.o source.o generator.o
+
+source.o: source.c source.h defs.h
+	gcc $(CFLAGS) source.c
+
+generator.o: generator.c generator.h defs.h
+	gcc $(CFLAGS) generator.c
+
+filter.o: filter.c filter.h defs.h
+	gcc $(CFLAGS) filter.c
+
+parse.o: parse.c defs.h
+	gcc $(CFLAGS) parse.c
 
 sin_table.o: sin_table.cc sin_table.h
-	g++ -c sin_table.cc
+	gcc $(CFLAGS) sin_table.cc
 
 clean: 
 	rm -f *.o ch_test
