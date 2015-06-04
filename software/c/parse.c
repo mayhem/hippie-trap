@@ -50,6 +50,94 @@ void *heap_alloc(uint8_t bytes)
     return ptr;
 }
 
+void *create_object(uint8_t id, 
+                    int32_t *values, uint8_t value_count,
+                    int32_t *gens, uint8_t gen_count,
+                    int32_t *colors, uint8_t color_count)
+{
+    void *obj = NULL;
+
+    switch(id)
+    {
+        case FUNC_FADE_IN:
+            {
+                if (value_count == 2)
+                {
+                    obj = heap_alloc(sizeof(f_fade_in_t));
+                    f_fade_in_init((f_date_in_t *)obj, values[0], values[1]);
+                }
+            }
+            break;
+
+        case FUNC_FADE_OUT:
+            {
+                if (value_count == 2)
+                {
+                    obj = heap_alloc(sizeof(f_fade_out_t));
+                    f_fade_out_init((f_fade_out_t *)obj, values[0], values[1]);
+                }
+            }
+            break;
+
+        case FUNC_BRIGHTNESS:
+            {
+                if (gen_count == 1)
+                {
+                    obj = heap_alloc(sizeof(f_brightness_t));
+                    f_brightness_init((f_brightness_t *)obj, gens[0]);
+                }
+            }
+            break;
+
+        case FUNC_CONSTANT_COLOR:
+            {
+                if (color_count == 1)
+                {
+                    obj = heap_alloc(sizeof(s_constant_color_t));
+                    s_constant_color_init((s_constant_color_t *)obj, &colors[0]);
+                }
+            }
+            break;
+
+        case FUNC_RAND_COL_SEQ:
+            {
+                if (value_count == 2)
+                {
+                    obj = heap_alloc(sizeof(s_random_color_seq_t));
+                    s_random_color_seq_init((s_random_color_seq_t *)obj, values[0], values[1]);
+                }
+            }
+            break;
+
+        case FUNC_HSV:
+            {
+                if (gen_count > 1)
+                {
+                    obj = heap_alloc(sizeof(s_hsv_t));
+                    if (gen_count > 2)
+                        s_hsv_init((s_hsv_t *)obj, gens[0], gens[1], gens[2]);
+                    else
+                    if (gen_count > 1)
+                        s_hsv_init((s_hsv_t *)obj, gens[0], gens[1], NULL);
+                    else
+                        s_hsv_init((s_hsv_t *)obj, gens[0], NULL, NULL);
+                }
+            }
+            break;
+
+        case FUNC_RAINBOW:
+            {
+                if (gen_count == 1)
+                {
+                    obj = heap_alloc(sizeof(s_rainbow_t));
+                    s_rainbow_init((s_rainbow_t *)obj, gens[0]);
+                }
+            }
+            break;
+    }
+    return obj;
+}
+
 /*
 | 1 byte   | 2 bytes  |
 | ID - ARG | FUNC SIG | ( 
@@ -60,7 +148,7 @@ void *parse_func(char *code, int16_t len, uint16_t *index)
     uint8_t  id, num_args, i, arg, value_count = 0, gen_count = 0, color_count = 0;
     uint16_t args, arg_index, value;
     int32_t  values[MAX_NUM_ARGS];
-    void    *gens[MAX_NUM_ARGS];
+    void    *gens[MAX_NUM_ARGS], objs;
     color_t  colors[MAX_NUM_ARGS];
 
     if (*index == 0)
@@ -94,86 +182,13 @@ void *parse_func(char *code, int16_t len, uint16_t *index)
         else
             printf("  unknown ");
     }
+
+    obj = create_object(uint8_t id, values, value_count, gens, gen_count, colors, color_count);
+    if (*index)
+        source = obj;
+
     *index = arg_index;
 
-    switch(id)
-    {
-        case FUNC_FADE_IN:
-            {
-                if (value_count == 2)
-                {
-                    f_fade_in_t *obj = heap_alloc(sizeof(f_fade_in_t));
-                    f_fade_in_init(obj, values[0], values[1]);
-                }
-            }
-            break;
-
-        case FUNC_FADE_OUT:
-            {
-                if (value_count == 2)
-                {
-                    f_fade_out_t *obj = heap_alloc(sizeof(f_fade_out_t));
-                    f_fade_out_init(obj, values[0], values[1]);
-                }
-            }
-            break;
-
-        case FUNC_BRIGHTNESS:
-            {
-                if (gen_count == 1)
-                {
-                    f_brightness_t *obj = heap_alloc(sizeof(f_brightness_t));
-                    f_brightness_init(obj, gens[0]);
-                }
-            }
-            break;
-
-        case FUNC_CONSTANT_COLOR:
-            {
-                if (color_count == 1)
-                {
-                    s_constant_color_t *obj = heap_alloc(sizeof(s_constant_color_t));
-                    s_constant_color_init(obj, &colors[0]);
-                }
-            }
-            break;
-
-        case FUNC_RAND_COL_SEQ:
-            {
-                if (value_count == 2)
-                {
-                    s_random_color_seq_t *obj = heap_alloc(sizeof(s_random_color_seq_t));
-                    s_random_color_seq_init(obj, values[0], values[1]);
-                }
-            }
-            break;
-
-        case FUNC_HSV:
-            {
-                if (gen_count > 1)
-                {
-                    s_hsv_t *obj = heap_alloc(sizeof(s_hsv_t));
-                    if (gen_count > 2)
-                        s_hsv_init(obj, gens[0], gens[1], gens[2]);
-                    else
-                    if (gen_count > 1)
-                        s_hsv_init(obj, gens[0], gens[1], NULL);
-                    else
-                        s_hsv_init(obj, gens[0], NULL, NULL);
-                }
-            }
-            break;
-
-        case FUNC_RAINBOW:
-            {
-                if (gen_count == 1)
-                {
-                    s_rainbow_t *obj = heap_alloc(sizeof(s_rainbow_t));
-                    s_rainbow_init(obj, gens[0]);
-                }
-            }
-            break;
-    }
 
 
     if (arg_index < len)
