@@ -12,7 +12,7 @@ generator.o: generator.c generator.h defs.h
 filter.o: filter.c filter.h defs.h
 	gcc $(CFLAGS) filter.c
 
-parse.o: parse.c defs.h
+parse.o: parse.c defs.h filter.h generator.h source.h
 	gcc $(CFLAGS) parse.c
 
 sin_table.o: sin_table.cc sin_table.h

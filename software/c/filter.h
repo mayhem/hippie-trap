@@ -7,6 +7,13 @@
 
 typedef void (*f_method)(void *self, uint32_t t, color_t *src, color_t *dest);
 
+// IMPORTANT: All of the s_ structs below must follow the pattern of this struct below. Call it a base "class"!
+typedef struct f_filter_t
+{
+    f_method   method;
+    void      *next;
+} f_filter_t;
+
 typedef struct f_fade_in_t
 {
     f_method   method;
@@ -15,7 +22,7 @@ typedef struct f_fade_in_t
     int32_t    offset;
 } f_fade_in_t;
 
-void f_fade_in_init(f_fade_in_t *self, int32_t duration, int32_t offset);
+void f_fade_in_init(f_fade_in_t *self, f_method method, int32_t duration, int32_t offset);
 void f_fade_in_get(void *self, uint32_t t, color_t *src, color_t *dest);
 
 typedef struct f_fade_out_t
@@ -26,17 +33,17 @@ typedef struct f_fade_out_t
     int32_t    offset;
 } f_fade_out_t;
 
-void f_fade_out_init(f_fade_out_t *self, int32_t duration, int32_t offset);
+void f_fade_out_init(f_fade_out_t *self, f_method method, int32_t duration, int32_t offset);
 void f_fade_out_get(void *self, uint32_t t, color_t *src, color_t *dest);
 
 typedef struct f_brightness_t
 {
-    f_method   method;
-    void      *next;
-    g_method   gen;
+    f_method      method;
+    void         *next;
+    generator_t  *gen;
 } f_brightness_t;
 
-void f_brightness_init(f_brightness_t *self, g_method gen);
+void f_brightness_init(f_brightness_t *self, f_method method, generator_t *gen);
 void f_brightness_get(void *self, uint32_t t, color_t *src, color_t *dest);
 
 #endif

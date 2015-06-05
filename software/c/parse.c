@@ -4,6 +4,7 @@
 
 #include "source.h"
 #include "filter.h"
+#include "generator.h"
 
 #define MAX_CODE_LEN      512
 #define MAX_NUM_ARGS        8
@@ -51,12 +52,13 @@ void *heap_alloc(uint8_t bytes)
 }
 
 void *create_object(uint8_t id, 
-                    int32_t *values, uint8_t value_count,
-                    int32_t *gens, uint8_t gen_count,
-                    int32_t *colors, uint8_t color_count)
+                    int32_t  *values, uint8_t value_count,
+                    void    **gens, uint8_t gen_count,
+                    color_t  *colors, uint8_t color_count)
 {
     void *obj = NULL;
 
+    printf("Create object: %d\n", id);
     switch(id)
     {
         case FUNC_FADE_IN:
@@ -64,7 +66,7 @@ void *create_object(uint8_t id,
                 if (value_count == 2)
                 {
                     obj = heap_alloc(sizeof(f_fade_in_t));
-                    f_fade_in_init((f_date_in_t *)obj, values[0], values[1]);
+                    f_fade_in_init((f_fade_in_t *)obj, f_fade_in_get, values[0], values[1]);
                 }
             }
             break;
@@ -74,7 +76,7 @@ void *create_object(uint8_t id,
                 if (value_count == 2)
                 {
                     obj = heap_alloc(sizeof(f_fade_out_t));
-                    f_fade_out_init((f_fade_out_t *)obj, values[0], values[1]);
+                    f_fade_out_init((f_fade_out_t *)obj, f_fade_out_get, values[0], values[1]);
                 }
             }
             break;
@@ -84,7 +86,8 @@ void *create_object(uint8_t id,
                 if (gen_count == 1)
                 {
                     obj = heap_alloc(sizeof(f_brightness_t));
-                    f_brightness_init((f_brightness_t *)obj, gens[0]);
+                    printf("brightness method %p\n", f_brightness_get);
+                    f_brightness_init((f_brightness_t *)obj, f_brightness_get, gens[0]);
                 }
             }
             break;
@@ -134,6 +137,34 @@ void *create_object(uint8_t id,
                 }
             }
             break;
+
+        case FUNC_SIN:
+        case FUNC_SQUARE:
+        case FUNC_SAWTOOTH:
+        case FUNC_STEP:
+            {
+                if (value_count == 4)
+                {
+                    obj = heap_alloc(sizeof(generator_t));
+                    switch(id)
+                    {
+                        case FUNC_SIN:
+                            printf("create sin gen: %p\n", obj);
+                            g_generator_init(obj, g_sin, values[0], values[1], values[2], values[3]);
+                        break;
+                        case FUNC_SQUARE:
+                            g_generator_init(obj, g_square, values[0], values[1], values[2], values[3]);
+                        break;
+                        case FUNC_SAWTOOTH:
+                            g_generator_init(obj, g_sawtooth, values[0], values[1], values[2], values[3]);
+                        break;
+                        case FUNC_STEP:
+                            g_generator_init(obj, g_step, values[0], values[1], values[2], values[3]);
+                        break;
+                    }
+                }
+            }
+            break;
     }
     return obj;
 }
@@ -148,11 +179,8 @@ void *parse_func(char *code, int16_t len, uint16_t *index)
     uint8_t  id, num_args, i, arg, value_count = 0, gen_count = 0, color_count = 0;
     uint16_t args, arg_index, value;
     int32_t  values[MAX_NUM_ARGS];
-    void    *gens[MAX_NUM_ARGS], objs;
+    void    *gens[MAX_NUM_ARGS];
     color_t  colors[MAX_NUM_ARGS];
-
-    if (*index == 0)
-        clear_heap();
 
     id = code[*index] >> 4;
     num_args = code[*index] & 0xF;
@@ -182,28 +210,71 @@ void *parse_func(char *code, int16_t len, uint16_t *index)
         else
             printf("  unknown ");
     }
-
-    obj = create_object(uint8_t id, values, value_count, gens, gen_count, colors, color_count);
-    if (*index)
-        source = obj;
-
     *index = arg_index;
 
+    return create_object(id, values, value_count, gens, gen_count, colors, color_count);
+}
 
+void *parse(char *code, int16_t len)
+{
+    void       *source, *ptr, *filter;
+    uint16_t    offset = 0;
 
-    if (arg_index < len)
+    clear_heap();
+    source = parse_func(code, len, &offset);
+    for(; offset < len;)
     {
-        parse_func(code, len, &arg_index);
+        filter = parse_func(code, len, &offset);
+        if (!filter)
+            break;
+        printf("Created filter: %p\n", filter);
+
+        ptr = (s_source_t *)source;
+        while (((f_filter_t *)ptr)->next)
+            ptr = ((f_filter_t *)ptr)->next;
+
+        ((f_filter_t *)ptr)->next = filter;
     }
 
-    return NULL;
+    return source;
+}
+
+
+void evaluate(s_source_t *src, uint32_t t, color_t *color)
+{
+    color_t  temp, dest;
+    void    *filter;
+
+    printf("Get source color\n");
+    src->method((void *)src, t, &dest);
+    printf("Get source color: %d, %d, %d\n", dest.c[0], dest.c[1], dest.c[2]);
+    filter = src->next;
+    while(filter)
+    {
+        temp.c[0] = dest.c[0];
+        temp.c[1] = dest.c[1];
+        temp.c[2] = dest.c[2];
+        f_filter_t *foo = (f_filter_t *)filter;
+        printf("Call filter: %p->%p\n", foo, ((f_filter_t *)filter)->method);
+//        foo->method(filter, t, &temp, &dest);
+        ((f_filter_t *)filter)->method(filter, t, &temp, &dest);
+
+        filter = ((f_filter_t *)filter)->next;
+    }
+    color->c[0] = dest.c[0];
+    color->c[1] = dest.c[1];
+    color->c[2] = dest.c[2];
 }
 
 int main(int argc, char *argv[])
 {
-    FILE *fp;
-    uint16_t rd, index = 0, dummy = 0;
-    char code[MAX_CODE_LEN], pair[3], ch;
+    FILE          *fp;
+    uint16_t       rd, index = 0;
+    char           code[MAX_CODE_LEN], pair[3];
+    unsigned int   ch;
+    s_source_t    *source;
+    color_t        color;
+    uint32_t       t;
     
     if (argc < 2)
     {
@@ -228,7 +299,18 @@ int main(int argc, char *argv[])
     }
     printf("\n");
 
-    parse_func(code, index, &dummy);
+    source = parse(code, index);
+    if (!source)
+    {
+        printf("Parse failed.\n");
+        return 0;
+    }
+
+    for(t = 0; t < SCALE_FACTOR * 2; t += 100)
+    {
+        evaluate(source, 0, &color);
+        printf("%d, %d, %d\n", color.c[0], color.c[1], color.c[2]);
+    }
 
     return 0;
 }

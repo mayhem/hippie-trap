@@ -6,6 +6,13 @@
 
 typedef void (*s_method)(void *self, uint32_t t, color_t *col);
 
+// IMPORTANT: All of the s_ structs below must follow the pattern of this struct below. Call it a base "class"!
+typedef struct s_source_t
+{
+    s_method   method;
+    void      *next;
+} s_source_t;
+
 typedef struct s_constant_color_t
 {
     s_method   method;
