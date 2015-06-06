@@ -95,19 +95,24 @@ rainbow.chain(filter.FadeOut(5.0, 1.0))
 
 purple = function.ConstantColor(Color(128, 0, 128))
 purple.chain(filter.FadeIn(1.0))
-purple.chain(filter.FadeOut(5.0, 1.0))
+purple.chain(filter.FadeOut(1.0, 5.0))
+
+wobble = function.RandomColorSequence(period_s, random.randint(0, 255))
+g = generator.Sin((math.pi * 2) / period_s, -math.pi/2, .5, .5)
+wobble.chain(filter.Brightness(g))
 
 #funcs = [rainbow, wobble]
-while True:
-    wobble = function.RandomColorSequence(period_s, random.randint(0, 255))
-    g = generator.Sin((math.pi * 2) / period_s, -math.pi/2, .5, .5)
-    wobble.chain(filter.Brightness(g))
-    funcs = [wobble]
+#while True:
+#    wobble = function.RandomColorSequence(period_s, random.randint(0, 255))
+#    g = generator.Sin((math.pi * 2) / period_s, -math.pi/2, .5, .5)
+#    wobble.chain(filter.Brightness(g))
+#    funcs = [wobble]
+#    funcs = [purple]
 
-    for f in funcs:
-        data = f.describe()
-        out = open("function.bin", "wb")
-        for c in data:
-            out.write("%02X" % c)
-        out.close()
-        ch.run(f, DELAY, 6)
+f = wobble
+data = f.describe()
+out = open("function.bin", "wb")
+for c in data:
+    out.write("%02X" % c)
+out.close()
+ch.run(f, DELAY, 6)

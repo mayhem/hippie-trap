@@ -53,13 +53,12 @@ class FadeOut(Filter):
         desc = common.make_function(common.FUNC_FADE_OUT, (common.ARG_VALUE, common.ARG_VALUE))
         desc += common.pack_fixed(self.duration)
         desc += common.pack_fixed(self.offset)
-        print "%s(%.3f, %.3f)" % (self.__class__.__name__, self.duration, self.offset)
         return desc + self.describe_next()
 
     def filter(self, t, color):
-        if t > self.offset + self.duration:
+        if t >= self.offset + self.duration:
             return Color(0,0,0)
-        if t > self.offset: 
+        if t >= self.offset: 
             percent = 1.0 - ((t - self.offset) / self.duration)
             return Color( int(color[0] * percent), int(color[1] * percent), int(color[2] * percent))
 

@@ -28,7 +28,8 @@ def make_function(id, args):
     return bytearray(pack("<BH", (id << 4) | len(args), flags))
 
 def pack_fixed(value):
-    return bytearray(pack("<h", int(value * 100)))
+    print value
+    return bytearray(pack("<i", int(value * 1000)))
 
 def pack_color(col):
     return bytearray(pack("<BBB", col[0], col[1], col[2]))

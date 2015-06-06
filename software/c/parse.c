@@ -8,7 +8,7 @@
 
 #define MAX_CODE_LEN      512
 #define MAX_NUM_ARGS        8
-#define VALUE_SIZE          2
+#define VALUE_SIZE          4
 #define ARG_VALUE           0
 #define ARG_FUNC            1
 #define ARG_COLOR           2
@@ -75,6 +75,7 @@ void *create_object(uint8_t id,
             {
                 if (value_count == 2)
                 {
+                    printf("create func fade out: %d %d\n", values[0], values[1]);
                     obj = heap_alloc(sizeof(f_fade_out_t));
                     f_fade_out_init((f_fade_out_t *)obj, f_fade_out_get, values[0], values[1]);
                 }
@@ -175,7 +176,8 @@ void *create_object(uint8_t id,
 void *parse_func(char *code, int16_t len, uint16_t *index)
 {
     uint8_t  id, num_args, i, arg, value_count = 0, gen_count = 0, color_count = 0;
-    uint16_t args, arg_index, value;
+    uint16_t arg_index;
+    uint32_t args, value;
     int32_t  values[MAX_NUM_ARGS];
     void    *gens[MAX_NUM_ARGS];
     color_t  colors[MAX_NUM_ARGS];
@@ -192,7 +194,7 @@ void *parse_func(char *code, int16_t len, uint16_t *index)
         arg = (args >> (i * 2)) & 0x3;
         if (arg == ARG_VALUE)
         {
-            values[value_count++] = *((uint16_t *)&code[arg_index]); 
+            values[value_count++] = *((uint32_t *)&code[arg_index]); 
             arg_index += VALUE_SIZE;
         }
         else if (arg == ARG_FUNC)
@@ -260,18 +262,6 @@ void evaluate(s_source_t *src, uint32_t t, color_t *color)
     color->c[2] = dest.c[2];
 }
 
-void test_hsv(void)
-{
-    int32_t hue;
-    color_t c;
-
-    for(hue = 0; hue <= SCALE_FACTOR; hue += 10)
-    {
-        hsv_to_rgb(hue, SCALE_FACTOR, SCALE_FACTOR, &c);
-        printf("%d: %d %d %d\n", hue, c.c[0], c.c[1], c.c[2]);
-    }
-}
-
 int main(int argc, char *argv[])
 {
     FILE          *fp;
@@ -282,9 +272,6 @@ int main(int argc, char *argv[])
     color_t        color;
     uint32_t       t;
 
-    test_hsv();
-    return 0;
-    
     if (argc < 2)
     {
         printf("parse <bin file>\n");
@@ -315,11 +302,11 @@ int main(int argc, char *argv[])
         return 0;
     }
 
-    for(t = 0; t < SCALE_FACTOR * 4; t += 100)
+    for(t = 0; t < SCALE_FACTOR * 6; t += 100)
 //    t = 0;
     {
         evaluate(source, t, &color);
-        printf("%d, %d, %d\n", color.c[0], color.c[1], color.c[2]);
+        printf("%u: %d, %d, %d\n", t, color.c[0], color.c[1], color.c[2]);
     }
 
     return 0;
