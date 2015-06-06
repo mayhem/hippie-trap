@@ -2,9 +2,13 @@
 #include "generator.h"
 #include "source.h"
 
-void hsv_to_rgb(int32_t hue, int32_t sat, int32_t value, color_t *color)
+void hsv_to_rgb(int32_t _h, int32_t _s, int32_t _v, color_t *color)
 {
+    color->c[0] = 0;
+    color->c[1] = 0;
+    color->c[2] = 0;
 }
+
 void s_constant_color_init(s_constant_color_t *self, color_t *color)
 {
     self->color.c[0] = color->c[0];

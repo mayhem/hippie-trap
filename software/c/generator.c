@@ -5,7 +5,6 @@ void g_generator_init(void *_self, g_method method, int32_t period, int32_t phas
 {
     generator_t *self = (generator_t *)_self;
     self->method = method;
-    printf("gen init: %p->%p\n", self, method);
     self->period = period;
     self->phase = phase;
     self->amplitude = amplitude;
@@ -14,7 +13,6 @@ void g_generator_init(void *_self, g_method method, int32_t period, int32_t phas
 
 int32_t g_sin(void *_self, uint32_t t)
 {
-    printf("in sin gen\n");
     generator_t *self = (generator_t *)_self;
     int32_t index = (((int32_t)t * self->period / SCALE_FACTOR + self->phase) % S_PIM2) * NUM_SIN_TABLE_ENTRIES / S_PIM2;
     if (index < 0)

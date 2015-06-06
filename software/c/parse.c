@@ -86,7 +86,6 @@ void *create_object(uint8_t id,
                 if (gen_count == 1)
                 {
                     obj = heap_alloc(sizeof(f_brightness_t));
-                    printf("brightness method %p\n", f_brightness_get);
                     f_brightness_init((f_brightness_t *)obj, f_brightness_get, gens[0]);
                 }
             }
@@ -149,7 +148,6 @@ void *create_object(uint8_t id,
                     switch(id)
                     {
                         case FUNC_SIN:
-                            printf("create sin gen: %p\n", obj);
                             g_generator_init(obj, g_sin, values[0], values[1], values[2], values[3]);
                         break;
                         case FUNC_SQUARE:
@@ -227,7 +225,6 @@ void *parse(char *code, int16_t len)
         filter = parse_func(code, len, &offset);
         if (!filter)
             break;
-        printf("Created filter: %p\n", filter);
 
         ptr = (s_source_t *)source;
         while (((f_filter_t *)ptr)->next)
@@ -245,9 +242,7 @@ void evaluate(s_source_t *src, uint32_t t, color_t *color)
     color_t  temp, dest;
     void    *filter;
 
-    printf("Get source color\n");
     src->method((void *)src, t, &dest);
-    printf("Get source color: %d, %d, %d\n", dest.c[0], dest.c[1], dest.c[2]);
     filter = src->next;
     while(filter)
     {
@@ -255,9 +250,8 @@ void evaluate(s_source_t *src, uint32_t t, color_t *color)
         temp.c[1] = dest.c[1];
         temp.c[2] = dest.c[2];
         f_filter_t *foo = (f_filter_t *)filter;
-        printf("Call filter: %p->%p\n", foo, ((f_filter_t *)filter)->method);
-//        foo->method(filter, t, &temp, &dest);
-        ((f_filter_t *)filter)->method(filter, t, &temp, &dest);
+        foo->method(filter, t, &temp, &dest);
+//        ((f_filter_t *)filter)->method(filter, t, &temp, &dest);
 
         filter = ((f_filter_t *)filter)->next;
     }
@@ -306,9 +300,10 @@ int main(int argc, char *argv[])
         return 0;
     }
 
-    for(t = 0; t < SCALE_FACTOR * 2; t += 100)
+    for(t = 0; t < SCALE_FACTOR * 4; t += 100)
+//    t = 0;
     {
-        evaluate(source, 0, &color);
+        evaluate(source, t, &color);
         printf("%d, %d, %d\n", color.c[0], color.c[1], color.c[2]);
     }
 
