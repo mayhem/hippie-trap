@@ -260,6 +260,18 @@ void evaluate(s_source_t *src, uint32_t t, color_t *color)
     color->c[2] = dest.c[2];
 }
 
+void test_hsv(void)
+{
+    int32_t hue;
+    color_t c;
+
+    for(hue = 0; hue <= SCALE_FACTOR; hue += 10)
+    {
+        hsv_to_rgb(hue, SCALE_FACTOR, SCALE_FACTOR, &c);
+        printf("%d: %d %d %d\n", hue, c.c[0], c.c[1], c.c[2]);
+    }
+}
+
 int main(int argc, char *argv[])
 {
     FILE          *fp;
@@ -269,6 +281,9 @@ int main(int argc, char *argv[])
     s_source_t    *source;
     color_t        color;
     uint32_t       t;
+
+    test_hsv();
+    return 0;
     
     if (argc < 2)
     {

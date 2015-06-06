@@ -4,6 +4,8 @@
 #include "defs.h"
 #include "generator.h"
 
+void hsv_to_rgb(int32_t h, int32_t s, int32_t v, color_t *color);
+
 typedef void (*s_method)(void *self, uint32_t t, color_t *col);
 
 // IMPORTANT: All of the s_ structs below must follow the pattern of this struct below. Call it a base "class"!
