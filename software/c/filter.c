@@ -60,10 +60,9 @@ void f_fade_out_get(void *_self, uint32_t t, color_t *src, color_t *dest)
     dest->c[2] = src->c[2];
 }
 
-void f_brightness_init(f_brightness_t *self, f_method method, generator_t *gen)
+void f_brightness_init(f_brightness_t *self, generator_t *gen)
 {
     self->gen = gen;
-    self->method = method;
     self->method = f_brightness_get;
 }
 

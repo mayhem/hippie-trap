@@ -91,7 +91,7 @@ period_s = 1
 
 rainbow = function.Rainbow(generator.Sawtooth(.55))
 rainbow.chain(filter.FadeIn(1))
-rainbow.chain(filter.FadeOut(5.0, 1.0))
+rainbow.chain(filter.FadeOut(1.0, 5.0))
 
 purple = function.ConstantColor(Color(128, 0, 128))
 purple.chain(filter.FadeIn(1.0))
@@ -109,7 +109,7 @@ wobble.chain(filter.Brightness(g))
 #    funcs = [wobble]
 #    funcs = [purple]
 
-f = wobble
+f = rainbow
 data = f.describe()
 out = open("function.bin", "wb")
 for c in data:

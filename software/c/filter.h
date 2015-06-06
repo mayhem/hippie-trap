@@ -43,7 +43,7 @@ typedef struct f_brightness_t
     generator_t  *gen;
 } f_brightness_t;
 
-void f_brightness_init(f_brightness_t *self, f_method method, generator_t *gen);
+void f_brightness_init(f_brightness_t *self, generator_t *gen);
 void f_brightness_get(void *self, uint32_t t, color_t *src, color_t *dest);
 
 #endif

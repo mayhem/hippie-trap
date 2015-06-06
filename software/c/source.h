@@ -50,12 +50,12 @@ void s_hsv_get(void *self, uint32_t t, color_t *dest);
 
 typedef struct s_rainbow_t 
 { 
-    s_method   method;
-    void      *next; 
-    g_method   gen;
+    s_method     method;
+    void        *next; 
+    generator_t *gen;
 } s_rainbow_t;
 
-void s_rainbow_init(s_rainbow_t *self, g_method gen);
+void s_rainbow_init(s_rainbow_t *self, generator_t *gen);
 void s_rainbow_get(void *self, uint32_t t, color_t *dest);
 
 #endif

@@ -6,25 +6,25 @@
 #include "filter.h"
 #include "generator.h"
 
-#define MAX_CODE_LEN      512
-#define MAX_NUM_ARGS        8
-#define VALUE_SIZE          4
-#define ARG_VALUE           0
-#define ARG_FUNC            1
-#define ARG_COLOR           2
-#define ARG_BOTTLE_SUPPLIED 3
+#define MAX_CODE_LEN           512
+#define MAX_NUM_ARGS             8
+#define VALUE_SIZE               4
+#define ARG_VALUE                0
+#define ARG_FUNC                 1
+#define ARG_COLOR                2
+#define ARG_BOTTLE_SUPPLIED      3
 
-#define FUNC_FADE_IN           0
-#define FUNC_FADE_OUT          1
-#define FUNC_BRIGHTNESS        2
-#define FUNC_SIN               3
-#define FUNC_SQUARE            4
-#define FUNC_SAWTOOTH          5
-#define FUNC_CONSTANT_COLOR    6
-#define FUNC_RAND_COL_SEQ      7
-#define FUNC_HSV               8
-#define FUNC_RAINBOW           9
-#define FUNC_STEP              10
+#define FILTER_FADE_IN           0
+#define FILTER_FADE_OUT          1
+#define FILTER_BRIGHTNESS        2
+#define GEN_SIN                  3
+#define GEN_SQUARE               4
+#define GEN_SAWTOOTH             5
+#define SRC_CONSTANT_COLOR       6
+#define SRC_RAND_COL_SEQ         7
+#define SRC_HSV                  8
+#define SRC_RAINBOW              9
+#define GEN_STEP                10
 
 #define HEAP_SIZE              256
 
@@ -61,7 +61,7 @@ void *create_object(uint8_t id,
     printf("Create object: %d\n", id);
     switch(id)
     {
-        case FUNC_FADE_IN:
+        case FILTER_FADE_IN:
             {
                 if (value_count == 2)
                 {
@@ -71,7 +71,7 @@ void *create_object(uint8_t id,
             }
             break;
 
-        case FUNC_FADE_OUT:
+        case FILTER_FADE_OUT:
             {
                 if (value_count == 2)
                 {
@@ -82,17 +82,17 @@ void *create_object(uint8_t id,
             }
             break;
 
-        case FUNC_BRIGHTNESS:
+        case FILTER_BRIGHTNESS:
             {
                 if (gen_count == 1)
                 {
                     obj = heap_alloc(sizeof(f_brightness_t));
-                    f_brightness_init((f_brightness_t *)obj, f_brightness_get, gens[0]);
+                    f_brightness_init((f_brightness_t *)obj, gens[0]);
                 }
             }
             break;
 
-        case FUNC_CONSTANT_COLOR:
+        case SRC_CONSTANT_COLOR:
             {
                 if (color_count == 1)
                 {
@@ -102,7 +102,7 @@ void *create_object(uint8_t id,
             }
             break;
 
-        case FUNC_RAND_COL_SEQ:
+        case SRC_RAND_COL_SEQ:
             {
                 if (value_count == 2)
                 {
@@ -112,7 +112,7 @@ void *create_object(uint8_t id,
             }
             break;
 
-        case FUNC_HSV:
+        case SRC_HSV:
             {
                 if (gen_count > 1)
                 {
@@ -128,7 +128,7 @@ void *create_object(uint8_t id,
             }
             break;
 
-        case FUNC_RAINBOW:
+        case SRC_RAINBOW:
             {
                 if (gen_count == 1)
                 {
@@ -138,26 +138,26 @@ void *create_object(uint8_t id,
             }
             break;
 
-        case FUNC_SIN:
-        case FUNC_SQUARE:
-        case FUNC_SAWTOOTH:
-        case FUNC_STEP:
+        case GEN_SIN:
+        case GEN_SQUARE:
+        case GEN_SAWTOOTH:
+        case GEN_STEP:
             {
                 if (value_count == 4)
                 {
                     obj = heap_alloc(sizeof(generator_t));
                     switch(id)
                     {
-                        case FUNC_SIN:
+                        case GEN_SIN:
                             g_generator_init(obj, g_sin, values[0], values[1], values[2], values[3]);
                         break;
-                        case FUNC_SQUARE:
+                        case GEN_SQUARE:
                             g_generator_init(obj, g_square, values[0], values[1], values[2], values[3]);
                         break;
-                        case FUNC_SAWTOOTH:
+                        case GEN_SAWTOOTH:
                             g_generator_init(obj, g_sawtooth, values[0], values[1], values[2], values[3]);
                         break;
-                        case FUNC_STEP:
+                        case GEN_STEP:
                             g_generator_init(obj, g_step, values[0], values[1], values[2], values[3]);
                         break;
                     }
@@ -184,8 +184,6 @@ void *parse_func(char *code, int16_t len, uint16_t *index)
 
     id = code[*index] >> 4;
     num_args = code[*index] & 0xF;
-
-    printf("id %d args %d\n", id, num_args);
 
     args = (code[*index + 2] << 8) | code[*index + 1];
     arg_index = *index + 3;
@@ -291,9 +289,7 @@ int main(int argc, char *argv[])
             break;
         sscanf(pair, "%02X", &ch);
         code[index] = ch;
-        printf("%02X ", ch);
     }
-    printf("\n");
 
     source = parse(code, index);
     if (!source)

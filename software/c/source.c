@@ -123,18 +123,19 @@ void s_hsv_get(void *_self, uint32_t t, color_t *dest)
 
 //--
 
-void s_rainbow_init(s_rainbow_t *self, g_method gen)
+void s_rainbow_init(s_rainbow_t *self, generator_t *gen)
 {
     self->gen = gen;
     self->method = s_rainbow_get;
     self->next = NULL; 
 }
 
-void s_rainbow_get(void *self, uint32_t t, color_t *dest)
+void s_rainbow_get(void *_self, uint32_t t, color_t *dest)
 {
     uint8_t wheel_pos;
 
-    wheel_pos = 255 - (255 * ((s_hsv_t *)self)->gen1(self, t) / SCALE_FACTOR);
+    s_rainbow_t *self = (s_rainbow_t *)_self;
+    wheel_pos = 255 - (255 * self->gen->method(self->gen, t) / SCALE_FACTOR);
     if (wheel_pos < 85)
     {
         dest->c[0] = 255 - wheel_pos * 3;

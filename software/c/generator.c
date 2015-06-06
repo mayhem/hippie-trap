@@ -9,6 +9,7 @@ void g_generator_init(void *_self, g_method method, int32_t period, int32_t phas
     self->phase = phase;
     self->amplitude = amplitude;
     self->offset = offset;
+    printf("gen_init: %d %d %d %d\n", period, phase, amplitude, offset);
 }
 
 int32_t g_sin(void *_self, uint32_t t)
