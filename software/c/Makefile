@@ -15,8 +15,8 @@ filter.o: filter.c filter.h defs.h
 parse.o: parse.c defs.h filter.h generator.h source.h
 	gcc $(CFLAGS) parse.c
 
-sin_table.o: sin_table.cc sin_table.h
-	gcc $(CFLAGS) sin_table.cc
+sin_table.o: sin_table.c sin_table.h
+	gcc $(CFLAGS) sin_table.c
 
 clean: 
 	rm -f *.o ch_test

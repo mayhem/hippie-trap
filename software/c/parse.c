@@ -31,6 +31,13 @@
 uint8_t heap[HEAP_SIZE];
 uint8_t heap_offset = 0;
 
+// TODO: Add heap protection function.
+// set color coded debug errors: out of heap, failed to parse.
+// allow for re-transmissions of patterns.
+// send pattern
+//    if I have a good pattern in memory, ignore new paterns.
+//    go to next pattern: clean in pattern memory
+
 void clear_heap(void)
 {
     heap_offset = 0;
