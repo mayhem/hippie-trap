@@ -6,10 +6,16 @@ import struct
 import function
 import generator
 import filter
+import random
 from time import sleep, time
-from color import Color, RandomColorSequence
+from color import Color
 
 BAUD_RATE = 38400
+NUM_PIXELS = 8
+
+PACKET_SINGLE_COLOR = 0
+PACKET_COLOR_ARRAY = 1
+BROADCAST = 255
 
 def crc16_update(crc, a):
     crc ^= a
@@ -39,8 +45,18 @@ class Chandelier(object):
             print "Cant open serial port: %s" % device
             sys.exit(-1)
 
-    def set_color(self, red, green, blue):
-        packet = chr(red) + chr(green) + chr(blue);
+    def set_color(self, dest, col):
+        packet = chr(dest) + chr(PACKET_SINGLE_COLOR) + chr(col[0]) + chr(col[1]) + chr(col[2])
+        crc = 0
+        for ch in packet:
+            crc = crc16_update(crc, ord(ch))
+        packet = struct.pack("<BB", 255,  len(packet) + 2) + packet + struct.pack("<H", crc)
+        self.ser.write(packet)
+
+    def set_color_array(self, dest, colors):
+        packet = chr(dest) + chr(PACKET_COLOR_ARRAY)
+        for col in colors:
+            packet += chr(col[0]) + chr(col[1]) + chr(col[2]);
         crc = 0
         for ch in packet:
             crc = crc16_update(crc, ord(ch))
@@ -55,7 +71,11 @@ class Chandelier(object):
         while True:
             t = time() - start_t
             col = function[t]
-            ch.set_color(col[0], col[1], col[2])
+            array = []
+            for i in xrange(NUM_PIXELS):
+                array.append(col)
+
+            ch.set_color_array(BROADCAST, array)
             sleep(delay)
 
             if duration > 0 and t > duration:
@@ -66,16 +86,33 @@ DELAY = .02
 ch = Chandelier()
 ch.open("/dev/ttyAMA0")
 
-#rainbow = function.Rainbow(.05)
-#rainbow.chain(filter.FadeIn(2))
-#purple = function.ConstantColor(Color(128, 0, 128))
-#purple.chain(filter.FadeIn(2.0))
-#purple.chain(filter.FadeOut(4.0, 2.0))
+random.seed()
+period_s = 1
 
-rand_col = RandomColorSequence()
-while True:
-    wobble = function.ConstantColor(rand_col.get())
-    period_s = 1
-    g = generator.Sin((math.pi * 2) / period_s, -math.pi/2, .5, .5)
-    wobble.chain(filter.Brightness(g))
-    ch.run(wobble, DELAY, period_s)
+rainbow = function.Rainbow(generator.Sawtooth(.55))
+rainbow.chain(filter.FadeIn(1))
+rainbow.chain(filter.FadeOut(1.0, 5.0))
+
+purple = function.ConstantColor(Color(128, 0, 128))
+purple.chain(filter.FadeIn(1.0))
+purple.chain(filter.FadeOut(1.0, 5.0))
+
+wobble = function.RandomColorSequence(period_s, random.randint(0, 255))
+g = generator.Sin((math.pi * 2) / period_s, -math.pi/2, .5, .5)
+wobble.chain(filter.Brightness(g))
+
+#funcs = [rainbow, wobble]
+#while True:
+#    wobble = function.RandomColorSequence(period_s, random.randint(0, 255))
+#    g = generator.Sin((math.pi * 2) / period_s, -math.pi/2, .5, .5)
+#    wobble.chain(filter.Brightness(g))
+#    funcs = [wobble]
+#    funcs = [purple]
+
+f = rainbow
+data = f.describe()
+out = open("function.bin", "wb")
+for c in data:
+    out.write("%02X" % c)
+out.close()
+ch.run(f, DELAY, 6)

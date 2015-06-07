@@ -5,3 +5,4 @@ ve
 *.s#?
 .DS_Store
 *.swp
+last_node_id.txt

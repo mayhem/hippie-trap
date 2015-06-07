@@ -19,6 +19,9 @@ class Color(object):
     def __init__(self, r, g, b):
         self.color = [r, g, b]
 
+    def describe(self, level = 0):
+        print "%s(%d, %d, %d)" % (self.__class__.__name__, self.color[0], self.color[1]. self.color[2]),
+
     def __str__(self):
         return "Color(%d,%d,%d)" % (self.color[0], self.color[1], self.color[2])
 
@@ -26,16 +29,3 @@ class Color(object):
     def __getitem__(self, i):
         return self.color[i]
 
-class RandomColorSequence(object):
-    '''
-       Return colors that appear _random_ to a human.
-    '''
-
-    def __init__(self):
-        self.last = random()
-
-    def get(self):
-        hue = (self.last + .5 + (random() * .5 - .25)) % 1.0
-        col = hueToColor(hue)
-        self.last = hue
-        return col
