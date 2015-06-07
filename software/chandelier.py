@@ -17,7 +17,7 @@ NUM_PIXELS = 8
 PACKET_SINGLE_COLOR = 0
 PACKET_COLOR_ARRAY  = 1
 PACKET_PATTERN      = 2
-BROADCAST = 255
+BROADCAST = 0
 
 def crc16_update(crc, a):
     crc ^= a
@@ -47,6 +47,12 @@ class Chandelier(object):
             print "Cant open serial port: %s" % device
             sys.exit(-1)
 
+        # Wait for things to settle, then pipe some characters through the line to get things going
+        sleep(.250)
+        self.ser.write(chr(0))
+        self.ser.write(chr(0))
+        self.ser.write(chr(0))
+
     def set_color(self, dest, col):
         packet = chr(dest) + chr(PACKET_SINGLE_COLOR) + chr(col[0]) + chr(col[1]) + chr(col[2])
         crc = 0
@@ -72,6 +78,13 @@ class Chandelier(object):
             crc = crc16_update(crc, ch)
         packet = struct.pack("<BB", 255,  len(packet) + 2) + packet + struct.pack("<H", crc)
         self.ser.write(packet)
+
+    def print_debug(self):
+        while True:
+            ch = self.ser.read(1)
+            if ch:
+                sys.stdout.write(ch);
+                sys.stdout.flush()
 
     def run(self, function, delay, duration = 0.0):
         start_t = time()
@@ -120,4 +133,6 @@ wobble.chain(filter.Brightness(g))
 #    funcs = [wobble]
 #    funcs = [purple]
 
-ch.send_pattern(BROADCAST, wobble)
+ch.send_pattern(BROADCAST, rainbow)
+print "----"
+ch.print_debug()
