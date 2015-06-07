@@ -14,7 +14,8 @@ BAUD_RATE = 38400
 NUM_PIXELS = 8
 
 PACKET_SINGLE_COLOR = 0
-PACKET_COLOR_ARRAY = 1
+PACKET_COLOR_ARRAY  = 1
+PACKET_PATTERN      = 2
 BROADCAST = 255
 
 def crc16_update(crc, a):
@@ -63,8 +64,13 @@ class Chandelier(object):
         packet = struct.pack("<BB", 255,  len(packet) + 2) + packet + struct.pack("<H", crc)
         self.ser.write(packet)
 
-# TODO:     packet = chr(red) + chr(green) + chr(blue);
-#    ValueError: chr() arg not in range(256)
+    def send_pattern(self, dest, pattern):
+        packet = chr(dest) + chr(PACKET_PATTERN) + pattern.describe() 
+        crc = 0
+        for ch in packet:
+            crc = crc16_update(crc, ch)
+        packet = struct.pack("<BB", 255,  len(packet) + 2) + packet + struct.pack("<H", crc)
+        self.ser.write(packet)
 
     def run(self, function, delay, duration = 0.0):
         start_t = time()
@@ -109,10 +115,4 @@ wobble.chain(filter.Brightness(g))
 #    funcs = [wobble]
 #    funcs = [purple]
 
-f = rainbow
-data = f.describe()
-out = open("function.bin", "wb")
-for c in data:
-    out.write("%02X" % c)
-out.close()
-ch.run(f, DELAY, 6)
+ch.send_pattern(BROADCAST, wobble)
