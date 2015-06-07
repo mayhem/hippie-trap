@@ -99,7 +99,7 @@ void s_random_color_seq_get(void *self, uint32_t t, color_t *dest)
 
 //--
 
-void s_hsv_init(s_hsv_t *self, g_method gen1, g_method gen2, g_method gen3)
+void s_hsv_init(s_hsv_t *self, generator_t *gen1, generator_t *gen2, generator_t *gen3)
 {
     self->gen1 = gen1;
     self->gen2 = gen2;
@@ -113,12 +113,12 @@ void s_hsv_get(void *_self, uint32_t t, color_t *dest)
     s_hsv_t *self = (s_hsv_t *)_self;
 
     if (self->gen2 && self->gen3)
-        hsv_to_rgb(self->gen1(_self, t), self->gen2(_self, t), self->gen3(_self, t), dest);
+        hsv_to_rgb(self->gen1->method(_self, t), self->gen2->method(_self, t), self->gen3->method(_self, t), dest);
     else
     if (self->gen2)
-        hsv_to_rgb(self->gen1(_self, t), self->gen2(_self, t), 1.0, dest);
+        hsv_to_rgb(self->gen1->method(_self, t), self->gen2->method(_self, t), 1.0, dest);
     else
-        hsv_to_rgb(self->gen1(_self, t), 1.0, 1.0, dest);
+        hsv_to_rgb(self->gen1->method(_self, t), 1.0, 1.0, dest);
 }
 
 //--

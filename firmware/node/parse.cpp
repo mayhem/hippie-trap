@@ -45,13 +45,9 @@ void clear_heap(void)
 
 void *heap_alloc(uint8_t bytes)
 { 
-    printf("heap: alloc %d bytes\n", bytes);
     uint8_t *ptr = heap + heap_offset;
     if (bytes + heap_offset > HEAP_SIZE)
-    {
-        fprintf(stderr, "Out of heap space!\n");
-        exit(-1);
-    }
+         return NULL;
 
     heap_offset += bytes;
 
@@ -73,8 +69,12 @@ void *create_object(uint8_t id,
                 if (value_count == 2)
                 {
                     obj = heap_alloc(sizeof(f_fade_in_t));
+                    if (!obj)
+                        return NULL;
                     f_fade_in_init((f_fade_in_t *)obj, f_fade_in_get, values[0], values[1]);
                 }
+                else
+                    return NULL;
             }
             break;
 
@@ -82,11 +82,13 @@ void *create_object(uint8_t id,
             {
                 if (value_count == 2)
                 {
-                    printf("create func fade out: %d %d\n", values[0], values[1]);
                     obj = heap_alloc(sizeof(f_fade_out_t));
+                    if (!obj)
+                        return NULL;
                     f_fade_out_init((f_fade_out_t *)obj, f_fade_out_get, values[0], values[1]);
                 }
-            }
+                else
+                    return NULL;            }
             break;
 
         case FILTER_BRIGHTNESS:
@@ -94,9 +96,12 @@ void *create_object(uint8_t id,
                 if (gen_count == 1)
                 {
                     obj = heap_alloc(sizeof(f_brightness_t));
-                    f_brightness_init((f_brightness_t *)obj, gens[0]);
+                    if (!obj)
+                        return NULL;
+                    f_brightness_init((f_brightness_t *)obj, (generator_t*)gens[0]);
                 }
-            }
+                else
+                    return NULL;            }
             break;
 
         case SRC_CONSTANT_COLOR:
@@ -104,9 +109,12 @@ void *create_object(uint8_t id,
                 if (color_count == 1)
                 {
                     obj = heap_alloc(sizeof(s_constant_color_t));
+                    if (!obj)
+                        return NULL;
                     s_constant_color_init((s_constant_color_t *)obj, &colors[0]);
                 }
-            }
+                else
+                    return NULL;            }
             break;
 
         case SRC_RAND_COL_SEQ:
@@ -114,9 +122,12 @@ void *create_object(uint8_t id,
                 if (value_count == 2)
                 {
                     obj = heap_alloc(sizeof(s_random_color_seq_t));
+                    if (!obj)
+                        return NULL;
                     s_random_color_seq_init((s_random_color_seq_t *)obj, values[0], values[1]);
                 }
-            }
+                else
+                    return NULL;            }
             break;
 
         case SRC_HSV:
@@ -124,15 +135,18 @@ void *create_object(uint8_t id,
                 if (gen_count > 1)
                 {
                     obj = heap_alloc(sizeof(s_hsv_t));
+                    if (!obj)
+                        return NULL;
                     if (gen_count > 2)
-                        s_hsv_init((s_hsv_t *)obj, gens[0], gens[1], gens[2]);
+                        s_hsv_init((s_hsv_t *)obj, (generator_t*)gens[0],  (generator_t*)gens[1],  (generator_t*)gens[2]);
                     else
                     if (gen_count > 1)
-                        s_hsv_init((s_hsv_t *)obj, gens[0], gens[1], NULL);
+                        s_hsv_init((s_hsv_t *)obj,  (generator_t*)gens[0],  (generator_t*)gens[1], NULL);
                     else
-                        s_hsv_init((s_hsv_t *)obj, gens[0], NULL, NULL);
+                        s_hsv_init((s_hsv_t *)obj,  (generator_t*)gens[0], NULL, NULL);
                 }
-            }
+                else
+                    return NULL;            }
             break;
 
         case SRC_RAINBOW:
@@ -140,9 +154,12 @@ void *create_object(uint8_t id,
                 if (gen_count == 1)
                 {
                     obj = heap_alloc(sizeof(s_rainbow_t));
-                    s_rainbow_init((s_rainbow_t *)obj, gens[0]);
+                    if (!obj)
+                        return NULL;
+                    s_rainbow_init((s_rainbow_t *)obj,  (generator_t*)gens[0]);
                 }
-            }
+                else
+                    return NULL;            }
             break;
 
         case GEN_SIN:
@@ -153,6 +170,8 @@ void *create_object(uint8_t id,
                 if (value_count == 4)
                 {
                     obj = heap_alloc(sizeof(generator_t));
+                    if (!obj)
+                        return NULL;
                     switch(id)
                     {
                         case GEN_SIN:
@@ -169,6 +188,8 @@ void *create_object(uint8_t id,
                         break;
                     }
                 }
+                else
+                    return NULL;
             }
             break;
     }
@@ -213,7 +234,7 @@ void *parse_func(char *code, int16_t len, uint16_t *index)
             colors[color_count++].c[2] = code[arg_index++];
         }
         else
-            printf("  unknown ");
+            return NULL;
     }
     *index = arg_index;
 
@@ -231,6 +252,7 @@ void *parse(char *code, int16_t len)
     {
         filter = parse_func(code, len, &offset);
         if (!filter)
+            // TODO: Handle error here!
             break;
 
         ptr = (s_source_t *)source;
@@ -267,50 +289,3 @@ void evaluate(s_source_t *src, uint32_t t, color_t *color)
     color->c[2] = dest.c[2];
 }
 
-int main(int argc, char *argv[])
-{
-    FILE          *fp;
-    uint16_t       rd, index = 0;
-    char           code[MAX_CODE_LEN], pair[3];
-    unsigned int   ch;
-    s_source_t    *source;
-    color_t        color;
-    uint32_t       t;
-
-    if (argc < 2)
-    {
-        printf("parse <bin file>\n");
-        exit(-1);
-    }
-    fp = fopen(argv[1], "rb");
-    if (!fp)
-    {
-        printf("Cannot open %s\n", argv[1]);
-        exit(-1);
-    }
-    pair[2] = 0;
-    for(index = 0;; index++)
-    {
-        rd = fread(pair, 1, 2, fp);
-        if (rd < 2)
-            break;
-        sscanf(pair, "%02X", &ch);
-        code[index] = ch;
-    }
-
-    source = parse(code, index);
-    if (!source)
-    {
-        printf("Parse failed.\n");
-        return 0;
-    }
-
-    for(t = 0; t < SCALE_FACTOR * 6; t += 100)
-//    t = 0;
-    {
-        evaluate(source, t, &color);
-        printf("%u: %d, %d, %d\n", t, color.c[0], color.c[1], color.c[2]);
-    }
-
-    return 0;
-}

@@ -2,7 +2,9 @@
 #include <EEPROM.h>
 #include <Adafruit_NeoPixel.h>
 
-const uint8_t NUM_PIXELS = 8;
+#include "parse.h"
+
+const uint8_t NUM_PIXELS = 4;
 const uint8_t OUT_PIN = 2;
 const uint8_t MAX_PACKET_LEN = 32;
 
@@ -89,6 +91,8 @@ void handle_packet(uint8_t len, uint8_t *packet)
                 pixels.setPixelColor(j, pixels.Color(data[0], data[1], data[2]));      
             break;  
     }
+
+    parse("fuss", 5);
 
     pixels.show();
 }

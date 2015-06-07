@@ -5436,10 +5436,10 @@ Standard 3-pin 0.1" header. Use with straight break away headers (SKU : PRT-0011
 <attribute name="MPN" value="WS2812B"/>
 <attribute name="OC_NEWARK" value="43Y4720"/>
 </part>
-<part name="R1" library="resistor" deviceset="R-EU_" device="R0805" value="300">
-<attribute name="MF" value="Multicomp Passives"/>
-<attribute name="MPN" value="MC01W08051300R"/>
-<attribute name="OC_NEWARK" value="58K4799"/>
+<part name="R1" library="resistor" deviceset="R-EU_" device="R0805" value="330">
+<attribute name="MF" value=""/>
+<attribute name="MPN" value="RC0805JR-07330RL"/>
+<attribute name="OC_NEWARK" value="66R3661"/>
 </part>
 <part name="S2B-PH-SM4" library="SparkFun-Connectors" deviceset="M03" device="JST-SMD" value="3-PIN SMD">
 <attribute name="MF" value="FARNELL"/>

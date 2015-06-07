@@ -38,14 +38,14 @@ void s_random_color_seq_get(void *self, uint32_t t, color_t *dest);
 
 typedef struct s_hsv_t 
 { 
-    s_method   method;
-    void      *next; 
-    g_method   gen1;
-    g_method   gen2;
-    g_method   gen3;
+    s_method     method;
+    void        *next; 
+    generator_t *gen1;
+    generator_t *gen2;
+    generator_t *gen3;
 } s_hsv_t;
 
-void s_hsv_init(s_hsv_t *self, g_method gen1, g_method gen2, g_method gen3);
+void s_hsv_init(s_hsv_t *self, generator_t * gen1, generator_t *gen2, generator_t *gen3);
 void s_hsv_get(void *self, uint32_t t, color_t *dest);
 
 typedef struct s_rainbow_t 
