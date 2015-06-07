@@ -1,5 +1,6 @@
 #!/usr/bin/python
 
+import sys
 import math
 import serial
 import struct
@@ -89,8 +90,12 @@ class Chandelier(object):
 
 DELAY = .02
 
+device = "/dev/ttyAMA0"
+if len(sys.argv) == 2:
+    device = sys.argv[1]
+
 ch = Chandelier()
-ch.open("/dev/ttyAMA0")
+ch.open(device)
 
 random.seed()
 period_s = 1
