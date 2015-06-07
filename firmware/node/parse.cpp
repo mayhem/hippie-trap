@@ -26,7 +26,7 @@
 #define SRC_RAINBOW              9
 #define GEN_STEP                10
 
-#define HEAP_SIZE              256
+#define HEAP_SIZE              255
 
 uint8_t heap[HEAP_SIZE];
 uint8_t heap_offset = 0;
@@ -201,7 +201,7 @@ void *create_object(uint8_t id,
 | ID - ARG | FUNC SIG | ( 
 */
 
-void *parse_func(char *code, int16_t len, uint16_t *index)
+void *parse_func(uint8_t *code, uint16_t len, uint16_t *index)
 {
     uint8_t  id, num_args, i, arg, value_count = 0, gen_count = 0, color_count = 0;
     uint16_t arg_index;
@@ -241,7 +241,7 @@ void *parse_func(char *code, int16_t len, uint16_t *index)
     return create_object(id, values, value_count, gens, gen_count, colors, color_count);
 }
 
-void *parse(char *code, int16_t len)
+void *parse(uint8_t *code, uint16_t len)
 {
     void       *source, *ptr, *filter;
     uint16_t    offset = 0;
@@ -252,8 +252,7 @@ void *parse(char *code, int16_t len)
     {
         filter = parse_func(code, len, &offset);
         if (!filter)
-            // TODO: Handle error here!
-            break;
+            return NULL;
 
         ptr = (s_source_t *)source;
         while (((f_filter_t *)ptr)->next)
@@ -264,7 +263,6 @@ void *parse(char *code, int16_t len)
 
     return source;
 }
-
 
 void evaluate(s_source_t *src, uint32_t t, color_t *color)
 {

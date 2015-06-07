@@ -6,7 +6,7 @@
     
 void clear_heap(void);
 void *heap_alloc(uint8_t bytes);
-void *parse(char *code, int16_t len);
+void *parse(uint8_t *code, uint16_t len);
 void evaluate(s_source_t *src, uint32_t t, color_t *color);
 
 #endif
