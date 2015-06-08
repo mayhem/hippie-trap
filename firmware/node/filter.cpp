@@ -8,6 +8,7 @@ void f_fade_in_init(f_fade_in_t *self, f_method method, int32_t duration, int32_
     self->method = method;
     self->offset = offset;
     self->method = f_fade_in_get;
+    self->next = NULL;
 }
 
 void f_fade_in_get(void *_self, uint32_t t, color_t *src, color_t *dest)
@@ -37,6 +38,7 @@ void f_fade_out_init(f_fade_out_t *self, f_method method,  int32_t duration, int
     self->method = method;
     self->offset = offset;
     self->method = f_fade_out_get;
+    self->next = NULL;
 }
 
 void f_fade_out_get(void *_self, uint32_t t, color_t *src, color_t *dest)
@@ -64,6 +66,7 @@ void f_brightness_init(f_brightness_t *self, generator_t *gen)
 {
     self->gen = gen;
     self->method = f_brightness_get;
+    self->next = NULL;
 }
 
 void f_brightness_get(void *_self, uint32_t t, color_t *src, color_t *dest)

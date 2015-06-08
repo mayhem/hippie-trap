@@ -14,8 +14,6 @@ const uint8_t PACKET_PATTERN      = 2;
 
 const uint16_t MAX_PACKET_LEN     = 200;
 uint8_t    g_packet[MAX_PACKET_LEN];
-uint16_t   g_packet_len = 0;
-void      *g_pattern = NULL;
 
 Adafruit_NeoPixel g_pixels = Adafruit_NeoPixel(NUM_PIXELS, OUT_PIN, NEO_GRB + NEO_KHZ800);
 
@@ -80,8 +78,9 @@ void show_pattern(s_source_t *pattern)
     color_t  color;
 
     Serial.println("Start animation\n");
-    for(t = 0; t < 6000; t+=10)
-    {
+    for(t = 0; t <= 6000; t+=10)
+    {   
+
         //Serial.println(t);
         evaluate(pattern, t, &color);
         //Serial.print(color.c[0]);
@@ -112,8 +111,9 @@ void setup()
 
 void handle_packet(uint16_t len, uint8_t *packet)
 {
-    uint8_t j, type, target;
-    uint8_t *data;
+    uint8_t    j, type, target;
+    uint8_t   *data;
+    void      *g_pattern = NULL;
 
     target = packet[0];
     if (target != BROADCAST && target != g_node_id)
@@ -193,9 +193,7 @@ void loop()
                     {            
                         pcrc = (uint16_t *)(g_packet + len - 2);
                         if (crc == *pcrc)
-                        {
                             handle_packet(len - 2, g_packet);
-                        }
                     }
 
                     len = 0;

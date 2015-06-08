@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <Arduino.h>
 
 #include "source.h"
 #include "filter.h"
@@ -29,7 +30,7 @@
 #define HEAP_SIZE              255
 
 uint8_t heap[HEAP_SIZE];
-uint8_t heap_offset = 0;
+uint16_t heap_offset = 0;
 
 // TODO: Add heap protection function.
 // set color coded debug errors: out of heap, failed to parse.
@@ -61,7 +62,6 @@ void *create_object(uint8_t id,
 {
     void *obj = NULL;
 
-    printf("Create object: %d\n", id);
     switch(id)
     {
         case FILTER_FADE_IN:
@@ -88,7 +88,8 @@ void *create_object(uint8_t id,
                     f_fade_out_init((f_fade_out_t *)obj, f_fade_out_get, values[0], values[1]);
                 }
                 else
-                    return NULL;            }
+                    return NULL;            
+            }
             break;
 
         case FILTER_BRIGHTNESS:
@@ -101,7 +102,8 @@ void *create_object(uint8_t id,
                     f_brightness_init((f_brightness_t *)obj, (generator_t*)gens[0]);
                 }
                 else
-                    return NULL;            }
+                    return NULL;            
+            }
             break;
 
         case SRC_CONSTANT_COLOR:
@@ -114,7 +116,8 @@ void *create_object(uint8_t id,
                     s_constant_color_init((s_constant_color_t *)obj, &colors[0]);
                 }
                 else
-                    return NULL;            }
+                    return NULL;            
+            }
             break;
 
         case SRC_RAND_COL_SEQ:
@@ -146,7 +149,8 @@ void *create_object(uint8_t id,
                         s_hsv_init((s_hsv_t *)obj,  (generator_t*)gens[0], NULL, NULL);
                 }
                 else
-                    return NULL;            }
+                    return NULL;            
+            }
             break;
 
         case SRC_RAINBOW:
@@ -159,7 +163,8 @@ void *create_object(uint8_t id,
                     s_rainbow_init((s_rainbow_t *)obj,  (generator_t*)gens[0]);
                 }
                 else
-                    return NULL;            }
+                    return NULL;            
+            }
             break;
 
         case GEN_SIN:
@@ -276,9 +281,7 @@ void evaluate(s_source_t *src, uint32_t t, color_t *color)
         temp.c[0] = dest.c[0];
         temp.c[1] = dest.c[1];
         temp.c[2] = dest.c[2];
-        f_filter_t *foo = (f_filter_t *)filter;
-        foo->method(filter, t, &temp, &dest);
-//        ((f_filter_t *)filter)->method(filter, t, &temp, &dest);
+        ((f_filter_t *)filter)->method(filter, t, &temp, &dest);
 
         filter = ((f_filter_t *)filter)->next;
     }
