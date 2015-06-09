@@ -27,9 +27,8 @@
 #define SRC_RAINBOW              9
 #define GEN_STEP                10
 
-#define HEAP_SIZE              255
-
-uint8_t heap[HEAP_SIZE];
+// variables to help manage the heap.
+uint8_t *cur_heap = NULL;
 uint16_t heap_offset = 0;
 
 // TODO: Add heap protection function.
@@ -38,15 +37,17 @@ uint16_t heap_offset = 0;
 // send pattern
 //    if I have a good pattern in memory, ignore new paterns.
 //    go to next pattern: clean in pattern memory
+// transition from current color to new color when switching patterns
 
-void clear_heap(void)
+void heap_setup(uint8_t *heap)
 {
     heap_offset = 0;
+    cur_heap = heap;
 }
 
 void *heap_alloc(uint8_t bytes)
 { 
-    uint8_t *ptr = heap + heap_offset;
+    uint8_t *ptr = cur_heap + heap_offset;
     if (bytes + heap_offset > HEAP_SIZE)
          return NULL;
 
@@ -55,7 +56,7 @@ void *heap_alloc(uint8_t bytes)
     return ptr;
 }
 
-void *create_object(uint8_t id, 
+void *create_object(uint8_t   id, 
                     int32_t  *values, uint8_t value_count,
                     void    **gens, uint8_t gen_count,
                     color_t  *colors, uint8_t color_count)
@@ -246,12 +247,12 @@ void *parse_func(uint8_t *code, uint16_t len, uint16_t *index)
     return create_object(id, values, value_count, gens, gen_count, colors, color_count);
 }
 
-void *parse(uint8_t *code, uint16_t len)
+void *parse(uint8_t *code, uint16_t len, uint8_t *heap)
 {
     void       *source, *ptr, *filter;
     uint16_t    offset = 0;
 
-    clear_heap();
+    heap_setup(heap);
     source = parse_func(code, len, &offset);
     for(; offset < len;)
     {

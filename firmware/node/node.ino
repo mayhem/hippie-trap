@@ -29,6 +29,12 @@ uint8_t    g_random_seed = 0;
 // The current packet
 uint8_t     g_packet[MAX_PACKET_LEN];
 s_source_t *g_cur_pattern = NULL;
+s_source_t *g_next_pattern = NULL;
+
+// this is where the parsed patterns live
+uint8_t g_pattern_space[HEAP_SIZE * 2];
+// this keeps track of where the next pattern should be written to 
+int8_t g_load_pattern = 0;
 
 // The LED control object
 Adafruit_NeoPixel g_pixels = Adafruit_NeoPixel(NUM_PIXELS, OUT_PIN, NEO_GRB + NEO_KHZ800);
@@ -38,9 +44,7 @@ uint8_t g_node_id = 0;
 
 
 // ---- prototypes -----
-void start_pattern(s_source_t *pattern);
-
-
+void next_pattern(void);
 
 void show_color(uint8_t r, uint8_t g, uint8_t b)
 {
@@ -93,23 +97,10 @@ void error_pattern(void)
 }
 
 
-void setup()
-{ 
-    g_pixels.begin();
-    startup_animation();
-
-    
-    Serial.begin(38400);
-    Serial.println("led-board hello!");
-    
-    g_node_id = EEPROM.read(id_address);
-}
-
 void handle_packet(uint16_t len, uint8_t *packet)
 {
     uint8_t    j, type, target;
     uint8_t   *data;
-
 
     target = packet[0];
     if (target != BROADCAST && target != g_node_id)
@@ -130,15 +121,29 @@ void handle_packet(uint16_t len, uint8_t *packet)
             break;  
             
         case PACKET_PATTERN:
-            g_cur_pattern = (s_source_t *)parse(data, len - 2);
-            if (!g_cur_pattern)
             {
-                Serial.println("Parse failed.");
-                error_pattern();
-                return;
+                uint8_t *heap;
+
+                heap = &g_pattern_space[g_load_pattern * HEAP_SIZE];
+                g_next_pattern = (s_source_t *)parse(data, len - 2, heap);
+                if (!g_next_pattern)
+                {
+                    Serial.println("Parse failed.");
+                    g_next_pattern = NULL;
+                    error_pattern();
+                    return;
+                }
+
+                Serial.println("Parse ok.");
+                // we parsed a valid pattern, increase the index
+                g_load_pattern= (g_load_pattern + 1) % 2;
+
+                break;  
             }
-            start_pattern(g_cur_pattern);
-            break;  
+
+        case PACKET_NEXT:
+            next_pattern();
+            break;
             
         case PACKET_ENTROPY:
             g_random_seed = data[0];
@@ -146,25 +151,32 @@ void handle_packet(uint16_t len, uint8_t *packet)
     }
 }
 
-void start_pattern(s_source_t *pattern)
+void next_pattern(void)
 {
     uint8_t  i;
     color_t  color;
+
+    if (!g_next_pattern)
+        return;
+        
+    g_cur_pattern = g_next_pattern;
+    g_next_pattern = NULL;
     
     g_pattern_start = millis();
     g_target = g_pattern_start;
-    
-    evaluate(pattern, g_pattern_start, &color);
+  
+
+    //evaluate(g_cur_pattern, g_pattern_start, &color);
     for(i = 0; i < NUM_PIXELS; i++)
         g_pixels.setPixelColor(i, color.c[0], color.c[1], color.c[2]); 
 }    
 
-void update_pattern(s_source_t *pattern)
+void update_pattern(void)
 {
     uint8_t  i;
     color_t  color;
 
-    if (!pattern)
+    if (!g_cur_pattern)
         return;
        
     if (g_target && millis() >= g_target)
@@ -172,10 +184,22 @@ void update_pattern(s_source_t *pattern)
         g_target += g_delay;
         g_pixels.show();
 
-        evaluate(pattern, g_target - g_pattern_start, &color);
+
+        evaluate(g_cur_pattern, g_target - g_pattern_start, &color);
         for(i = 0; i < NUM_PIXELS; i++)
             g_pixels.setPixelColor(i, color.c[0], color.c[1], color.c[2]); 
     }
+}
+
+void setup()
+{ 
+    g_pixels.begin();
+    startup_animation();
+    
+    Serial.begin(38400);
+    Serial.println("led-board hello!");
+    
+    g_node_id = EEPROM.read(id_address);
 }
 
 void loop()
@@ -184,7 +208,7 @@ void loop()
     static uint8_t     found_header = 0;
     static uint16_t    crc = 0, len = 0, recd = 0;
     
-    update_pattern(g_cur_pattern);
+    update_pattern();
     
     if (Serial.available() > 0) 
     {

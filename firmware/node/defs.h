@@ -3,6 +3,8 @@
 
 #include <stdint.h>
 
+#define HEAP_SIZE              255
+
 #define SCALE_FACTOR 1000
 #define S_PIM2       6283 // PI * 2 * SCALE_FACTOR
 #define S_PI         3141 // PI * SCALE_FACTOR
