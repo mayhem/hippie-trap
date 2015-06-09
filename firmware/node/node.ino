@@ -7,6 +7,7 @@
 const uint8_t NUM_PIXELS = 4;
 const uint8_t OUT_PIN = 2;
 
+const uint16_t MAX_PACKET_LEN     = 200;
 const uint8_t BROADCAST = 0;
 const uint8_t PACKET_SINGLE_COLOR = 0;
 const uint8_t PACKET_COLOR_ARRAY  = 1;
@@ -14,16 +15,29 @@ const uint8_t PACKET_PATTERN      = 2;
 const uint8_t PACKET_ENTROPY      = 3;
 const uint8_t PACKET_NEXT         = 4;
 
-uint8_t    g_random_seed = 0;
-
-const uint16_t MAX_PACKET_LEN     = 200;
-uint8_t    g_packet[MAX_PACKET_LEN];
-
-Adafruit_NeoPixel g_pixels = Adafruit_NeoPixel(NUM_PIXELS, OUT_PIN, NEO_GRB + NEO_KHZ800);
-
 // where in EEPROM our node id is stored
 const int id_address = 0;
+
+// ----- globals ------------
+
+// time keeping
+Timer t;
+volatile uint32_t   g_ticks = 0;
+volatile uint32_t   g_target = 0, g_last_target = 0;
+uint8_t             g_delay = 10;
+
+// random seed
+uint8_t    g_random_seed = 0;
+
+// The current packet
+uint8_t    g_packet[MAX_PACKET_LEN];
+
+// The LED control object
+Adafruit_NeoPixel g_pixels = Adafruit_NeoPixel(NUM_PIXELS, OUT_PIN, NEO_GRB + NEO_KHZ800);
+
+// our node id
 uint8_t g_node_id = 0;
+
 
 void show_color(uint8_t r, uint8_t g, uint8_t b)
 {
@@ -75,31 +89,6 @@ void error_pattern(void)
     g_pixels.show();
 }
 
-void show_pattern(s_source_t *pattern)
-{
-    uint8_t  i;
-    uint32_t t;
-    color_t  color;
-
-    Serial.println("Start animation\n");
-    for(t = 0; t <= 6000; t+=10)
-    {   
-
-        //Serial.println(t);
-        evaluate(pattern, t, &color);
-        //Serial.print(color.c[0]);
-        //Serial.print(", ");
-        //Serial.print(color.c[1]);        
-        //Serial.print(", ");
-        //Serial.println(color.c[2]);
-        
-        for(i = 0; i < NUM_PIXELS; i++)
-            g_pixels.setPixelColor(i, color.c[0], color.c[1], color.c[2]); 
-        g_pixels.show();
-        delay(10); 
-    }
-    Serial.println("Animation complete\n");
-}
 
 void setup()
 { 
@@ -111,6 +100,8 @@ void setup()
     Serial.println("led-board hello!");
     
     g_node_id = EEPROM.read(id_address);
+
+    t.every(1000, tick); // once per ms
 }
 
 void handle_packet(uint16_t len, uint8_t *packet)
@@ -151,6 +142,36 @@ void handle_packet(uint16_t len, uint8_t *packet)
             g_random_seed = data[0];
             break;  
     }
+}
+
+void tick()
+{
+    g_ticks++;
+
+    if (g_target && g_ticks >= g_target)
+    {
+        g_pixels.show();
+        g_last_target = g_target;
+        g_target = 0;
+    }
+}
+
+void evaluate_pattern(s_source_t *pattern)
+{
+    uint8_t  i;
+    color_t  color;
+
+    if (g_target || !pattern)
+        return;
+
+    if (g_last_target)
+        g_target = g_last_target + g_delay;
+    else
+        g_target = ticks + g_delay;
+
+    evaluate(pattern, g_target, &color);
+    for(i = 0; i < NUM_PIXELS; i++)
+        g_pixels.setPixelColor(i, color.c[0], color.c[1], color.c[2]); 
 }
 
 void loop()
@@ -211,4 +232,6 @@ void loop()
             }
         }
     }
+
+    evaluate_pattern(g_pattern);
 }
