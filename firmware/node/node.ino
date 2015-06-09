@@ -11,6 +11,10 @@ const uint8_t BROADCAST = 0;
 const uint8_t PACKET_SINGLE_COLOR = 0;
 const uint8_t PACKET_COLOR_ARRAY  = 1;
 const uint8_t PACKET_PATTERN      = 2;
+const uint8_t PACKET_ENTROPY      = 3;
+const uint8_t PACKET_NEXT         = 4;
+
+uint8_t    g_random_seed = 0;
 
 const uint16_t MAX_PACKET_LEN     = 200;
 uint8_t    g_packet[MAX_PACKET_LEN];
@@ -142,6 +146,9 @@ void handle_packet(uint16_t len, uint8_t *packet)
 
             Serial.println("Parse ok.");
             show_pattern((s_source_t *)g_pattern);
+            break;  
+        case PACKET_ENTROPY:
+            g_random_seed = data[0];
             break;  
     }
 }

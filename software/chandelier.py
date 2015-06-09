@@ -12,11 +12,14 @@ from time import sleep, time
 from color import Color
 
 BAUD_RATE = 38400
-NUM_PIXELS = 8
+NUM_PIXELS = 4
+NUM_NODES = 101
 
 PACKET_SINGLE_COLOR = 0
 PACKET_COLOR_ARRAY  = 1
 PACKET_PATTERN      = 2
+PACKET_ENTROPY      = 3
+PACKET_NEXT         = 4
 BROADCAST = 0
 
 def crc16_update(crc, a):
@@ -53,31 +56,30 @@ class Chandelier(object):
         self.ser.write(chr(0))
         self.ser.write(chr(0))
 
-    def set_color(self, dest, col):
-        packet = chr(dest) + chr(PACKET_SINGLE_COLOR) + chr(col[0]) + chr(col[1]) + chr(col[2])
+    def _send_packet(self, dest, type, data):
+        packet = chr(dest) + chr(type) + data
         crc = 0
         for ch in packet:
             crc = crc16_update(crc, ord(ch))
         packet = struct.pack("<BB", 255,  len(packet) + 2) + packet + struct.pack("<H", crc)
         self.ser.write(packet)
+
+    def send_entropy(self):
+        r = open("/dev/urandom", "r")
+        for dest in xrange(NUM_NODES):
+            self._send_packet(dest, PACKET_ENTROPY, r.read(1))
+        r.close()
+
+    def set_color(self, dest, col):
+        self._send_packet(dest, PACKET_SINGLE_COLOR, chr(col[0]) + chr(col[1]) + chr(col[2]))
 
     def set_color_array(self, dest, colors):
-        packet = chr(dest) + chr(PACKET_COLOR_ARRAY)
         for col in colors:
             packet += chr(col[0]) + chr(col[1]) + chr(col[2]);
-        crc = 0
-        for ch in packet:
-            crc = crc16_update(crc, ord(ch))
-        packet = struct.pack("<BB", 255,  len(packet) + 2) + packet + struct.pack("<H", crc)
-        self.ser.write(packet)
+        self._send_packet(dest, PACKET_COLOR_ARRAY, packet)
 
     def send_pattern(self, dest, pattern):
-        packet = chr(dest) + chr(PACKET_PATTERN) + pattern.describe() 
-        crc = 0
-        for ch in packet:
-            crc = crc16_update(crc, ch)
-        packet = struct.pack("<BB", 255,  len(packet) + 2) + packet + struct.pack("<H", crc)
-        self.ser.write(packet)
+        self._send_packet(dest, PACKET_PATTERN, pattern.describe()) 
 
     def print_debug(self):
         while True:
@@ -109,6 +111,7 @@ if len(sys.argv) == 2:
 
 ch = Chandelier()
 ch.open(device)
+ch.send_entropy()
 
 random.seed()
 period_s = 1
