@@ -1,7 +1,6 @@
 #include <util/crc16.h>
 #include <EEPROM.h>
 #include <Adafruit_NeoPixel.h>
-
 #include "parse.h"
 
 const uint8_t NUM_PIXELS = 4;
@@ -21,22 +20,26 @@ const int id_address = 0;
 // ----- globals ------------
 
 // time keeping
-Timer t;
-volatile uint32_t   g_ticks = 0;
-volatile uint32_t   g_target = 0, g_last_target = 0;
-uint8_t             g_delay = 10;
+uint32_t   g_target = 0, g_pattern_start = 0;
+uint8_t    g_delay = 10;
 
 // random seed
 uint8_t    g_random_seed = 0;
 
 // The current packet
-uint8_t    g_packet[MAX_PACKET_LEN];
+uint8_t     g_packet[MAX_PACKET_LEN];
+s_source_t *g_cur_pattern = NULL;
 
 // The LED control object
 Adafruit_NeoPixel g_pixels = Adafruit_NeoPixel(NUM_PIXELS, OUT_PIN, NEO_GRB + NEO_KHZ800);
 
 // our node id
 uint8_t g_node_id = 0;
+
+
+// ---- prototypes -----
+void start_pattern(s_source_t *pattern);
+
 
 
 void show_color(uint8_t r, uint8_t g, uint8_t b)
@@ -100,15 +103,13 @@ void setup()
     Serial.println("led-board hello!");
     
     g_node_id = EEPROM.read(id_address);
-
-    t.every(1000, tick); // once per ms
 }
 
 void handle_packet(uint16_t len, uint8_t *packet)
 {
     uint8_t    j, type, target;
     uint8_t   *data;
-    void      *g_pattern = NULL;
+
 
     target = packet[0];
     if (target != BROADCAST && target != g_node_id)
@@ -122,56 +123,59 @@ void handle_packet(uint16_t len, uint8_t *packet)
             for(int j=0; j < NUM_PIXELS; j++)
                 g_pixels.setPixelColor(j, g_pixels.Color(data[0], data[1], data[2]));
             break;
+            
         case PACKET_COLOR_ARRAY:
             for(int j=0; j < NUM_PIXELS; j++, data += 3)
                 g_pixels.setPixelColor(j, g_pixels.Color(data[0], data[1], data[2]));      
             break;  
+            
         case PACKET_PATTERN:
-            g_pattern = parse(data, len - 2);
-            if (!g_pattern)
+            g_cur_pattern = (s_source_t *)parse(data, len - 2);
+            if (!g_cur_pattern)
             {
                 Serial.println("Parse failed.");
                 error_pattern();
                 return;
             }
-
-            Serial.println("Parse ok.");
-            show_pattern((s_source_t *)g_pattern);
+            start_pattern(g_cur_pattern);
             break;  
+            
         case PACKET_ENTROPY:
             g_random_seed = data[0];
             break;  
     }
 }
 
-void tick()
+void start_pattern(s_source_t *pattern)
 {
-    g_ticks++;
+    uint8_t  i;
+    color_t  color;
+    
+    g_pattern_start = millis();
+    g_target = g_pattern_start;
+    
+    evaluate(pattern, g_pattern_start, &color);
+    for(i = 0; i < NUM_PIXELS; i++)
+        g_pixels.setPixelColor(i, color.c[0], color.c[1], color.c[2]); 
+}    
 
-    if (g_target && g_ticks >= g_target)
-    {
-        g_pixels.show();
-        g_last_target = g_target;
-        g_target = 0;
-    }
-}
-
-void evaluate_pattern(s_source_t *pattern)
+void update_pattern(s_source_t *pattern)
 {
     uint8_t  i;
     color_t  color;
 
-    if (g_target || !pattern)
+    if (!pattern)
         return;
+       
+    if (g_target && millis() >= g_target)
+    {
+        g_target += g_delay;
+        g_pixels.show();
 
-    if (g_last_target)
-        g_target = g_last_target + g_delay;
-    else
-        g_target = ticks + g_delay;
-
-    evaluate(pattern, g_target, &color);
-    for(i = 0; i < NUM_PIXELS; i++)
-        g_pixels.setPixelColor(i, color.c[0], color.c[1], color.c[2]); 
+        evaluate(pattern, g_target - g_pattern_start, &color);
+        for(i = 0; i < NUM_PIXELS; i++)
+            g_pixels.setPixelColor(i, color.c[0], color.c[1], color.c[2]); 
+    }
 }
 
 void loop()
@@ -179,7 +183,9 @@ void loop()
     uint8_t            i, ch, data[3];
     static uint8_t     found_header = 0;
     static uint16_t    crc = 0, len = 0, recd = 0;
-
+    
+    update_pattern(g_cur_pattern);
+    
     if (Serial.available() > 0) 
     {
         ch = Serial.read();
@@ -233,5 +239,4 @@ void loop()
         }
     }
 
-    evaluate_pattern(g_pattern);
 }
