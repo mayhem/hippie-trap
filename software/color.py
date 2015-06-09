@@ -20,7 +20,8 @@ class Color(object):
         self.color = [r, g, b]
 
     def describe(self, level = 0):
-        print "%s(%d, %d, %d)" % (self.__class__.__name__, self.color[0], self.color[1]. self.color[2]),
+        #print "%s(%d, %d, %d)" % (self.__class__.__name__, self.color[0], self.color[1]. self.color[2]),
+        pass
 
     def __str__(self):
         return "Color(%d,%d,%d)" % (self.color[0], self.color[1], self.color[2])

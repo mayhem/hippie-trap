@@ -30,7 +30,7 @@ class FadeIn(Filter):
         desc = common.make_function(common.FUNC_FADE_IN, (common.ARG_VALUE, common.ARG_VALUE))
         desc += common.pack_fixed(self.duration)
         desc += common.pack_fixed(self.offset)
-        print "%s(%.3f, %.3f)" % (self.__class__.__name__, self.duration, self.offset)
+        #print "%s(%.3f, %.3f)" % (self.__class__.__name__, self.duration, self.offset)
         return desc + self.describe_next()
 
     def filter(self, t, color):
@@ -72,9 +72,9 @@ class Brightness(Filter):
 
     def describe(self):
         desc = common.make_function(common.FUNC_BRIGHTNESS, (common.ARG_FUNC,))
-        print "%s("% self.__class__.__name__,
+        #print "%s("% self.__class__.__name__,
         desc += self.gen.describe()
-        print ")"
+        #print ")"
         return desc + self.describe_next()
 
     def filter(self, t, color):

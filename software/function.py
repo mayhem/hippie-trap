@@ -29,7 +29,7 @@ class ConstantColor(ColorSource):
     def describe(self):
         desc = common.make_function(common.FUNC_CONSTANT_COLOR, (common.ARG_COLOR,))
         desc += common.pack_color(self.color)
-        print "%s()" % (self.__class__.__name__)
+        #print "%s()" % (self.__class__.__name__)
         return desc + self.describe_next()
 
     def __getitem__(self, t):
@@ -49,7 +49,7 @@ class RandomColorSequence(ColorSource):
         desc = common.make_function(common.FUNC_RAND_COL_SEQ, (common.ARG_VALUE,common.ARG_VALUE))
         desc += common.pack_fixed(self.period)
         desc += common.pack_fixed(self.seed)
-        print "%s(%.3f, %.3f)" % (self.__class__.__name__, self.period, self.seed)
+        #print "%s(%.3f, %.3f)" % (self.__class__.__name__, self.period, self.seed)
         return desc + self.describe_next()
 
     def __getitem__(self, t):
@@ -65,10 +65,10 @@ class HSV(ColorSource):
         desc = common.make_function(common.FUNC_COLOR_WHEEL, (common.ARG_VALUE,common.ARG_VALUE,common.ARG_FUNC))
         desc += common.pack_fixed(self.period)
         desc += common.pack_fixed(self.seed)
-        print "%s(" % (self.__class__.__name__),
+        #print "%s(" % (self.__class__.__name__),
         if self.g:
             desc += self.g.describe()
-        print ")"
+        #print ")"
         return desc + self.describe_next()
 
     def __getitem__(self, t):
@@ -87,10 +87,10 @@ class Rainbow(ColorSource):
 
     def describe(self):
         desc = common.make_function(common.FUNC_RAINBOW, (common.ARG_FUNC,))
-        print "%s(" % (self.__class__.__name__),
+        #print "%s(" % (self.__class__.__name__),
         if self.g:
             desc += self.g.describe()
-        print ")"
+        #print ")"
         return desc + self.describe_next()
 
     def __getitem__(self, t):

@@ -28,7 +28,6 @@ def make_function(id, args):
     return bytearray(pack("<BH", (id << 4) | len(args), flags))
 
 def pack_fixed(value):
-    print value
     return bytearray(pack("<i", int(value * 1000)))
 
 def pack_color(col):
@@ -55,7 +54,7 @@ class ChainLink(object):
         return col 
 
     def describe_next(self):
-        print "  ",
+        #print "  ",
         if self.next:
             return self.next.describe()
         return bytearray([])
