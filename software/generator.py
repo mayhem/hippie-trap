@@ -30,7 +30,7 @@ class Sin(Generator):
         desc += common.pack_fixed(self.phase)
         desc += common.pack_fixed(self.amplitude)
         desc += common.pack_fixed(self.offset)
-        print "%s(%.3f, %.3f, %.3f, %.3f)" % (self.__class__.__name__, self.period, self.phase, self.amplitude, self.offset),
+        #print "%s(%.3f, %.3f, %.3f, %.3f)" % (self.__class__.__name__, self.period, self.phase, self.amplitude, self.offset),
         return desc
 
     def __getitem__(self, t):
@@ -48,7 +48,7 @@ class Square(Generator):
         desc += common.pack_fixed(self.phase)
         desc += common.pack_fixed(self.amplitude)
         desc += common.pack_fixed(self.offset)
-        print "%s(%.3f, %.3f, %.3f, %.3f)" % (self.__class__.__name__, self.period, self.phase, self.amplitude, self.offset),
+        #print "%s(%.3f, %.3f, %.3f, %.3f)" % (self.__class__.__name__, self.period, self.phase, self.amplitude, self.offset),
         return desc
 
     def __getitem__(self, t):
@@ -69,7 +69,7 @@ class Sawtooth(Generator):
         desc += common.pack_fixed(self.phase)
         desc += common.pack_fixed(self.amplitude)
         desc += common.pack_fixed(self.offset)
-        print "%s(%.3f, %.3f, %.3f, %.3f)" % (self.__class__.__name__, self.period, self.phase, self.amplitude, self.offset),
+        #print "%s(%.3f, %.3f, %.3f, %.3f)" % (self.__class__.__name__, self.period, self.phase, self.amplitude, self.offset),
         return desc
 
     def __getitem__(self, t):
@@ -86,7 +86,7 @@ class Step(Generator):
         desc += common.pack_fixed(self.phase)
         desc += common.pack_fixed(self.amplitude)
         desc += common.pack_fixed(self.offset)
-        print "%s(%.3f, %.3f, %.3f, %.3f)" % (self.__class__.__name__, self.period, self.phase, self.amplitude, self.offset),
+        #print "%s(%.3f, %.3f, %.3f, %.3f)" % (self.__class__.__name__, self.period, self.phase, self.amplitude, self.offset),
         return desc
 
     def __getitem__(self, t):
