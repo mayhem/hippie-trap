@@ -32,12 +32,17 @@ uint8_t *cur_heap = NULL;
 uint16_t heap_offset = 0;
 
 // TODO: 
-// add: clear next pattern
-// add: transition from current color to new color when switching patterns
+// add: transition support
 // add: position support
 // add: local args
+// add: set speed
+// add: individual LED support
 // todo: tune heap/packet sizes based on parsing. See
 // todo: test clear next pattern, off
+
+// New pattern stuff
+// 3d function source
+// complementary color source
 
 void heap_setup(uint8_t *heap)
 {

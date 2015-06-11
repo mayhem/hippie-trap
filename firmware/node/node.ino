@@ -46,6 +46,11 @@ Adafruit_NeoPixel g_pixels = Adafruit_NeoPixel(NUM_PIXELS, OUT_PIN, NEO_GRB + NE
 // our node id
 uint8_t g_node_id = 0;
 
+// color/step information for transitions
+uint32_t g_transition_end = 0;
+uint16_t g_transition_steps = 0;
+color_t  g_begin_color, g_end_color;
+
 // ---- prototypes -----
 void next_pattern(void);
 
@@ -143,7 +148,7 @@ void handle_packet(uint16_t len, uint8_t *packet)
             }
 
         case PACKET_NEXT:
-            next_pattern();
+            next(data[0]);
             break;
 
         case PACKET_CLEAR_NEXT:
@@ -167,17 +172,35 @@ void handle_packet(uint16_t len, uint8_t *packet)
     }
 }
 
-void next_pattern(void)
+void next(uint16_t transition_steps)
 {
-    uint8_t  i;
-    color_t  color;
-
     if (!g_next_pattern)
     {
         g_error = ERR_NO_VALID_PATTERN;
         return;
     }
-        
+
+    if (transition_steps)
+    {
+        g_transition_steps = transition_steps;
+
+        // start the transition and get last color
+        evaluate(g_cur_pattern, millis() - g_pattern_start, &g_end_color);
+
+        // get the first color of the new pattern
+        evaluate(g_next_pattern, 0, &g_begin_color);
+
+        g_transition_end = millis() + transition_steps;
+        return;
+    }
+    next_pattern();
+}
+
+void next_pattern(void)
+{
+    uint8_t  i;
+    color_t     color;
+
     g_cur_pattern = g_next_pattern;
     g_next_pattern = NULL;
     
@@ -190,6 +213,60 @@ void next_pattern(void)
 
     g_error = ERR_OK;
 }    
+
+void update_pattern(void)
+{
+    uint8_t  i;
+    color_t  color;
+
+    if (g_error)
+    {
+        error_pattern();
+        return;
+    }
+
+    // check to see if the transtion is finished
+    if (g_transition_end >= millis())
+    {
+        g_transition_end = 0;
+        g_transition_steps = 0;
+        next_pattern();
+        return;
+    }
+
+    // check for a transition
+    if (g_transition_end)
+    {
+        int32_t steps;
+
+        steps = (g_end_color.c[0] - g_begin_color.c[0]) * SCALE_FACTOR / g_transition_steps;
+        color.c[0] = g_begin_color.c[0] + (steps * (g_transition_end - millis()) / SCALE_FACTOR); 
+
+        steps = (g_end_color.c[1] - g_begin_color.c[1]) * SCALE_FACTOR / g_transition_steps;
+        color.c[1] = g_begin_color.c[1] + (steps * (g_transition_end - millis()) / SCALE_FACTOR); 
+
+        steps = (g_end_color.c[2] - g_begin_color.c[0]) * SCALE_FACTOR / g_transition_steps;
+        color.c[2] = g_begin_color.c[2] + (steps * (g_transition_end - millis()) / SCALE_FACTOR); 
+
+        for(i = 0; i < NUM_PIXELS; i++)
+            g_pixels.setPixelColor(i, color.c[0], color.c[1], color.c[2]); 
+
+        return;
+    }
+
+    if (!g_cur_pattern)
+        return;
+       
+    if (g_target && millis() >= g_target)
+    {
+        g_target += g_delay;
+        g_pixels.show();
+
+        evaluate(g_cur_pattern, g_target - g_pattern_start, &color);
+        for(i = 0; i < NUM_PIXELS; i++)
+            g_pixels.setPixelColor(i, color.c[0], color.c[1], color.c[2]); 
+    }
+}
 
 void clear_next_pattern(void)
 {
@@ -239,31 +316,6 @@ void error_pattern(void)
     }
     else
         show_color(NULL);
-}
-
-void update_pattern(void)
-{
-    uint8_t  i;
-    color_t  color;
-
-    if (g_error)
-    {
-        error_pattern();
-        return;
-    }
-
-    if (!g_cur_pattern)
-        return;
-       
-    if (g_target && millis() >= g_target)
-    {
-        g_target += g_delay;
-        g_pixels.show();
-
-        evaluate(g_cur_pattern, g_target - g_pattern_start, &color);
-        for(i = 0; i < NUM_PIXELS; i++)
-            g_pixels.setPixelColor(i, color.c[0], color.c[1], color.c[2]); 
-    }
 }
 
 void setup()
