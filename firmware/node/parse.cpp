@@ -32,15 +32,12 @@ uint8_t *cur_heap = NULL;
 uint16_t heap_offset = 0;
 
 // TODO: 
-// set color coded debug errors: out of heap, failed to parse.
-// allow for re-transmissions of patterns.
-//    if I have a good pattern in memory, ignore new paterns.
-//    go to next pattern: clean in pattern memory
-// add: transition from current color to new color when switching patterns
 // add: clear next pattern
+// add: transition from current color to new color when switching patterns
 // add: position support
 // add: local args
 // todo: tune heap/packet sizes based on parsing. See
+// todo: test clear next pattern, off
 
 void heap_setup(uint8_t *heap)
 {

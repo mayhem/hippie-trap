@@ -14,6 +14,7 @@ const uint8_t PACKET_PATTERN      = 2;
 const uint8_t PACKET_ENTROPY      = 3;
 const uint8_t PACKET_NEXT         = 4;
 const uint8_t PACKET_OFF          = 5;
+const uint8_t PACKET_CLEAR_NEXT   = 6;
 
 // where in EEPROM our node id is stored
 const int id_address = 0;
@@ -120,6 +121,11 @@ void handle_packet(uint16_t len, uint8_t *packet)
             {
                 uint8_t *heap, err;
 
+                // If I already have a pattern and a new pattern is sent, ignore it. It is a 
+                // redundant transmission in case we have communication problems.
+                if (g_next_pattern)
+                    return;
+
                 heap = &g_pattern_space[g_load_pattern * HEAP_SIZE];
                 g_next_pattern = (s_source_t *)parse(data, len - 2, heap);
                 if (!g_next_pattern)
@@ -138,6 +144,10 @@ void handle_packet(uint16_t len, uint8_t *packet)
 
         case PACKET_NEXT:
             next_pattern();
+            break;
+
+        case PACKET_CLEAR_NEXT:
+            clear_next_pattern();
             break;
 
         case PACKET_OFF:
@@ -180,6 +190,12 @@ void next_pattern(void)
 
     g_error = ERR_OK;
 }    
+
+void clear_next_pattern(void)
+{
+    g_next_pattern = NULL;
+    g_load_pattern= (g_load_pattern + 1) % 2;
+}
 
 void error_pattern(void)
 {
