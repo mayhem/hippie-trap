@@ -22,6 +22,10 @@ PACKET_COLOR_ARRAY  = 1
 PACKET_PATTERN      = 2
 PACKET_ENTROPY      = 3
 PACKET_NEXT         = 4
+PACKET_OFF          = 5
+PACKET_CLEAR_NEXT   = 6
+PACKET_POSITION     = 7
+PACKET_DELAY        = 8
 BROADCAST = 0
 
 def crc16_update(crc, a):
@@ -92,6 +96,12 @@ class Chandelier(object):
     def next_pattern(self, dest, transition_steps):
         self._send_packet(dest, PACKET_NEXT, bytearray(struct.pack("<H", transition_steps))) 
 
+    def off(self, dest):
+        self._send_packet(dest, PACKET_OFF, bytearray()) 
+
+    def set_delay(self, dest, delay):
+        self._send_packet(dest, PACKET_DELAY, bytearray(struct.pack("<b", delay))) 
+
     def debug_serial(self, duration):
         finish = duration + time()
         while time() < finish:
@@ -130,13 +140,13 @@ period_s = 1
 
 rainbow = function.Rainbow(generator.Sawtooth(.55))
 rainbow.chain(filter.FadeIn(1))
-rainbow.chain(filter.FadeOut(1.0, 5.0))
+#rainbow.chain(filter.FadeOut(1.0, 5.0))
 
-green = function.ConstantColor(Color(0, 128, 0))
-#green.chain(filter.FadeIn(1.0))
+green = function.ConstantColor(Color(0, 32, 0))
+green.chain(filter.FadeIn(1.0))
 
-purple = function.ConstantColor(Color(128, 0, 128))
-#purple.chain(filter.FadeIn(1.0))
+purple = function.ConstantColor(Color(0, 0, 64))
+purple.chain(filter.FadeIn(1.0))
 #purple.chain(filter.FadeOut(1.0, 5.0))
 
 wobble = function.RandomColorSequence(period_s, random.randint(0, 255))
@@ -153,17 +163,24 @@ funcs = [purple, green]
 
 loaded = False
 
-while True:
-    for f in funcs:
-        if not loaded:
-            ch.send_pattern(BROADCAST, f)
-            ch.debug_serial(1)
-            ch.next_pattern(BROADCAST, 0)
-            ch.debug_serial(1)
-            loaded = True
-            continue
+ch.send_pattern(BROADCAST, rainbow)
+ch.next_pattern(BROADCAST, 0)
+ch.debug_serial(10)
+
+#while True:
+#    for f in funcs:
+#        if not loaded:
+#            ch.send_pattern(BROADCAST, f)
+#            ch.debug_serial(1)
+#            ch.next_pattern(BROADCAST, 0)
+#            ch.debug_serial(1)
+#            loaded = True
+#            continue
             
-        ch.send_pattern(BROADCAST, f)
-        ch.debug_serial(1)
-        ch.next_pattern(BROADCAST, 2000)
-        ch.debug_serial(3)
+#        ch.send_pattern(BROADCAST, f)
+#        ch.debug_serial(1)
+#        ch.next_pattern(BROADCAST,1000) 
+#        ch.debug_serial(5)
+#        ch.off(BROADCAST)
+#        ch.debug_serial(1)
+#        loaded = False
