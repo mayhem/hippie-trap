@@ -86,8 +86,11 @@ class Chandelier(object):
     def send_pattern(self, dest, pattern):
         self._send_packet(dest, PACKET_PATTERN, bytearray(pattern.describe())) 
 
-    def next_pattern(self, dest):
-        self._send_packet(dest, PACKET_NEXT, bytearray()) 
+        # Give the bottles a moment to parse the packet before we go on
+        sleep(.05)
+
+    def next_pattern(self, dest, transition_steps):
+        self._send_packet(dest, PACKET_NEXT, bytearray(struct.pack("<H", transition_steps))) 
 
     def debug_serial(self, duration):
         finish = duration + time()
@@ -129,15 +132,18 @@ rainbow = function.Rainbow(generator.Sawtooth(.55))
 rainbow.chain(filter.FadeIn(1))
 rainbow.chain(filter.FadeOut(1.0, 5.0))
 
+green = function.ConstantColor(Color(0, 128, 0))
+#green.chain(filter.FadeIn(1.0))
+
 purple = function.ConstantColor(Color(128, 0, 128))
-purple.chain(filter.FadeIn(1.0))
-purple.chain(filter.FadeOut(1.0, 5.0))
+#purple.chain(filter.FadeIn(1.0))
+#purple.chain(filter.FadeOut(1.0, 5.0))
 
 wobble = function.RandomColorSequence(period_s, random.randint(0, 255))
 g = generator.Sin((math.pi * 2) / period_s, -math.pi/2, .5, .5)
 wobble.chain(filter.Brightness(g))
 
-funcs = [rainbow, purple, wobble]
+funcs = [purple, green]
 #while True:
 #    wobble = function.RandomColorSequence(period_s, random.randint(0, 255))
 #    g = generator.Sin((math.pi * 2) / period_s, -math.pi/2, .5, .5)
@@ -152,12 +158,12 @@ while True:
         if not loaded:
             ch.send_pattern(BROADCAST, f)
             ch.debug_serial(1)
-            ch.next_pattern(BROADCAST)
+            ch.next_pattern(BROADCAST, 0)
             ch.debug_serial(1)
             loaded = True
             continue
             
         ch.send_pattern(BROADCAST, f)
         ch.debug_serial(1)
-        ch.next_pattern(BROADCAST)
+        ch.next_pattern(BROADCAST, 2000)
         ch.debug_serial(3)
