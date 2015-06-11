@@ -16,7 +16,7 @@ const uint8_t PACKET_NEXT         = 4;
 const uint8_t PACKET_OFF          = 5;
 const uint8_t PACKET_CLEAR_NEXT   = 6;
 const uint8_t PACKET_POSITION     = 7;
-const uint8_t PACKET_SPEED        = 8;
+const uint8_t PACKET_DELAY        = 8;
 
 // where in EEPROM our node id is stored
 const int id_address = 0;
@@ -131,11 +131,12 @@ void handle_packet(uint16_t len, uint8_t *packet)
             {
                 uint8_t *heap, err;
 
+
                 // If I already have a pattern and a new pattern is sent, ignore it. It is a 
                 // redundant transmission in case we have communication problems.
                 if (g_next_pattern)
                     return;
-
+                Serial.println("packet pattern\n");
                 heap = &g_pattern_space[g_load_pattern * HEAP_SIZE];
                 g_next_pattern = (s_source_t *)parse(data, len - 2, heap);
                 if (!g_next_pattern)
@@ -153,7 +154,7 @@ void handle_packet(uint16_t len, uint8_t *packet)
             }
 
         case PACKET_NEXT:
-            next(data[0]);
+            next(*(uint16_t *)data);
             break;
 
         case PACKET_CLEAR_NEXT:
@@ -162,12 +163,12 @@ void handle_packet(uint16_t len, uint8_t *packet)
 
         case PACKET_OFF:
             {
-                color_t col;
-
-                col.c[0] = col.c[1] = col.c[2] = 0;
                 g_cur_pattern = g_next_pattern = NULL;
                 g_error = ERR_OK;
-                show_color(&col);
+                g_load_pattern = 0;
+                g_transition_end = 0;
+                g_target = 0;
+                show_color(NULL);
             }
             break;
             
@@ -197,31 +198,48 @@ void handle_packet(uint16_t len, uint8_t *packet)
             }
             break;  
 
-        case PACKET_SPEED:
+        case PACKET_DELAY:
             g_delay = data[0];
             break;  
     }
 }
 
+void print_col(color_t *c)
+{
+    Serial.print(c->c[0], DEC);
+    Serial.print(", ");
+    Serial.print(c->c[1], DEC);
+    Serial.print(", ");
+    Serial.println(c->c[2], DEC);
+}
+
 void next(uint16_t transition_steps)
 {
+    Serial.println("next " + String(transition_steps));
+    
     if (!g_next_pattern)
     {
         g_error = ERR_NO_VALID_PATTERN;
         return;
     }
 
-    if (transition_steps)
+    if (transition_steps && g_cur_pattern)
     {
         g_transition_steps = transition_steps;
 
         // start the transition and get last color
-        evaluate(g_cur_pattern, millis() - g_pattern_start, &g_end_color);
+        evaluate(g_cur_pattern, millis() - g_pattern_start, &g_begin_color);
+        Serial.print(" begin: ");
+        print_col(&g_begin_color);
 
         // get the first color of the new pattern
-        evaluate(g_next_pattern, 0, &g_begin_color);
+        evaluate(g_next_pattern, 0, &g_end_color);
+        Serial.print(" end: ");
+        print_col(&g_end_color);
 
         g_transition_end = millis() + transition_steps;
+        Serial.print("trans end: "); Serial.println(g_transition_end, DEC);
+        g_target = millis() + g_delay;
         return;
     }
     next_pattern();
@@ -231,7 +249,7 @@ void next_pattern(void)
 {
     uint8_t  i;
     color_t     color;
-
+        
     g_cur_pattern = g_next_pattern;
     g_next_pattern = NULL;
     
@@ -257,7 +275,7 @@ void update_pattern(void)
     }
 
     // check to see if the transtion is finished
-    if (g_transition_end >= millis())
+    if (g_transition_end && millis() >= g_transition_end)
     {
         g_transition_end = 0;
         g_transition_steps = 0;
@@ -266,25 +284,28 @@ void update_pattern(void)
     }
 
     // check for a transition
-    if (g_transition_end && millis() >= g_target)
+    if (g_transition_end)
     {
-        int32_t steps;
+        if (millis() >= g_target)
+        {
+            int32_t steps;
+            int32_t p = g_transition_steps - (g_transition_end - millis());
+            
+            g_target += g_delay;
+            g_pixels.show();
 
-        steps = (g_end_color.c[0] - g_begin_color.c[0]) * SCALE_FACTOR / g_transition_steps;
-        color.c[0] = g_begin_color.c[0] + (steps * (g_transition_end - millis()) / SCALE_FACTOR); 
+            steps = (int32_t)(g_end_color.c[0] - g_begin_color.c[0]) * SCALE_FACTOR / g_transition_steps;
+            color.c[0] = g_begin_color.c[0] + (steps * p / SCALE_FACTOR); 
 
-        steps = (g_end_color.c[1] - g_begin_color.c[1]) * SCALE_FACTOR / g_transition_steps;
-        color.c[1] = g_begin_color.c[1] + (steps * (g_transition_end - millis()) / SCALE_FACTOR); 
+            steps = (int32_t)(g_end_color.c[1] - g_begin_color.c[1]) * SCALE_FACTOR / g_transition_steps;
+            color.c[1] = g_begin_color.c[1] + (steps * p / SCALE_FACTOR); 
 
-        steps = (g_end_color.c[2] - g_begin_color.c[0]) * SCALE_FACTOR / g_transition_steps;
-        color.c[2] = g_begin_color.c[2] + (steps * (g_transition_end - millis()) / SCALE_FACTOR); 
+            steps = (int32_t)(g_end_color.c[2] - g_begin_color.c[2]) * SCALE_FACTOR / g_transition_steps;
+            color.c[2] = g_begin_color.c[2] + (steps * p / SCALE_FACTOR); 
 
-        for(i = 0; i < NUM_PIXELS; i++)
-            g_pixels.setPixelColor(i, color.c[0], color.c[1], color.c[2]); 
-
-        g_target += g_delay;
-        g_pixels.show();
-
+            for(i = 0; i < NUM_PIXELS; i++)
+                g_pixels.setPixelColor(i, color.c[0], color.c[1], color.c[2]); 
+        }
         return;
     }
 
@@ -298,7 +319,8 @@ void update_pattern(void)
 
         evaluate(g_cur_pattern, g_target - g_pattern_start, &color);
         for(i = 0; i < NUM_PIXELS; i++)
-            g_pixels.setPixelColor(i, color.c[0], color.c[1], color.c[2]); 
+            g_pixels.setPixelColor(i, color.c[0], color.c[1], color.c[2]);
+        //print_col(&color); 
     }
 }
 
@@ -343,7 +365,7 @@ void error_pattern(void)
             default:    
                  col.c[0] = 128;
                  col.c[1] = 0;
-                 col.c[0] = 128;
+                 col.c[2] = 128;
                  break;
         }
         show_color(&col);
