@@ -13,11 +13,14 @@ const uint8_t PACKET_COLOR_ARRAY  = 1;
 const uint8_t PACKET_PATTERN      = 2;
 const uint8_t PACKET_ENTROPY      = 3;
 const uint8_t PACKET_NEXT         = 4;
+const uint8_t PACKET_OFF          = 5;
 
 // where in EEPROM our node id is stored
 const int id_address = 0;
 
 // ----- globals ------------
+
+uint8_t    g_error = ERR_OK;
 
 // time keeping
 uint32_t   g_target = 0, g_pattern_start = 0;
@@ -42,22 +45,26 @@ Adafruit_NeoPixel g_pixels = Adafruit_NeoPixel(NUM_PIXELS, OUT_PIN, NEO_GRB + NE
 // our node id
 uint8_t g_node_id = 0;
 
-
 // ---- prototypes -----
 void next_pattern(void);
 
-void show_color(uint8_t r, uint8_t g, uint8_t b)
+void show_color(color_t *col)
 {
     uint8_t j;
     
     for(j = 0; j < NUM_PIXELS; j++)
-        g_pixels.setPixelColor(j, r, g, b);
+        if (col)
+            g_pixels.setPixelColor(j, col->c[0], col->c[1], col->c[2]);
+        else
+            g_pixels.setPixelColor(j, 0, 0, 0); 
+           
     g_pixels.show();
 }
 
 void startup_animation(void)
 {
     uint8_t i, j;
+ 
     uint8_t col1[3] = { 128, 40, 0 };
     uint8_t col2[3] = { 128, 0, 128 };
 
@@ -83,19 +90,8 @@ void startup_animation(void)
         g_pixels.show();
         delay(100);
     }
-    show_color(0, 0, 0);
+    show_color(NULL);
 }
-
-void error_pattern(void)
-{
-    uint8_t i;
-
-    for(i = 0; i < NUM_PIXELS; i++)
-        g_pixels.setPixelColor(i, 255, 0, 0);  
-
-    g_pixels.show();
-}
-
 
 void handle_packet(uint16_t len, uint8_t *packet)
 {
@@ -122,7 +118,7 @@ void handle_packet(uint16_t len, uint8_t *packet)
             
         case PACKET_PATTERN:
             {
-                uint8_t *heap;
+                uint8_t *heap, err;
 
                 heap = &g_pattern_space[g_load_pattern * HEAP_SIZE];
                 g_next_pattern = (s_source_t *)parse(data, len - 2, heap);
@@ -130,7 +126,6 @@ void handle_packet(uint16_t len, uint8_t *packet)
                 {
                     Serial.println("Parse failed.");
                     g_next_pattern = NULL;
-                    error_pattern();
                     return;
                 }
 
@@ -143,6 +138,17 @@ void handle_packet(uint16_t len, uint8_t *packet)
 
         case PACKET_NEXT:
             next_pattern();
+            break;
+
+        case PACKET_OFF:
+            {
+                color_t col;
+
+                col.c[0] = col.c[1] = col.c[2] = 0;
+                g_cur_pattern = g_next_pattern = NULL;
+                g_error = ERR_OK;
+                show_color(&col);
+            }
             break;
             
         case PACKET_ENTROPY:
@@ -157,7 +163,10 @@ void next_pattern(void)
     color_t  color;
 
     if (!g_next_pattern)
+    {
+        g_error = ERR_NO_VALID_PATTERN;
         return;
+    }
         
     g_cur_pattern = g_next_pattern;
     g_next_pattern = NULL;
@@ -165,16 +174,67 @@ void next_pattern(void)
     g_pattern_start = millis();
     g_target = g_pattern_start;
   
-
-    //evaluate(g_cur_pattern, g_pattern_start, &color);
+    evaluate(g_cur_pattern, g_pattern_start, &color);
     for(i = 0; i < NUM_PIXELS; i++)
         g_pixels.setPixelColor(i, color.c[0], color.c[1], color.c[2]); 
+
+    g_error = ERR_OK;
 }    
+
+void error_pattern(void)
+{
+    uint8_t  t;
+    uint8_t  i;
+    color_t  col;
+
+    t = millis() % (ERROR_DELAY * 2);
+    if (t > ERROR_DELAY)
+    {
+        switch(g_error)
+        {
+            case ERR_NO_VALID_PATTERN: // orange
+                 col.c[0] = 128;
+                 col.c[1] = 40;
+                 col.c[0] = 0;
+                 break;
+
+            case ERR_STACK_CLASH:  // red
+                 col.c[0] = 255;
+                 col.c[1] = col.c[2] = 0;
+                 break;
+
+            case ERR_OUT_OF_HEAP:  // green
+                 col.c[1] = 255;
+                 col.c[0] = col.c[2] = 0;
+                 break;
+
+            case ERR_PARSE_FAILURE:  // blue
+                 col.c[2] = 255;
+                 col.c[0] = col.c[1] = 0;
+                 break;
+
+            default:    
+                 col.c[0] = 128;
+                 col.c[1] = 0;
+                 col.c[0] = 128;
+                 break;
+        }
+        show_color(&col);
+    }
+    else
+        show_color(NULL);
+}
 
 void update_pattern(void)
 {
     uint8_t  i;
     color_t  color;
+
+    if (g_error)
+    {
+        error_pattern();
+        return;
+    }
 
     if (!g_cur_pattern)
         return;
@@ -183,7 +243,6 @@ void update_pattern(void)
     {
         g_target += g_delay;
         g_pixels.show();
-
 
         evaluate(g_cur_pattern, g_target - g_pattern_start, &color);
         for(i = 0; i < NUM_PIXELS; i++)

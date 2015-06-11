@@ -31,13 +31,16 @@
 uint8_t *cur_heap = NULL;
 uint16_t heap_offset = 0;
 
-// TODO: Add heap protection function.
+// TODO: 
 // set color coded debug errors: out of heap, failed to parse.
 // allow for re-transmissions of patterns.
-// send pattern
 //    if I have a good pattern in memory, ignore new paterns.
 //    go to next pattern: clean in pattern memory
-// transition from current color to new color when switching patterns
+// add: transition from current color to new color when switching patterns
+// add: clear next pattern
+// add: position support
+// add: local args
+// todo: tune heap/packet sizes based on parsing. See
 
 void heap_setup(uint8_t *heap)
 {
@@ -49,7 +52,10 @@ void *heap_alloc(uint8_t bytes)
 { 
     uint8_t *ptr = cur_heap + heap_offset;
     if (bytes + heap_offset > HEAP_SIZE)
-         return NULL;
+    {
+        g_error = ERR_OUT_OF_HEAP;
+        return NULL;
+    }
 
     heap_offset += bytes;
 
@@ -75,7 +81,10 @@ void *create_object(uint8_t   id,
                     f_fade_in_init((f_fade_in_t *)obj, f_fade_in_get, values[0], values[1]);
                 }
                 else
+                {
+                    g_error = ERR_PARSE_FAILURE;
                     return NULL;
+                }
             }
             break;
 
@@ -89,7 +98,10 @@ void *create_object(uint8_t   id,
                     f_fade_out_init((f_fade_out_t *)obj, f_fade_out_get, values[0], values[1]);
                 }
                 else
-                    return NULL;            
+                {
+                    g_error = ERR_PARSE_FAILURE;
+                    return NULL;
+                }
             }
             break;
 
@@ -103,7 +115,10 @@ void *create_object(uint8_t   id,
                     f_brightness_init((f_brightness_t *)obj, (generator_t*)gens[0]);
                 }
                 else
-                    return NULL;            
+                {
+                    g_error = ERR_PARSE_FAILURE;
+                    return NULL;
+                }
             }
             break;
 
@@ -117,7 +132,10 @@ void *create_object(uint8_t   id,
                     s_constant_color_init((s_constant_color_t *)obj, &colors[0]);
                 }
                 else
-                    return NULL;            
+                {
+                    g_error = ERR_PARSE_FAILURE;
+                    return NULL;
+                }
             }
             break;
 
@@ -131,7 +149,11 @@ void *create_object(uint8_t   id,
                     s_random_color_seq_init((s_random_color_seq_t *)obj, values[0], values[1]);
                 }
                 else
-                    return NULL;            }
+                {
+                    g_error = ERR_PARSE_FAILURE;
+                    return NULL;
+                }
+            }
             break;
 
         case SRC_HSV:
@@ -150,7 +172,10 @@ void *create_object(uint8_t   id,
                         s_hsv_init((s_hsv_t *)obj,  (generator_t*)gens[0], NULL, NULL);
                 }
                 else
-                    return NULL;            
+                {
+                    g_error = ERR_PARSE_FAILURE;
+                    return NULL;
+                }
             }
             break;
 
@@ -164,7 +189,10 @@ void *create_object(uint8_t   id,
                     s_rainbow_init((s_rainbow_t *)obj,  (generator_t*)gens[0]);
                 }
                 else
-                    return NULL;            
+                {
+                    g_error = ERR_PARSE_FAILURE;
+                    return NULL;
+                }
             }
             break;
 
@@ -195,7 +223,10 @@ void *create_object(uint8_t   id,
                     }
                 }
                 else
+                {
+                    g_error = ERR_PARSE_FAILURE;
                     return NULL;
+                }
             }
             break;
     }
@@ -240,7 +271,10 @@ void *parse_func(uint8_t *code, uint16_t len, uint16_t *index)
             colors[color_count++].c[2] = code[arg_index++];
         }
         else
+        {   
+            g_error = ERR_PARSE_FAILURE;
             return NULL;
+        }
     }
     *index = arg_index;
 
@@ -254,6 +288,9 @@ void *parse(uint8_t *code, uint16_t len, uint8_t *heap)
 
     heap_setup(heap);
     source = parse_func(code, len, &offset);
+    if (!source)
+        return NULL;
+
     for(; offset < len;)
     {
         filter = parse_func(code, len, &offset);
@@ -290,4 +327,3 @@ void evaluate(s_source_t *src, uint32_t t, color_t *color)
     color->c[1] = dest.c[1];
     color->c[2] = dest.c[2];
 }
-

@@ -15,4 +15,12 @@ typedef struct
     uint8_t c[3];
 } color_t;
 
+extern uint8_t g_error;
+const uint8_t ERROR_DELAY          = 50;
+const uint8_t ERR_OK               = 0;
+const uint8_t ERR_NO_VALID_PATTERN = 1;
+const uint8_t ERR_STACK_CLASH      = 2;
+const uint8_t ERR_OUT_OF_HEAP      = 3;
+const uint8_t ERR_PARSE_FAILURE    = 4;
+
 #endif
