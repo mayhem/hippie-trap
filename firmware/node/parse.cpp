@@ -38,10 +38,8 @@ uint8_t *cur_heap = NULL;
 uint16_t heap_offset = 0;
 
 // TODO: 
-// add: local args -> pos, id, rand
-// add: set speed
 // todo: tune heap/packet sizes based on parsing. See
-// todo: test clear next pattern, off
+// todo: test clear next pattern, off, postion, local args, transitions, speed
 // add: individual LED support
 // add: address support
 

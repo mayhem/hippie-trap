@@ -16,6 +16,7 @@ const uint8_t PACKET_NEXT         = 4;
 const uint8_t PACKET_OFF          = 5;
 const uint8_t PACKET_CLEAR_NEXT   = 6;
 const uint8_t PACKET_POSITION     = 7;
+const uint8_t PACKET_SPEED        = 8;
 
 // where in EEPROM our node id is stored
 const int id_address = 0;
@@ -194,7 +195,10 @@ void handle_packet(uint16_t len, uint8_t *packet)
                 col.c[2] = 180;
                 show_color(&col);
             }
+            break;  
 
+        case PACKET_SPEED:
+            g_delay = data[0];
             break;  
     }
 }
@@ -262,7 +266,7 @@ void update_pattern(void)
     }
 
     // check for a transition
-    if (g_transition_end)
+    if (g_transition_end && millis() >= g_target)
     {
         int32_t steps;
 
@@ -277,6 +281,9 @@ void update_pattern(void)
 
         for(i = 0; i < NUM_PIXELS; i++)
             g_pixels.setPixelColor(i, color.c[0], color.c[1], color.c[2]); 
+
+        g_target += g_delay;
+        g_pixels.show();
 
         return;
     }
