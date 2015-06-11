@@ -15,6 +15,7 @@ const uint8_t PACKET_ENTROPY      = 3;
 const uint8_t PACKET_NEXT         = 4;
 const uint8_t PACKET_OFF          = 5;
 const uint8_t PACKET_CLEAR_NEXT   = 6;
+const uint8_t PACKET_POSITION     = 7;
 
 // where in EEPROM our node id is stored
 const int id_address = 0;
@@ -28,7 +29,7 @@ uint32_t   g_target = 0, g_pattern_start = 0;
 uint8_t    g_delay = 10;
 
 // random seed
-uint8_t    g_random_seed = 0;
+uint32_t    g_random_seed = 0;
 
 // The current packet
 uint8_t     g_packet[MAX_PACKET_LEN];
@@ -50,6 +51,9 @@ uint8_t g_node_id = 0;
 uint32_t g_transition_end = 0;
 uint16_t g_transition_steps = 0;
 color_t  g_begin_color, g_end_color;
+
+// location in space
+int32_t g_pos[3];
 
 // ---- prototypes -----
 void next_pattern(void);
@@ -167,7 +171,30 @@ void handle_packet(uint16_t len, uint8_t *packet)
             break;
             
         case PACKET_ENTROPY:
-            g_random_seed = data[0];
+            {
+                color_t col;
+
+                g_random_seed = data[0];
+                randomSeed(g_random_seed);
+
+                col.c[0] = col.c[2] = 0;
+                col.c[1] = 180;
+                show_color(&col);
+            }
+            break;  
+            
+        case PACKET_POSITION:
+            {
+                color_t col;
+                g_pos[0] = data[0];
+                g_pos[1] = data[1];
+                g_pos[2] = data[2];
+
+                col.c[0] = col.c[1] = 0;
+                col.c[2] = 180;
+                show_color(&col);
+            }
+
             break;  
     }
 }

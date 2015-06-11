@@ -16,6 +16,10 @@ typedef struct
 } color_t;
 
 extern uint8_t g_error;
+extern uint8_t g_node_id;
+extern int32_t g_pos[3];
+extern uint32_t g_random_seed;
+
 const uint8_t ERROR_DELAY          = 50;
 const uint8_t ERR_OK               = 0;
 const uint8_t ERR_NO_VALID_PATTERN = 1;

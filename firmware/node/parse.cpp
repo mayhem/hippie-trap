@@ -13,7 +13,13 @@
 #define ARG_VALUE                0
 #define ARG_FUNC                 1
 #define ARG_COLOR                2
-#define ARG_BOTTLE_SUPPLIED      3
+#define ARG_LOCAL                3
+
+#define LOCAL_ID                 0
+#define LOCAL_RAND               1
+#define LOCAL_POS_X              2
+#define LOCAL_POS_Y              3
+#define LOCAL_POS_Z              4
 
 #define FILTER_FADE_IN           0
 #define FILTER_FADE_OUT          1
@@ -32,13 +38,12 @@ uint8_t *cur_heap = NULL;
 uint16_t heap_offset = 0;
 
 // TODO: 
-// add: transition support
-// add: position support
-// add: local args
+// add: local args -> pos, id, rand
 // add: set speed
-// add: individual LED support
 // todo: tune heap/packet sizes based on parsing. See
 // todo: test clear next pattern, off
+// add: individual LED support
+// add: address support
 
 // New pattern stuff
 // 3d function source
@@ -273,9 +278,29 @@ void *parse_func(uint8_t *code, uint16_t len, uint16_t *index)
             colors[color_count++].c[2] = code[arg_index++];
         }
         else
-        {   
-            g_error = ERR_PARSE_FAILURE;
-            return NULL;
+        if (arg == ARG_LOCAL)
+        {
+            switch(*((uint32_t *)&code[arg_index]))
+            {
+                case LOCAL_ID:
+                    values[value_count++] = g_node_id;
+                    break;
+                case LOCAL_RAND:
+                    break;
+                case LOCAL_POS_X:
+                    values[value_count++] = g_pos[0];
+                    break;
+                case LOCAL_POS_Y:
+                    values[value_count++] = g_pos[1];
+                    break;
+                case LOCAL_POS_Z:
+                    values[value_count++] = g_pos[2];
+                    break;
+                default:
+                    g_error = ERR_PARSE_FAILURE;
+                    return NULL;
+            }
+            arg_index += VALUE_SIZE;
         }
     }
     *index = arg_index;

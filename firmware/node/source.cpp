@@ -1,3 +1,4 @@
+#include <Arduino.h>
 #include <stdlib.h>
 #include "generator.h"
 #include "source.h"
@@ -89,12 +90,17 @@ void s_random_color_seq_init(s_random_color_seq_t *self, int32_t period, uint32_
     self->seed = seed;
     self->method = s_random_color_seq_get;
     self->next = NULL; 
+
+    // Make sure we have a good random number saved before we set a predicatable seed
+    g_random_seed = random();
+
+    
 }
 
 void s_random_color_seq_get(void *self, uint32_t t, color_t *dest)
 {
-    srand(((s_random_color_seq_t *)self)->seed + (uint32_t)(t * SCALE_FACTOR / ((s_random_color_seq_t *)self)->period));
-    hsv_to_rgb(rand() % SCALE_FACTOR, SCALE_FACTOR, SCALE_FACTOR, dest);
+    randomSeed(((s_random_color_seq_t *)self)->seed + (uint32_t)(t * SCALE_FACTOR / ((s_random_color_seq_t *)self)->period));
+    hsv_to_rgb(random(SCALE_FACTOR), SCALE_FACTOR, SCALE_FACTOR, dest);
 }
 
 //--
