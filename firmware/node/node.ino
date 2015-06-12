@@ -18,6 +18,7 @@ const uint8_t PACKET_OFF          = 5;
 const uint8_t PACKET_CLEAR_NEXT   = 6;
 const uint8_t PACKET_POSITION     = 7;
 const uint8_t PACKET_DELAY        = 8;
+const uint8_t PACKET_ADDR         = 9;
 
 // where in EEPROM our node id is stored
 const int id_address = 0;
@@ -56,6 +57,8 @@ color_t  g_begin_color, g_end_color;
 
 // location in space
 int32_t g_pos[3];
+int8_t  g_ring = -1;
+int8_t  g_arm = -1;
 
 // Gamma correction table in progmem
 const uint8_t PROGMEM gamma[] = {
