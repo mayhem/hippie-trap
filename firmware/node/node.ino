@@ -1,6 +1,7 @@
 #include <util/crc16.h>
 #include <EEPROM.h>
 #include <Adafruit_NeoPixel.h>
+#include <avr/pgmspace.h>
 #include "parse.h"
 
 const uint8_t NUM_PIXELS = 4;
@@ -56,28 +57,69 @@ color_t  g_begin_color, g_end_color;
 // location in space
 int32_t g_pos[3];
 
+// Gamma correction table in progmem
+const uint8_t PROGMEM gamma[] = {
+    0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+    0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  1,  1,  1,  1,
+    1,  1,  1,  1,  1,  1,  1,  1,  1,  2,  2,  2,  2,  2,  2,  2,
+    2,  3,  3,  3,  3,  3,  3,  3,  4,  4,  4,  4,  4,  5,  5,  5,
+    5,  6,  6,  6,  6,  7,  7,  7,  7,  8,  8,  8,  9,  9,  9, 10,
+   10, 10, 11, 11, 11, 12, 12, 13, 13, 13, 14, 14, 15, 15, 16, 16,
+   17, 17, 18, 18, 19, 19, 20, 20, 21, 21, 22, 22, 23, 24, 24, 25,
+   25, 26, 27, 27, 28, 29, 29, 30, 31, 32, 32, 33, 34, 35, 35, 36,
+   37, 38, 39, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 50,
+   51, 52, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 66, 67, 68,
+   69, 70, 72, 73, 74, 75, 77, 78, 79, 81, 82, 83, 85, 86, 87, 89,
+   90, 92, 93, 95, 96, 98, 99,101,102,104,105,107,109,110,112,114,
+  115,117,119,120,122,124,126,127,129,131,133,135,137,138,140,142,
+  144,146,148,150,152,154,156,158,160,162,164,167,169,171,173,175,
+  177,180,182,184,186,189,191,193,196,198,200,203,205,208,210,213,
+  215,218,220,223,225,228,231,233,236,239,241,244,247,249,252,255 
+};
+
 // ---- prototypes -----
 void next_pattern(void);
 
 void show_color(color_t *col)
 {
     uint8_t j;
-    
+   
     for(j = 0; j < NUM_PIXELS; j++)
         if (col)
-            g_pixels.setPixelColor(j, col->c[0], col->c[1], col->c[2]);
+            g_pixels.setPixelColor(j, 
+                pgm_read_byte(&gamma[col->c[0]]),
+                pgm_read_byte(&gamma[col->c[1]]),
+                pgm_read_byte(&gamma[col->c[2]]));
         else
             g_pixels.setPixelColor(j, 0, 0, 0); 
            
     g_pixels.show();
 }
 
+void set_pixel_color(uint8_t index, color_t *col)
+{
+    if (col)
+    {
+        g_pixels.setPixelColor(index,
+            pgm_read_byte(&gamma[col->c[0]]),
+            pgm_read_byte(&gamma[col->c[1]]),
+            pgm_read_byte(&gamma[col->c[2]]));
+    }
+    else
+        g_pixels.setPixelColor(index, 0, 0, 0);
+}
+
 void startup_animation(void)
 {
     uint8_t i, j;
- 
-    uint8_t col1[3] = { 128, 40, 0 };
-    uint8_t col2[3] = { 128, 0, 128 };
+    color_t col1, col2;
+
+    col1.c[0] = 128;
+    col1.c[1] = 40;
+    col1.c[2] = 0;
+    col2.c[0] = 128;
+    col2.c[1] = 0;
+    col2.c[2] = 128;
 
     for(i = 0; i < 10; i++)
     {       
@@ -86,16 +128,16 @@ void startup_animation(void)
             if (i % 2 == 0)
             {
                 if (j % 2 == 1)
-                    g_pixels.setPixelColor(j, col1[0], col1[1], col1[2]);
+                    set_pixel_color(j, &col1);
                 else
-                    g_pixels.setPixelColor(j, 0, 0, 0);    
+                    set_pixel_color(j, NULL);
             }
             else
             {
                 if (j % 2 == 0)
-                    g_pixels.setPixelColor(j, col2[0], col2[1], col2[2]);
+                    set_pixel_color(j, &col2);
                 else
-                    g_pixels.setPixelColor(j, 0, 0, 0);  
+                    set_pixel_color(j, NULL);  
             }
         }   
         g_pixels.show();
@@ -118,14 +160,30 @@ void handle_packet(uint16_t len, uint8_t *packet)
     switch(type)
     {
         case PACKET_SINGLE_COLOR:
-            for(int j=0; j < NUM_PIXELS; j++)
-                g_pixels.setPixelColor(j, g_pixels.Color(data[0], data[1], data[2]));
-            break;
-            
+            {
+                color_t col;
+                col.c[0] = data[0];
+                col.c[1] = data[1];
+                col.c[2] = data[2];
+
+                for(int j=0; j < NUM_PIXELS; j++)
+                    set_pixel_color(j, &col);
+
+                break;
+            } 
         case PACKET_COLOR_ARRAY:
-            for(int j=0; j < NUM_PIXELS; j++, data += 3)
-                g_pixels.setPixelColor(j, g_pixels.Color(data[0], data[1], data[2]));      
-            break;  
+            {
+                color_t col;
+
+                for(int j=0; j < NUM_PIXELS; j++, data += 3)
+                {
+                    col.c[0] = data[0];
+                    col.c[1] = data[1];
+                    col.c[2] = data[2];
+                    set_pixel_color(j, &col);
+                }
+                break;  
+            }
             
         case PACKET_PATTERN:
             {
@@ -258,7 +316,7 @@ void next_pattern(void)
   
     evaluate(g_cur_pattern, g_pattern_start, &color);
     for(i = 0; i < NUM_PIXELS; i++)
-        g_pixels.setPixelColor(i, color.c[0], color.c[1], color.c[2]); 
+        set_pixel_color(i, &color); 
 
     g_error = ERR_OK;
 }    
@@ -304,7 +362,7 @@ void update_pattern(void)
             color.c[2] = g_begin_color.c[2] + (steps * p / SCALE_FACTOR); 
 
             for(i = 0; i < NUM_PIXELS; i++)
-                g_pixels.setPixelColor(i, color.c[0], color.c[1], color.c[2]); 
+                set_pixel_color(i, &color); 
         }
         return;
     }
@@ -319,7 +377,7 @@ void update_pattern(void)
 
         evaluate(g_cur_pattern, g_target - g_pattern_start, &color);
         for(i = 0; i < NUM_PIXELS; i++)
-            g_pixels.setPixelColor(i, color.c[0], color.c[1], color.c[2]);
+            set_pixel_color(i, &color);
         //print_col(&color); 
     }
 }

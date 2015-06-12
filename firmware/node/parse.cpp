@@ -42,7 +42,6 @@ uint16_t heap_offset = 0;
 // todo: test clear next pattern, postion, local args, transitions
 // add: individual LED support
 // add: address support
-// add: gamma correction
 
 // New pattern stuff
 // 3d function source
