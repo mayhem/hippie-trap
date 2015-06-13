@@ -1,6 +1,9 @@
 #include <stdlib.h>
+#include <Arduino.h>
 #include "filter.h"
 #include "generator.h"
+
+extern void print_col(color_t *col);
 
 void f_fade_in_init(f_fade_in_t *self, f_method method, int32_t duration, int32_t offset)
 {
@@ -14,6 +17,7 @@ void f_fade_in_init(f_fade_in_t *self, f_method method, int32_t duration, int32_
 void f_fade_in_get(void *_self, uint32_t t, color_t *src, color_t *dest)
 {
     f_fade_in_t *self = (f_fade_in_t *)_self;
+    
     if (t < self->offset)
     {
         dest->c[0] = dest->c[1] = dest->c[2] = 0;
@@ -22,6 +26,7 @@ void f_fade_in_get(void *_self, uint32_t t, color_t *src, color_t *dest)
     if (t < self->offset + self->duration)
     {
         int32_t percent = (t - self->offset) * SCALE_FACTOR / self->duration;
+        
         dest->c[0] = src->c[0] * percent / SCALE_FACTOR;
         dest->c[1] = src->c[1] * percent / SCALE_FACTOR;
         dest->c[2] = src->c[2] * percent / SCALE_FACTOR;
@@ -30,6 +35,7 @@ void f_fade_in_get(void *_self, uint32_t t, color_t *src, color_t *dest)
     dest->c[0] = src->c[0];
     dest->c[1] = src->c[1];
     dest->c[2] = src->c[2];
+
 }
 
 void f_fade_out_init(f_fade_out_t *self, f_method method,  int32_t duration, int32_t offset)
