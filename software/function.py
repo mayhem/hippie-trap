@@ -58,24 +58,26 @@ class RandomColorSequence(ColorSource):
 
 class HSV(ColorSource):
 
-    def __init__(self, gen, gen2 = None, gen3 = None):
-        super(HSV, self).__init__(g, gen2, gen3)
+    def __init__(self, gen, g2 = None, g3 = None):
+        super(HSV, self).__init__(gen, g2, g3)
 
     def describe(self):
-        desc = common.make_function(common.FUNC_COLOR_WHEEL, (common.ARG_VALUE,common.ARG_VALUE,common.ARG_FUNC))
-        desc += common.pack_fixed(self.period)
-        desc += common.pack_fixed(self.seed)
+        desc = common.make_function(common.FUNC_HSV, (common.ARG_VALUE,common.ARG_VALUE,common.ARG_FUNC))
         #print "%s(" % (self.__class__.__name__),
         if self.g:
             desc += self.g.describe()
+            if self.g2:
+                desc += self.g2.describe()
+            if self.g3:
+                desc += self.g3.describe()
         #print ")"
         return desc + self.describe_next()
 
     def __getitem__(self, t):
-        if self.gen2 and self.gen3:
-            col = colorsys.hsv_to_rgb(self.g[t], self.gen2[t], self.gen3[t])
-        elif self.gen2:
-            col = colorsys.hsv_to_rgb(self.g[t], self.gen2[t], 1)
+        if self.g2 and self.g3:
+            col = colorsys.hsv_to_rgb(self.g[t], self.g2[t], self.g3[t])
+        elif self.g2:
+            col = colorsys.hsv_to_rgb(self.g[t], self.g2[t], 1)
         else:
             col = colorsys.hsv_to_rgb(self.g[t], 1, 1)
         return self.call_next(t, Color(int(col[0] * 255), int(col[1] * 255), int(col[2] * 255)))

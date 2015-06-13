@@ -9,9 +9,8 @@ import function
 import generator
 import filter
 import random
-from time import sleep, time
 from color import Color
-from threading import Thread
+from time import sleep, time
 
 BAUD_RATE = 38400
 NUM_PIXELS = 4
@@ -45,7 +44,6 @@ class Chandelier(object):
     def open(self, device):
 
         try:
-            print "Opening %s" % device
             self.ser = serial.Serial(device, 
                                      BAUD_RATE, 
                                      bytesize=serial.EIGHTBITS, 
@@ -124,63 +122,3 @@ class Chandelier(object):
 
             if duration > 0 and t > duration:
                 break
-
-DELAY = .02
-
-device = "/dev/ttyAMA0"
-if len(sys.argv) == 2:
-    device = sys.argv[1]
-
-ch = Chandelier()
-ch.open(device)
-ch.send_entropy()
-
-random.seed()
-period_s = 1
-
-rainbow = function.Rainbow(generator.Sawtooth(.55))
-rainbow.chain(filter.FadeIn(1))
-#rainbow.chain(filter.FadeOut(1.0, 5.0))
-
-green = function.ConstantColor(Color(0, 32, 0))
-green.chain(filter.FadeIn(1.0))
-
-purple = function.ConstantColor(Color(0, 0, 64))
-purple.chain(filter.FadeIn(1.0))
-#purple.chain(filter.FadeOut(1.0, 5.0))
-
-wobble = function.RandomColorSequence(period_s, random.randint(0, 255))
-g = generator.Sin((math.pi * 2) / period_s, -math.pi/2, .5, .5)
-wobble.chain(filter.Brightness(g))
-
-funcs = [purple, green]
-#while True:
-#    wobble = function.RandomColorSequence(period_s, random.randint(0, 255))
-#    g = generator.Sin((math.pi * 2) / period_s, -math.pi/2, .5, .5)
-#    wobble.chain(filter.Brightness(g))
-#    funcs = [wobble]
-#    funcs = [purple]
-
-loaded = False
-
-ch.send_pattern(BROADCAST, rainbow)
-ch.next_pattern(BROADCAST, 0)
-ch.debug_serial(10)
-
-#while True:
-#    for f in funcs:
-#        if not loaded:
-#            ch.send_pattern(BROADCAST, f)
-#            ch.debug_serial(1)
-#            ch.next_pattern(BROADCAST, 0)
-#            ch.debug_serial(1)
-#            loaded = True
-#            continue
-            
-#        ch.send_pattern(BROADCAST, f)
-#        ch.debug_serial(1)
-#        ch.next_pattern(BROADCAST,1000) 
-#        ch.debug_serial(5)
-#        ch.off(BROADCAST)
-#        ch.debug_serial(1)
-#        loaded = False
