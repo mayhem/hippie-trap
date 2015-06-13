@@ -118,7 +118,7 @@ void startup_animation(void)
     color_t col1, col2;
 
     col1.c[0] = 255;
-    col1.c[1] = 180;
+    col1.c[1] = 140;
     col1.c[2] = 0;
     col2.c[0] = 255;
     col2.c[1] = 0;

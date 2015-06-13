@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <Arduino.h>
 #include <avr/pgmspace.h>
 #include "generator.h"
 
@@ -34,7 +35,8 @@ int32_t g_square(void *_self, uint32_t t)
 
 int32_t g_sawtooth(void *_self, uint32_t t)
 {
-    generator_t *self = (generator_t *)_self;
+    generator_t *self = (generator_t *)_self;  
+    
     int32_t v = (((int32_t)t * self->period / SCALE_FACTOR) + self->phase) % SCALE_FACTOR;
     return v * self->amplitude / SCALE_FACTOR + self->offset;
 }

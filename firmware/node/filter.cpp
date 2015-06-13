@@ -3,8 +3,6 @@
 #include "filter.h"
 #include "generator.h"
 
-extern void print_col(color_t *col);
-
 void f_fade_in_init(f_fade_in_t *self, f_method method, int32_t duration, int32_t offset)
 {
     self->duration = duration;

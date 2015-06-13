@@ -164,7 +164,8 @@ void *create_object(uint8_t   id,
 
         case SRC_HSV:
             {
-                if (gen_count > 1)
+                
+                if (gen_count > 0)
                 {
                     obj = heap_alloc(sizeof(s_hsv_t));
                     if (!obj)
@@ -175,7 +176,7 @@ void *create_object(uint8_t   id,
                     if (gen_count > 1)
                         s_hsv_init((s_hsv_t *)obj,  (generator_t*)gens[0],  (generator_t*)gens[1], NULL);
                     else
-                        s_hsv_init((s_hsv_t *)obj,  (generator_t*)gens[0], NULL, NULL);
+                        s_hsv_init((s_hsv_t *)obj,  (generator_t*)gens[0], NULL, NULL);  
                 }
                 else
                 {
@@ -319,10 +320,12 @@ void *parse(uint8_t *code, uint16_t len, uint8_t *heap)
 
     for(; offset < len;)
     {
+        Serial.println("parse filter");
         filter = parse_func(code, len, &offset);
         if (!filter)
             return NULL;
 
+        
         ptr = (s_source_t *)source;
         while (((f_filter_t *)ptr)->next)
             ptr = ((f_filter_t *)ptr)->next;
