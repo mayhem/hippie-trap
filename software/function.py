@@ -62,7 +62,13 @@ class HSV(ColorSource):
         super(HSV, self).__init__(gen, g2, g3)
 
     def describe(self):
-        desc = common.make_function(common.FUNC_HSV, (common.ARG_VALUE,common.ARG_VALUE,common.ARG_FUNC))
+        if self.g3:
+            desc = common.make_function(common.FUNC_HSV, (common.ARG_FUNC, common.ARG_FUNC, common.ARG_FUNC))
+        elif self.g2:
+            desc = common.make_function(common.FUNC_HSV, (common.ARG_FUNC, common.ARG_FUNC))
+        else:
+            desc = common.make_function(common.FUNC_HSV, (common.ARG_FUNC,))
+
         #print "%s(" % (self.__class__.__name__),
         if self.g:
             desc += self.g.describe()

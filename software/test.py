@@ -42,7 +42,7 @@ wobble = function.RandomColorSequence(period_s, random.randint(0, 255))
 g = generator.Sin((math.pi * 2) / period_s, -math.pi/2, .5, .5)
 wobble.chain(filter.Brightness(g))
 
-funcs = [hsv, purple]
+funcs = [rainbow]
 #while True:
 #    wobble = function.RandomColorSequence(period_s, random.randint(0, 255))
 #    g = generator.Sin((math.pi * 2) / period_s, -math.pi/2, .5, .5)
@@ -58,7 +58,7 @@ loaded = False
 #ch.debug_serial(10)
 
 ch.send_pattern(BROADCAST, hsv)
-ch.next_pattern(BROADCAST,1000) 
+ch.next_pattern(BROADCAST,0) 
 ch.debug_serial(1000)
 sys.exit(-1)
 
