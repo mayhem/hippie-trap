@@ -117,12 +117,12 @@ void startup_animation(void)
     uint8_t i, j;
     color_t col1, col2;
 
-    col1.c[0] = 128;
-    col1.c[1] = 40;
+    col1.c[0] = 255;
+    col1.c[1] = 140;
     col1.c[2] = 0;
-    col2.c[0] = 128;
+    col2.c[0] = 255;
     col2.c[1] = 0;
-    col2.c[2] = 128;
+    col2.c[2] = 255;
 
     for(i = 0; i < 10; i++)
     {       
@@ -169,8 +169,9 @@ void handle_packet(uint16_t len, uint8_t *packet)
                 col.c[1] = data[1];
                 col.c[2] = data[2];
 
+                //print_col(&col);
                 for(int j=0; j < NUM_PIXELS; j++)
-                    set_pixel_color(j, &col);
+                    show_color(&col);
 
                 break;
             } 
@@ -185,6 +186,7 @@ void handle_packet(uint16_t len, uint8_t *packet)
                     col.c[2] = data[2];
                     set_pixel_color(j, &col);
                 }
+                g_pixels.show();
                 break;  
             }
             
@@ -197,7 +199,7 @@ void handle_packet(uint16_t len, uint8_t *packet)
                 // redundant transmission in case we have communication problems.
                 if (g_next_pattern)
                     return;
-                Serial.println("packet pattern\n");
+
                 heap = &g_pattern_space[g_load_pattern * HEAP_SIZE];
                 g_next_pattern = (s_source_t *)parse(data, len - 2, heap);
                 if (!g_next_pattern)
@@ -207,7 +209,6 @@ void handle_packet(uint16_t len, uint8_t *packet)
                     return;
                 }
 
-                Serial.println("Parse ok.");
                 // we parsed a valid pattern, increase the index
                 g_load_pattern= (g_load_pattern + 1) % 2;
 
@@ -276,7 +277,6 @@ void print_col(color_t *c)
 
 void next(uint16_t transition_steps)
 {
-    Serial.println("next " + String(transition_steps));
     
     if (!g_next_pattern)
     {
@@ -290,17 +290,11 @@ void next(uint16_t transition_steps)
 
         // start the transition and get last color
         evaluate(g_cur_pattern, millis() - g_pattern_start, &g_begin_color);
-        Serial.print(" begin: ");
-        print_col(&g_begin_color);
 
         // get the first color of the new pattern
         evaluate(g_next_pattern, 0, &g_end_color);
-        Serial.print(" end: ");
-        print_col(&g_end_color);
 
-        g_transition_end = millis() + transition_steps;
-        Serial.print("trans end: "); Serial.println(g_transition_end, DEC);
-        g_target = millis() + g_delay;
+        g_transition_end = millis() + (uint32_t)transition_steps;
         return;
     }
     next_pattern();
@@ -316,12 +310,8 @@ void next_pattern(void)
     
     g_pattern_start = millis();
     g_target = g_pattern_start;
-  
-    evaluate(g_cur_pattern, g_pattern_start, &color);
-    for(i = 0; i < NUM_PIXELS; i++)
-        set_pixel_color(i, &color); 
-
     g_error = ERR_OK;
+    update_pattern();
 }    
 
 void update_pattern(void)

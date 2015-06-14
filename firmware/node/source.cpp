@@ -87,19 +87,19 @@ void s_constant_color_get(void *self, uint32_t t, color_t *dest)
 void s_random_color_seq_init(s_random_color_seq_t *self, int32_t period, uint32_t seed)
 {
     self->period = period;
-    self->seed = seed;
+    self->seed = seed;    
     self->method = s_random_color_seq_get;
     self->next = NULL; 
 
     // Make sure we have a good random number saved before we set a predicatable seed
     g_random_seed = random();
-
-    
 }
 
 void s_random_color_seq_get(void *self, uint32_t t, color_t *dest)
 {
-    randomSeed(((s_random_color_seq_t *)self)->seed + (uint32_t)(t * SCALE_FACTOR / ((s_random_color_seq_t *)self)->period));
+    uint32_t seed = ((s_random_color_seq_t *)self)->seed;
+    if (seed)
+        randomSeed(seed + (uint32_t)(t / ((s_random_color_seq_t *)self)->period));
     hsv_to_rgb(random(SCALE_FACTOR), SCALE_FACTOR, SCALE_FACTOR, dest);
 }
 
@@ -119,12 +119,12 @@ void s_hsv_get(void *_self, uint32_t t, color_t *dest)
     s_hsv_t *self = (s_hsv_t *)_self;
 
     if (self->gen2 && self->gen3)
-        hsv_to_rgb(self->gen1->method(_self, t), self->gen2->method(_self, t), self->gen3->method(_self, t), dest);
+        hsv_to_rgb(self->gen1->method(self->gen1, t), self->gen2->method(self->gen2, t), self->gen3->method(self->gen2, t), dest);
     else
     if (self->gen2)
-        hsv_to_rgb(self->gen1->method(_self, t), self->gen2->method(_self, t), 1.0, dest);
+        hsv_to_rgb(self->gen1->method(self->gen1, t), self->gen2->method(self->gen2, t), SCALE_FACTOR, dest);
     else
-        hsv_to_rgb(self->gen1->method(_self, t), 1.0, 1.0, dest);
+        hsv_to_rgb(self->gen1->method(self->gen1, t), SCALE_FACTOR, SCALE_FACTOR, dest);
 }
 
 //--
