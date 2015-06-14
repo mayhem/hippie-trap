@@ -320,7 +320,6 @@ void *parse(uint8_t *code, uint16_t len, uint8_t *heap)
 
     for(; offset < len;)
     {
-        Serial.println("parse filter");
         filter = parse_func(code, len, &offset);
         if (!filter)
             return NULL;

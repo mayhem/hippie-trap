@@ -97,7 +97,10 @@ void s_random_color_seq_init(s_random_color_seq_t *self, int32_t period, uint32_
 
 void s_random_color_seq_get(void *self, uint32_t t, color_t *dest)
 {
-    randomSeed(((s_random_color_seq_t *)self)->seed + (uint32_t)(t * SCALE_FACTOR / ((s_random_color_seq_t *)self)->period));
+//    Serial.print(t, DEC);
+//    Serial.print(" ");
+//    Serial.println(t / ((s_random_color_seq_t *)self)->period, DEC);
+    randomSeed(((s_random_color_seq_t *)self)->seed + (uint32_t)(t / ((s_random_color_seq_t *)self)->period));
     hsv_to_rgb(random(SCALE_FACTOR), SCALE_FACTOR, SCALE_FACTOR, dest);
 }
 
