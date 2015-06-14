@@ -169,8 +169,9 @@ void handle_packet(uint16_t len, uint8_t *packet)
                 col.c[1] = data[1];
                 col.c[2] = data[2];
 
+                //print_col(&col);
                 for(int j=0; j < NUM_PIXELS; j++)
-                    set_pixel_color(j, &col);
+                    show_color(&col);
 
                 break;
             } 
@@ -185,6 +186,7 @@ void handle_packet(uint16_t len, uint8_t *packet)
                     col.c[2] = data[2];
                     set_pixel_color(j, &col);
                 }
+                g_pixels.show();
                 break;  
             }
             
