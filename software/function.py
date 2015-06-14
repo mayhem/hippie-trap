@@ -40,8 +40,9 @@ class RandomColorSequence(ColorSource):
        Return colors that appear _random_ to a human.
     '''
 
-    def __init__(self, period, seed=0):
+    def __init__(self, period, phase=0, seed=0):
         self.period = period
+        self.phase = phase
         self.seed = seed
         super(RandomColorSequence, self).__init__(None)
 

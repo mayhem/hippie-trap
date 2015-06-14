@@ -14,6 +14,7 @@ FUNC_RAND_COL_SEQ      = 7
 FUNC_HSV               = 8
 FUNC_RAINBOW           = 9
 FUNC_STEP              = 10
+FUNC_SPARKLE           = 11
 
 ARG_VALUE              = 0
 ARG_FUNC               = 1

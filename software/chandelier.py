@@ -77,12 +77,12 @@ class Chandelier(object):
             self._send_packet(dest, PACKET_ENTROPY, bytearray(os.urandom(1)))
 
     def set_color(self, dest, col):
-        self._send_packet(dest, PACKET_SINGLE_COLOR, bytearray((col[0] + chr(col[1]) + chr(col[2]))))
+        self._send_packet(dest, PACKET_SINGLE_COLOR, bytearray((col[0], col[1], col[2])))
 
     def set_color_array(self, dest, colors):
         packet = bytearray()
         for col in colors:
-            packet += bytearray((col[0]) + chr(col[1]) + chr(col[2]))
+            packet += bytearray(col[0], col[1], col[2])
         self._send_packet(dest, PACKET_COLOR_ARRAY, packet)
 
     def send_pattern(self, dest, pattern):
@@ -113,12 +113,8 @@ class Chandelier(object):
         while True:
             t = time() - start_t
             col = function[t]
-            array = []
-            for i in xrange(NUM_PIXELS):
-                array.append(col)
-
-            ch.set_color_array(BROADCAST, array)
-            sleep(delay)
+            self.set_color(BROADCAST, col)
+            self.debug_serial(delay)
 
             if duration > 0 and t > duration:
                 break

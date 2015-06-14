@@ -57,7 +57,7 @@ loaded = False
 #ch.next_pattern(BROADCAST, 0)
 #ch.debug_serial(10)
 
-ch.send_pattern(BROADCAST, hsv)
+ch.send_pattern(BROADCAST, wobble)
 ch.next_pattern(BROADCAST,0) 
 ch.debug_serial(1000)
 sys.exit(-1)

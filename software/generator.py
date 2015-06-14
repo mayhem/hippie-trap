@@ -95,3 +95,24 @@ class Step(Generator):
             return self.amplitude + self.offset
         else:
             return self.offset
+
+class Sparkle(Generator):
+
+    def __init__(self, period = 1.0, phase = 0.0, amplitude = 1.0, offset = 0.0):
+        super(Sparkle, self).__init__(period, phase, amplitude, offset)
+
+    def describe(self):
+        desc = common.make_function(common.FUNC_SPARKLE, (common.ARG_VALUE, common.ARG_VALUE, common.ARG_VALUE, common.ARG_VALUE))
+        desc += common.pack_fixed(self.period)
+        desc += common.pack_fixed(self.phase)
+        desc += common.pack_fixed(self.amplitude)
+        desc += common.pack_fixed(self.offset)
+        #print "%s(%.3f, %.3f, %.3f, %.3f)" % (self.__class__.__name__, self.period, self.phase, self.amplitude, self.offset),
+        return desc
+
+    def __getitem__(self, t):
+        v = (t / self.period) + self.phase
+        if v < 1.0:
+            return self.amplitude - t + self.offset
+        if t >= 1.0:
+            v = self.offset
