@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include "generator.h"
 #include "source.h"
+#include "parse.h"
 
 void hsv_to_rgb(int32_t h, int32_t s, int32_t v, color_t *color)
 {
@@ -162,5 +163,51 @@ void s_rainbow_get(void *_self, uint32_t t, color_t *dest)
         dest->c[0] = wheel_pos * 3;
         dest->c[1] = 255 - (wheel_pos * 3);
         dest->c[2] = 0;
+    }
+}
+
+void s_op_init(s_op_t *self, uint8_t op, s_source_t *s1, s_source_t *s2)
+{
+    self->method = s_op_get;
+    self->next = NULL; 
+    self->s1 = s1;
+    self->s2 = s2;
+}
+
+void s_op_get(void *_self, uint32_t t, color_t *dest)
+{
+    s_op_t *self = (s_op_t *)_self;
+    color_t col1, col2;
+
+    evaluate(self->s1, t, &col1);
+    evaluate(self->s2, t, &col2);
+
+    switch(self->op)
+    {
+        case OP_ADD:
+            dest->c[0] = max(0, min(255, col1.c[0] + col2.c[0]));
+            dest->c[1] = max(0, min(255, col1.c[1] + col2.c[1]));
+            dest->c[2] = max(0, min(255, col1.c[2] + col2.c[2]));
+            break;
+        case OP_SUB:
+            dest->c[0] = max(0, min(255, col1.c[0] - col2.c[0]));
+            dest->c[1] = max(0, min(255, col1.c[1] - col2.c[1]));
+            dest->c[2] = max(0, min(255, col1.c[2] - col2.c[2]));
+            break;
+        case OP_MUL:
+            dest->c[0] = max(0, min(255, col1.c[0] * col2.c[0]));
+            dest->c[1] = max(0, min(255, col1.c[1] * col2.c[1]));
+            dest->c[2] = max(0, min(255, col1.c[2] * col2.c[2]));
+            break;
+        case OP_DIV:
+            dest->c[0] = max(0, min(255, (int32_t)col1.c[0] / (int32_t)col2.c[0]));
+            dest->c[1] = max(0, min(255, (int32_t)col1.c[1] / (int32_t)col2.c[1]));
+            dest->c[2] = max(0, min(255, (int32_t)col1.c[2] / (int32_t)col2.c[2]));
+            break;
+        case OP_MOD:
+            dest->c[0] = max(0, min(255, (int32_t)col1.c[0] % (int32_t)col2.c[0]));
+            dest->c[1] = max(0, min(255, (int32_t)col1.c[1] % (int32_t)col2.c[1]));
+            dest->c[2] = max(0, min(255, (int32_t)col1.c[2] % (int32_t)col2.c[2]));
+            break;
     }
 }
