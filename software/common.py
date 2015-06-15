@@ -15,11 +15,19 @@ FUNC_HSV               = 8
 FUNC_RAINBOW           = 9
 FUNC_STEP              = 10
 FUNC_SPARKLE           = 11
+FUNC_GENOP             = 12
+FUNC_SRCOP             = 13
 
 ARG_VALUE              = 0
 ARG_FUNC               = 1
 ARG_COLOR              = 2
 ARG_CONSTANT           = 3
+
+OP_ADD = 0
+OP_SUB = 1
+OP_MUL = 2
+OP_DIV = 3
+OP_MOD = 4
 
 def make_function(id, args):
     flags = 0

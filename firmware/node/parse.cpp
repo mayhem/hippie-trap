@@ -39,11 +39,11 @@ uint16_t heap_offset = 0;
 
 // TODO: 
 // todo: tune heap/packet sizes based on parsing. See
-// todo: test clear next pattern, position, local args
+// todo: test clear next pattern, position, local args, generator op
 // add: individual LED support
 // add: address support
 // todo: change delay to speed (don't change DELAY, change how fast t increments)
-// operator object: combine one or more generators
+// operator object: combine one or more sources
 // chain sources: add source chains and specify operator (+, -, / and div ?)
 // square wave: random period, custom/duty cycle
 // sparkle generator: impulse, then decay., random repeat

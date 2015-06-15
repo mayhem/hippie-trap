@@ -122,3 +122,46 @@ class Rainbow(ColorSource):
             color[2] = 0
 
         return self.call_next(t, Color(color[0], color[1], color[2]))
+
+class SourceOp(common.ChainLink):
+    def __init__(self, operation, src1, src2):
+        super(SourceOp, self).__init__()
+        self.operation = operation
+        self.s1 = src1
+        self.s2 = src2
+
+    def describe(self):
+        desc = common.make_function(common.FUNC_SRCOP, (common.ARG_VALUE, common.ARG_FUNC,common.ARG_FUNC))
+        desc += common.pack_fixed(self.operation)
+        desc += self.s1.describe()
+        desc += self.s2.describe()
+        return desc + self.describe_next()
+
+    def __getitem__(self, t):
+        col1 = self.s1[t]
+        col2 = self.s2[t]
+        res = Color(0,0,0)
+        if self.operation == common.OP_ADD:
+            res.color[0] = max(0, min(255, col1.color[0] + col2.color[0]))
+            res.color[1] = max(0, min(255, col1.color[1] + col2.color[1]))
+            res.color[2] = max(0, min(255, col1.color[2] + col2.color[2]))
+        elif self.operation == common.OP_SUB:
+            res.color[0] = max(0, min(255, col1.color[0] - col2.color[0]))
+            res.color[1] = max(0, min(255, col1.color[1] - col2.color[1]))
+            res.color[2] = max(0, min(255, col1.color[2] - col2.color[2]))
+
+        # Not sure if any of these make sense. :)
+        elif self.operation == common.OP_MUL:
+            res.color[0] = max(0, min(255, col1.color[0] * col2.color[0]))
+            res.color[1] = max(0, min(255, col1.color[1] * col2.color[1]))
+            res.color[2] = max(0, min(255, col1.color[2] * col2.color[2]))
+        elif self.operation == common.OP_SUB:
+            res.color[0] = max(0, min(255, col1.color[0] / col2.color[0]))
+            res.color[1] = max(0, min(255, col1.color[1] / col2.color[1]))
+            res.color[2] = max(0, min(255, col1.color[2] / col2.color[2]))
+        elif self.operation == common.OP_MOD:
+            res.color[0] = max(0, min(255, col1.color[0] % col2.color[0]))
+            res.color[1] = max(0, min(255, col1.color[1] % col2.color[1]))
+            res.color[2] = max(0, min(255, col1.color[2] % col2.color[2]))
+
+        return self.call_next(t, res)

@@ -3,6 +3,33 @@ import abc
 import math
 import common
 
+class GenOp(object):
+    def __init__(self, operation, gen1, gen2):
+        self.operation = operation
+        self.g1 = gen1
+        self.g2 = gen2
+
+    def describe(self):
+        desc = common.make_function(common.FUNC_GENOP, (common.ARG_FUNC,command.ARG_FUNC))
+        desc += common.pack_fixed(self.operation)
+        desc += self.g1.describe()
+        desc += self.g2.describe()
+        return desc + self.describe_next()
+
+    def __getitem__(self, t):
+        if self.operation == common.OP_ADD:
+            return self.g1[t] + self.g2[t]
+        elif self.operation == common.OP_SUB:
+            return self.g1[t] - self.g2[t]
+        elif self.operation == common.OP_MUL:
+            return self.g1[t] * self.g2[t]
+        elif self.operation == common.OP_SUB:
+            return self.g1[t] * SCALE_FACTOR / self.g2[t]
+        elif self.operation == common.OP_MOD:
+            return self.g1[t] % self.g2[t]
+
+        return 0.0
+
 class Generator(object):
 
     def __init__(self, period, phase, amplitude, offset):

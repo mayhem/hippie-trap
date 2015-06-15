@@ -61,6 +61,9 @@ class Chandelier(object):
         self.ser.write(chr(0))
 
     def _send_packet(self, dest, type, data):
+        if not self.ser:
+            return
+
         if not isinstance(data, bytearray):
             print "data argument to send_packet must be bytearray"
             return
