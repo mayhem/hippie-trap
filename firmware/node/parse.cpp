@@ -37,22 +37,6 @@
 uint8_t *cur_heap = NULL;
 uint16_t heap_offset = 0;
 
-// TODO: 
-// todo: tune heap/packet sizes based on parsing. See
-// todo: test clear next pattern, position, local args
-// add: individual LED support
-// add: address support
-// todo: change delay to speed (don't change DELAY, change how fast t increments)
-// operator object: combine one or more generators
-// chain sources: add source chains and specify operator (+, -, / and div ?)
-// square wave: random period, custom/duty cycle
-// sparkle generator: impulse, then decay., random repeat
-
-
-// New pattern stuff
-// - 3d function source
-// - complementary color source
-
 void heap_setup(uint8_t *heap)
 {
     heap_offset = 0;
@@ -208,8 +192,25 @@ void *create_object(uint8_t   id,
             }
             break;
 
-        case GEN_SIN:
         case GEN_SQUARE:
+            {
+                if (value_count == 5)
+                {
+                    obj = heap_alloc(sizeof(square_t));
+                    if (!obj)
+                        return NULL;
+
+                    g_square_init(obj, g_square, values[0], values[1], values[2], values[3], values[4]);
+                }
+                else
+                {
+                    g_error = ERR_PARSE_FAILURE;
+                    return NULL;
+                }
+            }
+            break;
+                     
+        case GEN_SIN:
         case GEN_SAWTOOTH:
         case GEN_STEP:
             {
@@ -222,9 +223,6 @@ void *create_object(uint8_t   id,
                     {
                         case GEN_SIN:
                             g_generator_init(obj, g_sin, values[0], values[1], values[2], values[3]);
-                        break;
-                        case GEN_SQUARE:
-                            g_generator_init(obj, g_square, values[0], values[1], values[2], values[3]);
                         break;
                         case GEN_SAWTOOTH:
                             g_generator_init(obj, g_sawtooth, values[0], values[1], values[2], values[3]);
