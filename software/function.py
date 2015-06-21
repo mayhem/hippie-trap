@@ -123,6 +123,38 @@ class Rainbow(ColorSource):
 
         return self.call_next(t, Color(color[0], color[1], color[2]))
 
+class CompColorSource(common.ChainLink):
+
+    def __init__(self, color, dist, index):
+        '''color - base color for the triad. const or gen
+           index - which of the parts of the complement are we: 0 anchor, 1 secondary color 1, 2 secondary color 2
+           dist - the distribution angle between secondary colors'''
+        super(CompColorSource, self).__init__()
+        self.color = color
+        self.dist = dist
+        self.index = index
+
+    def describe(self):
+        desc = common.make_function(common.FUNC_COMPLEMENTARY, (common.ARG_FUNC, common.ARG_FUNC, common.ARG_VALUE))
+        desc += self.hue.describe()
+        desc += self.dist.describe()
+        desc += common.pack_fixed(self.index)
+        return desc + self.describe_next()
+
+    def __getitem__(self, t):
+        if self.index == 0:
+            return self.call_next(t, self.color)
+        elif self.index == 1:
+            h,s,v = colorsys.rgb_to_hsv(self.color.color[0] / 255.0, self.color.color[1] / 255.0, self.color.color[2] / 255.0)
+            h = (h - self.dist) % 1.0
+            col = colorsys.hsv_to_rgb(h, s, v)
+            return self.call_next(t, Color(int(col[0] * 255), int(col[1] * 255), int(col[2] * 255)))
+        else:
+            h,s,v = colorsys.rgb_to_hsv(self.color.color[0] / 255.0, self.color.color[1] / 255.0, self.color.color[2] / 255.0)
+            h = (h + self.dist) % 1.0
+            col = colorsys.hsv_to_rgb(h, s, v)
+            return self.call_next(t, Color(int(col[0] * 255), int(col[1] * 255), int(col[2] * 255)))
+
 class SourceOp(common.ChainLink):
     def __init__(self, operation, src1, src2, src3 = None):
         super(SourceOp, self).__init__()

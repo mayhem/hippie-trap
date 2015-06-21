@@ -43,6 +43,19 @@ class Abs(object):
     def __getitem__(self, t):
         return abs(self.g[t])
 
+class Constant(object):
+
+    def __init__(self, value):
+        self.value = value
+
+    def describe(self):
+        desc = common.make_function(common.FUNC_CONSTANT, (common.ARG_VALUE,))
+        desc += common.pack_fixed(self.value)
+        return desc
+
+    def __getitem__(self, t):
+        return self.value
+
 class Generator(object):
 
     def __init__(self, period, phase, amplitude, offset):

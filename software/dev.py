@@ -44,15 +44,33 @@ g = generator.Sin((math.pi * 2) / period_s, -math.pi/2, .5, .5)
 g = generator.Sparkle()
 wobble.chain(filter.Brightness(g))
 
-src1 = function.ConstantColor(Color(255,0,0))
-src1.chain(filter.Brightness(generator.Sin((math.pi * 3) / period_s, 2, .5, .5)))
+#src1 = function.ConstantColor(Color(255,0,0))
+#src1.chain(filter.Brightness(generator.Sin((math.pi * 3) / period_s, 2, .5, .5)))
+#
+#src2 = function.ConstantColor(Color(0,0,255))
+#src2.chain(filter.Brightness(generator.Sin((math.pi * 2) / period_s, 1, .5, .5)))
+#
+#src3 = function.ConstantColor(Color(0,255,0))
+#src3.chain(filter.Brightness(generator.Sin(math.pi / period_s, 1, .5, .5)))
+#
+#op = function.SourceOp(common.OP_ADD, src1, src2, src3)
 
-src2 = function.ConstantColor(Color(0,0,255))
-src2.chain(filter.Brightness(generator.Sin((math.pi * 2) / period_s, 1, .5, .5)))
+dist = .15
+base = Color(255, 0, 64)
+while True:
+    triad = function.CompColorSource(base, dist, 0)
+    print triad[0]
+    ch.set_color(BROADCAST, triad[0])
+    sleep(1)
 
-src3 = function.ConstantColor(Color(0,255,0))
-src3.chain(filter.Brightness(generator.Sin(math.pi / period_s, 1, .5, .5)))
+    triad = function.CompColorSource(base, dist, 1)
+    print triad[0]
+    ch.set_color(BROADCAST, triad[0])
+    sleep(1)
 
-op = function.SourceOp(common.OP_ADD, src1, src2, src3)
+    triad = function.CompColorSource(base, dist, 2)
+    print triad[0]
+    ch.set_color(BROADCAST, triad[0])
+    sleep(1)
 
-ch.run(op, DELAY, 20)
+#ch.run(op, DELAY, 20)

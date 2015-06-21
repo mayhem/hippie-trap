@@ -19,6 +19,8 @@ FUNC_GENOP             = 12
 FUNC_SRCOP             = 13
 FUNC_ABS               = 14
 FUNC_LINE              = 15
+FUNC_CONSTANT          = 16
+FUNC_COMPLEMENTARY     = 17
 
 ARG_VALUE              = 0
 ARG_FUNC               = 1
