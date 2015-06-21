@@ -30,6 +30,19 @@ class GenOp(object):
 
         return 0.0
 
+class Abs(object):
+
+    def __init__(self, gen):
+        self.g = gen
+
+    def describe(self):
+        desc = common.make_function(common.FUNC_ABS, (common.ARG_FUNC,))
+        desc += self.g.describe()
+        return desc
+
+    def __getitem__(self, t):
+        return abs(self.g[t])
+
 class Generator(object):
 
     def __init__(self, period, phase, amplitude, offset):
@@ -143,3 +156,19 @@ class Sparkle(Generator):
             return self.amplitude - t + self.offset
         if t >= 1.0:
             v = self.offset
+
+class Line(Generator):
+
+    def __init__(self, period = 1.0, phase = 0.0, amplitude = 1.0, offset = 0.0):
+        super(Line, self).__init__(period, phase, amplitude, offset)
+
+    def describe(self):
+        desc = common.make_function(common.FUNC_LINE, (common.ARG_VALUE, common.ARG_VALUE, common.ARG_VALUE, common.ARG_VALUE))
+        desc += common.pack_fixed(self.period)
+        desc += common.pack_fixed(self.phase)
+        desc += common.pack_fixed(self.amplitude)
+        desc += common.pack_fixed(self.offset)
+        return desc
+
+    def __getitem__(self, t):
+        return (t * self.amplitude) + self.offset

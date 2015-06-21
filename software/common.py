@@ -17,6 +17,8 @@ FUNC_STEP              = 10
 FUNC_SPARKLE           = 11
 FUNC_GENOP             = 12
 FUNC_SRCOP             = 13
+FUNC_ABS               = 14
+FUNC_LINE              = 15
 
 ARG_VALUE              = 0
 ARG_FUNC               = 1
