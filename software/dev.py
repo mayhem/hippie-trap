@@ -55,22 +55,33 @@ wobble.chain(filter.Brightness(g))
 #
 #op = function.SourceOp(common.OP_ADD, src1, src2, src3)
 
-dist = .15
-base = Color(255, 0, 64)
-while True:
-    triad = function.CompColorSource(base, dist, 0)
-    print triad[0]
-    ch.set_color(BROADCAST, triad[0])
-    sleep(1)
+#dist = .15
+#base = Color(255, 0, 64)
+#while True:
+#    triad = function.CompColorSource(base, dist, 0)
+#    print triad[0]
+#    ch.set_color(BROADCAST, triad[0])
+#    sleep(1)
+#
+#    triad = function.CompColorSource(base, dist, 1)
+#    print triad[0]
+#    ch.set_color(BROADCAST, triad[0])
+#    sleep(1)
 
-    triad = function.CompColorSource(base, dist, 1)
-    print triad[0]
-    ch.set_color(BROADCAST, triad[0])
-    sleep(1)
+#    triad = function.CompColorSource(base, dist, 2)
+#    print triad[0]
+#    ch.set_color(BROADCAST, triad[0])
+#    sleep(1)
 
-    triad = function.CompColorSource(base, dist, 2)
-    print triad[0]
-    ch.set_color(BROADCAST, triad[0])
-    sleep(1)
+RUN_LOCAL = 0
 
-#ch.run(op, DELAY, 20)
+src = function.ConstantColor(Color(255,0,0))
+src.chain(filter.Brightness(generator.Square(1, 0, 1, 0, .05)))
+
+if RUN_LOCAL:
+    ch.run(src, DELAY, 20)
+else:
+    print "Sending %d bytes." % len(src.describe())
+    ch.send_pattern(BROADCAST, src) 
+    ch.next_pattern(BROADCAST, 0)
+    ch.debug_serial(10)
