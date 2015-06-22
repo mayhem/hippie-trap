@@ -5,6 +5,7 @@
 
 #include "source.h"
 #include "filter.h"
+#include "function.h"
 #include "generator.h"
 
 #define MAX_CODE_LEN           512
@@ -16,7 +17,6 @@
 #define ARG_LOCAL                3
 
 #define LOCAL_ID                 0
-#define LOCAL_RAND               1
 #define LOCAL_POS_X              2
 #define LOCAL_POS_Y              3
 #define LOCAL_POS_Z              4
@@ -32,6 +32,8 @@
 #define SRC_HSV                  8
 #define SRC_RAINBOW              9
 #define GEN_STEP                10
+
+#define FUNC_LOCAL_RANDOM       18
 
 // variables to help manage the heap.
 uint8_t *cur_heap = NULL;
@@ -239,6 +241,23 @@ void *create_object(uint8_t   id,
                 }
             }
             break;
+        // plan: add flag about local value, evaluate on the spot, return value. receiver casts to value accordingly.     
+        case FUNC_LOCAL_RANDOM:
+            {
+                if (value_count == 2)
+                {
+                    obj = heap_alloc(sizeof(f_local_random_t));
+                    if (!obj)
+                        return NULL;
+                    f_local_random_init((s_local_random_t *)obj, values[0], values[1]);
+                }
+                else
+                {
+                    g_error = ERR_PARSE_FAILURE;
+                    return NULL;
+                }
+            }
+            break;
     }
     return obj;
 }
@@ -288,8 +307,6 @@ void *parse_func(uint8_t *code, uint16_t len, uint16_t *index)
                 case LOCAL_ID:
                     values[value_count++] = g_node_id;
                     break;
-                case LOCAL_RAND:
-                    break;
                 case LOCAL_POS_X:
                     values[value_count++] = g_pos[0];
                     break;
@@ -327,7 +344,6 @@ void *parse(uint8_t *code, uint16_t len, uint8_t *heap)
         if (!filter)
             return NULL;
 
-        
         ptr = (s_source_t *)source;
         while (((f_filter_t *)ptr)->next)
             ptr = ((f_filter_t *)ptr)->next;
