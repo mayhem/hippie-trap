@@ -9,9 +9,8 @@ import function
 import generator
 import filter
 import random
-from time import sleep, time
 from color import Color
-from threading import Thread
+from time import sleep, time
 
 BAUD_RATE = 38400
 NUM_PIXELS = 4
@@ -45,7 +44,6 @@ class Chandelier(object):
     def open(self, device):
 
         try:
-            print "Opening %s" % device
             self.ser = serial.Serial(device, 
                                      BAUD_RATE, 
                                      bytesize=serial.EIGHTBITS, 
@@ -63,6 +61,9 @@ class Chandelier(object):
         self.ser.write(chr(0))
 
     def _send_packet(self, dest, type, data):
+        if not self.ser:
+            return
+
         if not isinstance(data, bytearray):
             print "data argument to send_packet must be bytearray"
             return
@@ -79,12 +80,12 @@ class Chandelier(object):
             self._send_packet(dest, PACKET_ENTROPY, bytearray(os.urandom(1)))
 
     def set_color(self, dest, col):
-        self._send_packet(dest, PACKET_SINGLE_COLOR, bytearray((col[0] + chr(col[1]) + chr(col[2]))))
+        self._send_packet(dest, PACKET_SINGLE_COLOR, bytearray((col[0], col[1], col[2])))
 
     def set_color_array(self, dest, colors):
         packet = bytearray()
         for col in colors:
-            packet += bytearray((col[0]) + chr(col[1]) + chr(col[2]))
+            packet += bytearray(col[0], col[1], col[2])
         self._send_packet(dest, PACKET_COLOR_ARRAY, packet)
 
     def send_pattern(self, dest, pattern):
@@ -115,72 +116,8 @@ class Chandelier(object):
         while True:
             t = time() - start_t
             col = function[t]
-            array = []
-            for i in xrange(NUM_PIXELS):
-                array.append(col)
-
-            ch.set_color_array(BROADCAST, array)
-            sleep(delay)
+            self.set_color(BROADCAST, col)
+            self.debug_serial(delay)
 
             if duration > 0 and t > duration:
                 break
-
-DELAY = .02
-
-device = "/dev/ttyAMA0"
-if len(sys.argv) == 2:
-    device = sys.argv[1]
-
-ch = Chandelier()
-ch.open(device)
-ch.send_entropy()
-
-random.seed()
-period_s = 1
-
-rainbow = function.Rainbow(generator.Sawtooth(.55))
-rainbow.chain(filter.FadeIn(1))
-#rainbow.chain(filter.FadeOut(1.0, 5.0))
-
-green = function.ConstantColor(Color(0, 32, 0))
-green.chain(filter.FadeIn(1.0))
-
-purple = function.ConstantColor(Color(0, 0, 64))
-purple.chain(filter.FadeIn(1.0))
-#purple.chain(filter.FadeOut(1.0, 5.0))
-
-wobble = function.RandomColorSequence(period_s, random.randint(0, 255))
-g = generator.Sin((math.pi * 2) / period_s, -math.pi/2, .5, .5)
-wobble.chain(filter.Brightness(g))
-
-funcs = [purple, green]
-#while True:
-#    wobble = function.RandomColorSequence(period_s, random.randint(0, 255))
-#    g = generator.Sin((math.pi * 2) / period_s, -math.pi/2, .5, .5)
-#    wobble.chain(filter.Brightness(g))
-#    funcs = [wobble]
-#    funcs = [purple]
-
-loaded = False
-
-ch.send_pattern(BROADCAST, rainbow)
-ch.next_pattern(BROADCAST, 0)
-ch.debug_serial(10)
-
-#while True:
-#    for f in funcs:
-#        if not loaded:
-#            ch.send_pattern(BROADCAST, f)
-#            ch.debug_serial(1)
-#            ch.next_pattern(BROADCAST, 0)
-#            ch.debug_serial(1)
-#            loaded = True
-#            continue
-            
-#        ch.send_pattern(BROADCAST, f)
-#        ch.debug_serial(1)
-#        ch.next_pattern(BROADCAST,1000) 
-#        ch.debug_serial(5)
-#        ch.off(BROADCAST)
-#        ch.debug_serial(1)
-#        loaded = False

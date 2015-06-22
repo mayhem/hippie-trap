@@ -65,3 +65,35 @@ int32_t g_step(void *_self, uint32_t t)
     else
         return self->offset;
 }
+
+void g_generator_op_init(void *_self, uint8_t op, generator_t *g, generator_t *g2)
+{
+    generator_op_t *self = (generator_op_t *)_self;
+    self->g = g;
+    self->g2 = g2;
+    self->op = op;
+}
+
+int32_t g_generator_op_get(void *_self, uint32_t t)
+{
+    generator_op_t *self = (generator_op_t *)_self;
+    int32_t         v1, v2;
+
+    v1 = self->g->method(self->g, t);
+    v2 = self->g2->method(self->g2, t);
+
+    switch(self->op)
+    {
+        case OP_ADD:
+            return v1 + v2;
+        case OP_SUB:
+            return v1 - v2;
+        case OP_MUL:
+            return v1 * v2;
+        case OP_DIV:
+            return v1 * SCALE_FACTOR / v2;
+        case OP_MOD:
+            return v1 % v2;
+    }
+    return 0;
+}

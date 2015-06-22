@@ -40,8 +40,9 @@ class RandomColorSequence(ColorSource):
        Return colors that appear _random_ to a human.
     '''
 
-    def __init__(self, period, seed=0):
+    def __init__(self, period, phase=0, seed=0):
         self.period = period
+        self.phase = phase
         self.seed = seed
         super(RandomColorSequence, self).__init__(None)
 
@@ -58,24 +59,32 @@ class RandomColorSequence(ColorSource):
 
 class HSV(ColorSource):
 
-    def __init__(self, gen, gen2 = None, gen3 = None):
-        super(HSV, self).__init__(g, gen2, gen3)
+    def __init__(self, gen, g2 = None, g3 = None):
+        super(HSV, self).__init__(gen, g2, g3)
 
     def describe(self):
-        desc = common.make_function(common.FUNC_COLOR_WHEEL, (common.ARG_VALUE,common.ARG_VALUE,common.ARG_FUNC))
-        desc += common.pack_fixed(self.period)
-        desc += common.pack_fixed(self.seed)
+        if self.g3:
+            desc = common.make_function(common.FUNC_HSV, (common.ARG_FUNC, common.ARG_FUNC, common.ARG_FUNC))
+        elif self.g2:
+            desc = common.make_function(common.FUNC_HSV, (common.ARG_FUNC, common.ARG_FUNC))
+        else:
+            desc = common.make_function(common.FUNC_HSV, (common.ARG_FUNC,))
+
         #print "%s(" % (self.__class__.__name__),
         if self.g:
             desc += self.g.describe()
+            if self.g2:
+                desc += self.g2.describe()
+            if self.g3:
+                desc += self.g3.describe()
         #print ")"
         return desc + self.describe_next()
 
     def __getitem__(self, t):
-        if self.gen2 and self.gen3:
-            col = colorsys.hsv_to_rgb(self.g[t], self.gen2[t], self.gen3[t])
-        elif self.gen2:
-            col = colorsys.hsv_to_rgb(self.g[t], self.gen2[t], 1)
+        if self.g2 and self.g3:
+            col = colorsys.hsv_to_rgb(self.g[t], self.g2[t], self.g3[t])
+        elif self.g2:
+            col = colorsys.hsv_to_rgb(self.g[t], self.g2[t], 1)
         else:
             col = colorsys.hsv_to_rgb(self.g[t], 1, 1)
         return self.call_next(t, Color(int(col[0] * 255), int(col[1] * 255), int(col[2] * 255)))
@@ -113,3 +122,88 @@ class Rainbow(ColorSource):
             color[2] = 0
 
         return self.call_next(t, Color(color[0], color[1], color[2]))
+
+class CompColorSource(common.ChainLink):
+
+    def __init__(self, color, dist, index):
+        '''color - base color for the triad. const or gen
+           index - which of the parts of the complement are we: 0 anchor, 1 secondary color 1, 2 secondary color 2
+           dist - the distribution angle between secondary colors'''
+        super(CompColorSource, self).__init__()
+        self.color = color
+        self.dist = dist
+        self.index = index
+
+    def describe(self):
+        desc = common.make_function(common.FUNC_COMPLEMENTARY, (common.ARG_FUNC, common.ARG_FUNC, common.ARG_VALUE))
+        desc += self.hue.describe()
+        desc += self.dist.describe()
+        desc += common.pack_fixed(self.index)
+        return desc + self.describe_next()
+
+    def __getitem__(self, t):
+        if self.index == 0:
+            return self.call_next(t, self.color)
+        elif self.index == 1:
+            h,s,v = colorsys.rgb_to_hsv(self.color.color[0] / 255.0, self.color.color[1] / 255.0, self.color.color[2] / 255.0)
+            h = (h - self.dist) % 1.0
+            col = colorsys.hsv_to_rgb(h, s, v)
+            return self.call_next(t, Color(int(col[0] * 255), int(col[1] * 255), int(col[2] * 255)))
+        else:
+            h,s,v = colorsys.rgb_to_hsv(self.color.color[0] / 255.0, self.color.color[1] / 255.0, self.color.color[2] / 255.0)
+            h = (h + self.dist) % 1.0
+            col = colorsys.hsv_to_rgb(h, s, v)
+            return self.call_next(t, Color(int(col[0] * 255), int(col[1] * 255), int(col[2] * 255)))
+
+class SourceOp(common.ChainLink):
+    def __init__(self, operation, src1, src2, src3 = None):
+        super(SourceOp, self).__init__()
+        self.operation = operation
+        self.s1 = src1
+        self.s2 = src2
+        self.s3 = src3
+
+    def describe(self):
+        if self.s3:
+            desc = common.make_function(common.FUNC_SRCOP, (common.ARG_VALUE, common.ARG_FUNC,common.ARG_FUNC, common.ARG_FUNC))
+        else:
+            desc = common.make_function(common.FUNC_SRCOP, (common.ARG_VALUE, common.ARG_FUNC,common.ARG_FUNC))
+        desc += common.pack_fixed(self.operation)
+        desc += self.s1.describe()
+        desc += self.s2.describe()
+        if self.s3:
+            desc += self.s2.describe()
+        return desc + self.describe_next()
+
+    def __getitem__(self, t):
+        col1 = self.s1[t]
+        col2 = self.s2[t]
+        if self.s3:
+            col3 = self.s3[t]
+        else:
+            colr3 = Color(0,0,0)
+        res = Color(0,0,0)
+        if self.operation == common.OP_ADD:
+            res.color[0] = max(0, min(255, col1.color[0] + col2.color[0] + col3.color[0]))
+            res.color[1] = max(0, min(255, col1.color[1] + col2.color[1] + col3.color[1]))
+            res.color[2] = max(0, min(255, col1.color[2] + col2.color[2] + col3.color[2]))
+        elif self.operation == common.OP_SUB:
+            res.color[0] = max(0, min(255, col1.color[0] - col2.color[0] - col3.color[0]))
+            res.color[1] = max(0, min(255, col1.color[1] - col2.color[1] - col3.color[1]))
+            res.color[2] = max(0, min(255, col1.color[2] - col2.color[2] - col3.color[2]))
+
+        # Not sure if any of these make sense. :)
+        elif self.operation == common.OP_MUL:
+            res.color[0] = max(0, min(255, col1.color[0] * col2.color[0]))
+            res.color[1] = max(0, min(255, col1.color[1] * col2.color[1]))
+            res.color[2] = max(0, min(255, col1.color[2] * col2.color[2]))
+        elif self.operation == common.OP_SUB:
+            res.color[0] = max(0, min(255, col1.color[0] / col2.color[0]))
+            res.color[1] = max(0, min(255, col1.color[1] / col2.color[1]))
+            res.color[2] = max(0, min(255, col1.color[2] / col2.color[2]))
+        elif self.operation == common.OP_MOD:
+            res.color[0] = max(0, min(255, col1.color[0] % col2.color[0]))
+            res.color[1] = max(0, min(255, col1.color[1] % col2.color[1]))
+            res.color[2] = max(0, min(255, col1.color[2] % col2.color[2]))
+
+        return self.call_next(t, res)

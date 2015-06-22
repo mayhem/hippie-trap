@@ -3,6 +3,59 @@ import abc
 import math
 import common
 
+class GenOp(object):
+    def __init__(self, operation, gen1, gen2):
+        self.operation = operation
+        self.g1 = gen1
+        self.g2 = gen2
+
+    def describe(self):
+        desc = common.make_function(common.FUNC_GENOP, (common.ARG_FUNC,command.ARG_FUNC))
+        desc += common.pack_fixed(self.operation)
+        desc += self.g1.describe()
+        desc += self.g2.describe()
+        return desc + self.describe_next()
+
+    def __getitem__(self, t):
+        if self.operation == common.OP_ADD:
+            return self.g1[t] + self.g2[t]
+        elif self.operation == common.OP_SUB:
+            return self.g1[t] - self.g2[t]
+        elif self.operation == common.OP_MUL:
+            return self.g1[t] * self.g2[t]
+        elif self.operation == common.OP_SUB:
+            return self.g1[t] * SCALE_FACTOR / self.g2[t]
+        elif self.operation == common.OP_MOD:
+            return self.g1[t] % self.g2[t]
+
+        return 0.0
+
+class Abs(object):
+
+    def __init__(self, gen):
+        self.g = gen
+
+    def describe(self):
+        desc = common.make_function(common.FUNC_ABS, (common.ARG_FUNC,))
+        desc += self.g.describe()
+        return desc
+
+    def __getitem__(self, t):
+        return abs(self.g[t])
+
+class Constant(object):
+
+    def __init__(self, value):
+        self.value = value
+
+    def describe(self):
+        desc = common.make_function(common.FUNC_CONSTANT, (common.ARG_VALUE,))
+        desc += common.pack_fixed(self.value)
+        return desc
+
+    def __getitem__(self, t):
+        return self.value
+
 class Generator(object):
 
     def __init__(self, period, phase, amplitude, offset):
@@ -95,3 +148,40 @@ class Step(Generator):
             return self.amplitude + self.offset
         else:
             return self.offset
+
+class Sparkle(Generator):
+
+    def __init__(self, period = 1.0, phase = 0.0, amplitude = 1.0, offset = 0.0):
+        super(Sparkle, self).__init__(period, phase, amplitude, offset)
+
+    def describe(self):
+        desc = common.make_function(common.FUNC_SPARKLE, (common.ARG_VALUE, common.ARG_VALUE, common.ARG_VALUE, common.ARG_VALUE))
+        desc += common.pack_fixed(self.period)
+        desc += common.pack_fixed(self.phase)
+        desc += common.pack_fixed(self.amplitude)
+        desc += common.pack_fixed(self.offset)
+        #print "%s(%.3f, %.3f, %.3f, %.3f)" % (self.__class__.__name__, self.period, self.phase, self.amplitude, self.offset),
+        return desc
+
+    def __getitem__(self, t):
+        v = (t / self.period) + self.phase
+        if v < 1.0:
+            return self.amplitude - t + self.offset
+        if t >= 1.0:
+            v = self.offset
+
+class Line(Generator):
+
+    def __init__(self, period = 1.0, phase = 0.0, amplitude = 1.0, offset = 0.0):
+        super(Line, self).__init__(period, phase, amplitude, offset)
+
+    def describe(self):
+        desc = common.make_function(common.FUNC_LINE, (common.ARG_VALUE, common.ARG_VALUE, common.ARG_VALUE, common.ARG_VALUE))
+        desc += common.pack_fixed(self.period)
+        desc += common.pack_fixed(self.phase)
+        desc += common.pack_fixed(self.amplitude)
+        desc += common.pack_fixed(self.offset)
+        return desc
+
+    def __getitem__(self, t):
+        return (t * self.amplitude) + self.offset
