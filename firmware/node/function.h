@@ -17,14 +17,6 @@ typedef struct fu_function_t
     void      *next;
 } fu_function_t;
 
-typedef struct fu_local_random_t
-{
-    fu_method  method;
-    void      *next;
-    int32_t    lower, upper, value;
-} fu_local_random_t;
-
-void fu_local_random_init(fu_local_random_t *self, int32_t lower, int32_t upper);
-void fu_local_random_get(void *_self, uint32_t t, int32_t *dest);
+int32_t fu_local_random(int32_t lower, int32_t upper);
 
 #endif

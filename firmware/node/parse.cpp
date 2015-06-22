@@ -65,13 +65,14 @@ void *heap_alloc(uint8_t bytes)
     return ptr;
 }
 
-void *create_object(uint8_t   id, 
+void *create_object(uint8_t   id, uint8_t *is_local,
                     int32_t  *values, uint8_t value_count,
                     void    **gens, uint8_t gen_count,
                     color_t  *colors, uint8_t color_count)
 {
     void *obj = NULL;
 
+    *is_local = 0;
     switch(id)
     {
         case FILTER_FADE_IN:
@@ -319,16 +320,17 @@ void *create_object(uint8_t   id,
                 }
             }
             break;
-
-        // plan: add flag about local value, evaluate on the spot, return value. receiver casts to value accordingly.     
+    
         case FUNC_LOCAL_RANDOM:
             {
+                *is_local = 1;
+                Serial.println("is local!");
                 if (value_count == 2)
                 {
-                    obj = heap_alloc(sizeof(fu_local_random_t));
-                    if (!obj)
-                        return NULL;
-                    fu_local_random_init((fu_local_random_t *)obj, values[0], values[1]);
+
+                    int32_t ret = fu_local_random(values[0], values[1]);
+                    Serial.println(ret);
+                    return (void *)ret;
                 }
                 else
                 {
@@ -346,17 +348,17 @@ void *create_object(uint8_t   id,
 | ID - ARG | FUNC SIG | ( 
 */
 
-void *parse_func(uint8_t *code, uint16_t len, uint16_t *index)
+void *parse_func(uint8_t *code, uint16_t len, uint16_t *index, uint8_t *is_local)
 {
     uint8_t  id, num_args, i, arg, value_count = 0, gen_count = 0, color_count = 0;
     uint16_t arg_index;
     uint32_t args, value;
     int32_t  values[MAX_NUM_ARGS];
-    void    *gens[MAX_NUM_ARGS];
+    void    *gens[MAX_NUM_ARGS], *ret;
     color_t  colors[MAX_NUM_ARGS];
 
-    id = code[*index] >> 4;
-    num_args = code[*index] & 0xF;
+    id = code[*index] >> 3;
+    num_args = code[*index] & 0x7;
 
     args = (code[*index + 2] << 8) | code[*index + 1];
     arg_index = *index + 3;
@@ -370,7 +372,14 @@ void *parse_func(uint8_t *code, uint16_t len, uint16_t *index)
         }
         else if (arg == ARG_FUNC)
         {
-            gens[gen_count++] = parse_func(code, len, &arg_index);
+            uint8_t local = 0;
+            gens[gen_count++] = parse_func(code, len, &arg_index, &local);
+            if (local)
+            {
+                gen_count--;
+                values[value_count++] = (uint32_t)gens[gen_count];
+                Serial.println("local result: " + String(values[value_count-1]));
+            }
         }
         else if (arg == ARG_COLOR)
         {
@@ -404,22 +413,23 @@ void *parse_func(uint8_t *code, uint16_t len, uint16_t *index)
     }
     *index = arg_index;
 
-    return create_object(id, values, value_count, gens, gen_count, colors, color_count);
+    return create_object(id, is_local, values, value_count, gens, gen_count, colors, color_count);
 }
 
 void *parse(uint8_t *code, uint16_t len, uint8_t *heap)
 {
     void       *source, *ptr, *filter;
     uint16_t    offset = 0;
+    uint8_t     local;
 
     heap_setup(heap);
-    source = parse_func(code, len, &offset);
+    source = parse_func(code, len, &offset, &local);
     if (!source)
         return NULL;
 
     for(; offset < len;)
     {
-        filter = parse_func(code, len, &offset);
+        filter = parse_func(code, len, &offset, &local);
         if (!filter)
             return NULL;
 
