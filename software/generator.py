@@ -65,7 +65,7 @@ class LocalRandomValue(object):
         self.value = lower + random.random() * (upper - lower)
 
     def describe(self):
-        desc = common.make_function(common.FUNC_RANDOM, (common.ARG_VALUE,common.ARG_VALUE))
+        desc = common.make_function(common.FUNC_LOCAL_RANDOM, (common.ARG_VALUE,common.ARG_VALUE))
         desc += common.pack_fixed(self.lower)
         desc += common.pack_fixed(self.upper)
         return desc
@@ -80,6 +80,30 @@ class Generator(object):
         self.phase = phase
         self.amplitude = amplitude
         self.offset = offset
+
+        if type(self.period) in (int, float):
+            self.period_f = None
+        else:
+            self.period_f = self.period
+            self.period = self.period_f[0]
+
+        if type(self.phase) in (int, float):
+            self.phase_f = None
+        else:
+            self.phase_f = self.phase
+            self.phase = self.phase_f[0]
+
+        if type(self.amplitude) in (int, float):
+            self.amplitude_f = None
+        else:
+            self.amplitude_f = self.amplitude
+            self.amplitude = self.amplitude_f[0]
+
+        if type(self.offset) in (int, float):
+            self.offset_f = None
+        else:
+            self.offset_f = self.offset
+            self.offset = self.offset_f[0]
 
     @abc.abstractmethod
     def describe(self):
@@ -111,14 +135,20 @@ class Square(Generator):
 
     def __init__(self, period = 1.0, phase = 0.0, amplitude = 1.0, offset = 0.0, duty=.5):
         super(Square, self).__init__(period, phase, amplitude, offset)
-        if isinstance(self.period, object):
-            self.period = self.period[0]
-            print "local random period:", self.period
         self.duty = duty
+        if type(self.duty) in (int, float):
+            self.duty_f = None
+        else:
+            self.duty_f = self.duty
+            self.duty = self.duty_f[0]
 
     def describe(self):
-        desc = common.make_function(common.FUNC_SQUARE, (common.ARG_VALUE, common.ARG_VALUE, common.ARG_VALUE, common.ARG_VALUE, common.ARG_VALUE))
-        desc += common.pack_fixed(self.period)
+        if self.period_f:
+            desc = common.make_function(common.FUNC_SQUARE, (common.ARG_FUNC, common.ARG_VALUE, common.ARG_VALUE, common.ARG_VALUE, common.ARG_VALUE))
+            desc += self.period_f.describe()
+        else:
+            desc = common.make_function(common.FUNC_SQUARE, (common.ARG_VALUE, common.ARG_VALUE, common.ARG_VALUE, common.ARG_VALUE, common.ARG_VALUE))
+            desc += common.pack_fixed(self.period)
         desc += common.pack_fixed(self.phase)
         desc += common.pack_fixed(self.amplitude)
         desc += common.pack_fixed(self.offset)

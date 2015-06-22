@@ -26,6 +26,9 @@ ch.send_entropy()
 random.seed()
 period_s = 1
 
+def pfs(seconds):
+    return (math.pi * 2) / seconds
+
 #hsv = function.HSV(generator.Sawtooth(.15))
 #
 #rainbow = function.Rainbow(generator.Sawtooth(.15))
@@ -40,7 +43,7 @@ period_s = 1
 ##purple.chain(filter.FadeOut(1.0, 5.0))
 
 wobble = function.RandomColorSequence(period_s, random.randint(0, 255))
-g = generator.Sin((math.pi * 2) / period_s, -math.pi/2, .5, .5)
+g = generator.Sin(pfs(1), -math.pi/2, .5, .5)
 g = generator.Sparkle()
 wobble.chain(filter.Brightness(g))
 
@@ -77,7 +80,7 @@ RUN_LOCAL = 0
 
 r = generator.LocalRandomValue(.25, 1.00)
 src = function.ConstantColor(Color(255,0,0))
-src.chain(filter.Brightness(generator.Square(r)))
+src.chain(filter.Brightness(generator.Sawtooth(r)))
 
 if RUN_LOCAL:
     ch.run(src, DELAY, 20)
