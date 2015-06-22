@@ -23,10 +23,14 @@ FUNC_CONSTANT          = 16
 FUNC_COMPLEMENTARY     = 17
 FUNC_LOCAL_RANDOM      = 18
 
+FUNC_MAX               = 31
+
 ARG_VALUE              = 0
 ARG_FUNC               = 1
 ARG_COLOR              = 2
 ARG_LOCAL              = 3
+
+MAX_NUM_ARGS           = 8
 
 OP_ADD = 0
 OP_SUB = 1
@@ -39,7 +43,13 @@ def make_function(id, args):
     for i, arg in enumerate(args):
         flags |= arg << (i * 2);
 
-    return bytearray(pack("<BH", (id << 4) | len(args), flags))
+    if len(args) > 8:
+        raise ValueError("Functions cannot have more than 8 arguments")
+
+    if id > FUNC_MAX:
+        raise ValueError("Max 32 functions are allowed.")
+
+    return bytearray(pack("<BH", (id << 3) | len(args), flags))
 
 def pack_fixed(value):
     '''Convert value to a signed, scaled 4 byte integer'''
