@@ -32,7 +32,13 @@
 #define SRC_HSV                  8
 #define SRC_RAINBOW              9
 #define GEN_STEP                10
-
+#define FUNC_SPARKLE            11
+#define FUNC_GENOP              12
+#define FUNC_SRCOP              13
+#define FUNC_ABS                14
+#define FUNC_LINE               15
+#define FUNC_CONSTANT           16
+#define FUNC_COMPLEMENTARY      17
 #define FUNC_LOCAL_RANDOM       18
 
 // variables to help manage the heap.
@@ -241,6 +247,25 @@ void *create_object(uint8_t   id,
                 }
             }
             break;
+
+        case FUNC_GENOP:
+            {
+                if (value_count == 1 && gen_count == 2)
+                {
+                    obj = heap_alloc(sizeof(generator_op_t));
+                    if (!obj)
+                        return NULL;
+                    g_generator_op_init(obj, values[0], values[1], values[2], values[3]);
+                }
+                else
+                {
+                    g_error = ERR_PARSE_FAILURE;
+                    return NULL;
+                }
+            }
+            break;
+
+#define FUNC_SRCOP              13
         // plan: add flag about local value, evaluate on the spot, return value. receiver casts to value accordingly.     
         case FUNC_LOCAL_RANDOM:
             {
