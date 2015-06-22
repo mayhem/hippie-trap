@@ -67,6 +67,11 @@ void hsv_to_rgb(int32_t h, int32_t s, int32_t v, color_t *color)
     color->c[2] = b;
 }
 
+void rgb_to_hsv(color_t *color, int32_t *h, int32_t *s, int32_t *v)
+{
+    // finish me!
+}
+
 void s_constant_color_init(s_constant_color_t *self, color_t *color)
 {
     self->color.c[0] = color->c[0];
@@ -166,6 +171,8 @@ void s_rainbow_get(void *_self, uint32_t t, color_t *dest)
     }
 }
 
+//--
+
 void s_op_init(s_op_t *self, uint8_t op, s_source_t *s1, s_source_t *s2)
 {
     self->method = s_op_get;
@@ -209,5 +216,44 @@ void s_op_get(void *_self, uint32_t t, color_t *dest)
             dest->c[1] = max(0, min(255, (int32_t)col1.c[1] % (int32_t)col2.c[1]));
             dest->c[2] = max(0, min(255, (int32_t)col1.c[2] % (int32_t)col2.c[2]));
             break;
+    }
+}
+
+//--
+
+void s_comp_init(s_comp_t *self, color_t *col, int32_t dist, int32_t index)
+{
+    self->method = s_comp_get;
+    self->next = NULL; 
+    self->col.c[0] = col->c[0];
+    self->col.c[1] = col->c[1];
+    self->col.c[2] = col->c[2];
+    self->dist = dist;
+    self->index = index;
+}
+
+void s_comp_get(void *_self, uint32_t t, color_t *dest)
+{
+    s_comp_t *self = (s_comp_t *)_self;
+    int32_t h, s, v;
+
+    if (self->index == 0)
+    {
+        dest->c[0] = self->col.c[0];
+        dest->c[1] = self->col.c[1];
+        dest->c[2] = self->col.c[2];
+    }
+    else
+    if (self->index == 1)
+    {
+        rgb_to_hsv(&self->col, &h, &s, &v);
+        h = (h - self->dist) % SCALE_FACTOR;
+        hsv_to_rgb(h, s, v, dest);
+    }
+    else
+    {
+        rgb_to_hsv(&self->col, &h, &s, &v);
+        h = (h + self->dist) % SCALE_FACTOR;
+        hsv_to_rgb(h, s, v, dest);
     }
 }

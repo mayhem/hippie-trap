@@ -36,8 +36,8 @@
 #define FUNC_GENOP              12
 #define FUNC_SRCOP              13
 #define FUNC_ABS                14
-#define FUNC_LINE               15
-#define FUNC_CONSTANT           16
+#define GEN_LINE                15
+#define GEN_CONSTANT            16
 #define FUNC_COMPLEMENTARY      17
 #define FUNC_LOCAL_RANDOM       18
 
@@ -221,6 +221,7 @@ void *create_object(uint8_t   id,
         case GEN_SIN:
         case GEN_SAWTOOTH:
         case GEN_STEP:
+        case GEN_LINE:
             {
                 if (value_count == 4)
                 {
@@ -238,6 +239,9 @@ void *create_object(uint8_t   id,
                         case GEN_STEP:
                             g_generator_init(obj, g_step, values[0], values[1], values[2], values[3]);
                         break;
+                        case GEN_LINE:
+                            g_generator_init(obj, g_line, values[0], values[1], values[2], values[3]);
+                        break;
                     }
                 }
                 else
@@ -252,10 +256,10 @@ void *create_object(uint8_t   id,
             {
                 if (value_count == 1 && gen_count == 2)
                 {
-                    obj = heap_alloc(sizeof(generator_op_t));
+                    obj = heap_alloc(sizeof(s_op_t));
                     if (!obj)
                         return NULL;
-                    g_generator_op_init(obj, values[0], values[1], values[2], values[3]);
+                    g_generator_op_init(obj, (uint8_t)values[0], (generator_t*)gens[0], (generator_t*)gens[1]);
                 }
                 else
                 {
@@ -265,16 +269,66 @@ void *create_object(uint8_t   id,
             }
             break;
 
-#define FUNC_SRCOP              13
+        case FUNC_SRCOP:
+            {
+                if (value_count == 1 && gen_count == 2)
+                {
+                    obj = heap_alloc(sizeof(s_op_t));
+                    if (!obj)
+                        return NULL;
+                    s_op_init((s_op_t *)obj, (uint8_t)values[0], (s_source_t*)gens[0], (s_source_t*)gens[1]);
+                }
+                else
+                {
+                    g_error = ERR_PARSE_FAILURE;
+                    return NULL;
+                }
+            }
+            break;
+
+        case FUNC_ABS:
+            {
+                if (gen_count == 1)
+                {
+                    obj = heap_alloc(sizeof(g_abs_t));
+                    if (!obj)
+                        return NULL;
+                    g_abs_init(obj, (generator_t *)gens[0]);
+                }
+                else
+                {
+                    g_error = ERR_PARSE_FAILURE;
+                    return NULL;
+                }
+            }
+            break;
+
+        case GEN_CONSTANT:
+            {
+                if (value_count == 1)
+                {
+                    obj = heap_alloc(sizeof(g_constant_t));
+                    if (!obj)
+                        return NULL;
+                    g_constant_init((g_constant_t *)obj, (uint8_t)values[0]);
+                }
+                else
+                {
+                    g_error = ERR_PARSE_FAILURE;
+                    return NULL;
+                }
+            }
+            break;
+
         // plan: add flag about local value, evaluate on the spot, return value. receiver casts to value accordingly.     
         case FUNC_LOCAL_RANDOM:
             {
                 if (value_count == 2)
                 {
-                    obj = heap_alloc(sizeof(f_local_random_t));
+                    obj = heap_alloc(sizeof(fu_local_random_t));
                     if (!obj)
                         return NULL;
-                    f_local_random_init((s_local_random_t *)obj, values[0], values[1]);
+                    fu_local_random_init((fu_local_random_t *)obj, values[0], values[1]);
                 }
                 else
                 {

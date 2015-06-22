@@ -66,9 +66,16 @@ int32_t g_step(void *_self, uint32_t t)
         return self->offset;
 }
 
+int32_t g_line(void *_self, uint32_t t)
+{
+    generator_t *self = (generator_t *)_self;
+    return ((int32_t)t * self->amplitude / SCALE_FACTOR) + self->offset;
+}
+
 void g_generator_op_init(void *_self, uint8_t op, generator_t *g, generator_t *g2)
 {
     generator_op_t *self = (generator_op_t *)_self;
+    self->method = g_generator_op_get;
     self->g = g;
     self->g2 = g2;
     self->op = op;
@@ -96,4 +103,29 @@ int32_t g_generator_op_get(void *_self, uint32_t t)
             return v1 % v2;
     }
     return 0;
+}
+
+void g_abs_init(void *_self, generator_t *g)
+{
+    g_abs_t *self = (g_abs_t *)_self;
+    self->method = g_abs_get;
+    self->g = g;
+}
+
+int32_t g_abs_get(void *_self, uint32_t t)
+{
+    generator_op_t *self = (generator_op_t *)_self;
+    return abs(self->g->method(self->g, t));
+}
+
+void g_constant_init(void *_self, int32_t value)
+{
+    g_constant_t *self = (g_constant_t *)_self;
+    self->value = value;
+}
+
+int32_t g_constant_get(void *_self, uint32_t t)
+{
+    g_constant_t *self = (g_constant_t *)_self;
+    return self->value;
 }
