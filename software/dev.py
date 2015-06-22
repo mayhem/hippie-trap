@@ -75,8 +75,9 @@ wobble.chain(filter.Brightness(g))
 
 RUN_LOCAL = 0
 
+r = generator.LocalRandomValue(.25, 1.00)
 src = function.ConstantColor(Color(255,0,0))
-src.chain(filter.Brightness(generator.Square(1, 0, 1, 0, .05)))
+src.chain(filter.Brightness(generator.Square(r)))
 
 if RUN_LOCAL:
     ch.run(src, DELAY, 20)

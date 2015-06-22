@@ -1,6 +1,7 @@
 #!/usr/bin/python
 import abc
 import math
+import random
 import common
 
 class GenOp(object):
@@ -56,6 +57,22 @@ class Constant(object):
     def __getitem__(self, t):
         return self.value
 
+class LocalRandomValue(object):
+
+    def __init__(self, lower, upper):
+        self.lower = lower
+        self.upper = upper
+        self.value = lower + random.random() * (upper - lower)
+
+    def describe(self):
+        desc = common.make_function(common.FUNC_RANDOM, (common.ARG_VALUE,common.ARG_VALUE))
+        desc += common.pack_fixed(self.lower)
+        desc += common.pack_fixed(self.upper)
+        return desc
+
+    def __getitem__(self, t):
+        return self.value
+
 class Generator(object):
 
     def __init__(self, period, phase, amplitude, offset):
@@ -94,6 +111,9 @@ class Square(Generator):
 
     def __init__(self, period = 1.0, phase = 0.0, amplitude = 1.0, offset = 0.0, duty=.5):
         super(Square, self).__init__(period, phase, amplitude, offset)
+        if isinstance(self.period, object):
+            self.period = self.period[0]
+            print "local random period:", self.period
         self.duty = duty
 
     def describe(self):

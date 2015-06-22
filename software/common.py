@@ -21,11 +21,12 @@ FUNC_ABS               = 14
 FUNC_LINE              = 15
 FUNC_CONSTANT          = 16
 FUNC_COMPLEMENTARY     = 17
+FUNC_LOCAL_RANDOM      = 18
 
 ARG_VALUE              = 0
 ARG_FUNC               = 1
 ARG_COLOR              = 2
-ARG_CONSTANT           = 3
+ARG_LOCAL              = 3
 
 OP_ADD = 0
 OP_SUB = 1
@@ -41,6 +42,7 @@ def make_function(id, args):
     return bytearray(pack("<BH", (id << 4) | len(args), flags))
 
 def pack_fixed(value):
+    '''Convert value to a signed, scaled 4 byte integer'''
     return bytearray(pack("<i", int(value * 1000)))
 
 def pack_color(col):
