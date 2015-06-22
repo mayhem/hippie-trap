@@ -5,6 +5,7 @@
 
 #include "source.h"
 #include "filter.h"
+#include "function.h"
 #include "generator.h"
 
 #define MAX_CODE_LEN           512
@@ -16,7 +17,6 @@
 #define ARG_LOCAL                3
 
 #define LOCAL_ID                 0
-#define LOCAL_RAND               1
 #define LOCAL_POS_X              2
 #define LOCAL_POS_Y              3
 #define LOCAL_POS_Z              4
@@ -33,25 +33,11 @@
 #define SRC_RAINBOW              9
 #define GEN_STEP                10
 
+#define FUNC_LOCAL_RANDOM       18
+
 // variables to help manage the heap.
 uint8_t *cur_heap = NULL;
 uint16_t heap_offset = 0;
-
-// TODO: 
-// todo: tune heap/packet sizes based on parsing. See
-// todo: test clear next pattern, position, local args, generator op
-// add: individual LED support
-// add: address support
-// todo: change delay to speed (don't change DELAY, change how fast t increments)
-// operator object: combine one or more sources
-// chain sources: add source chains and specify operator (+, -, / and div ?)
-// square wave: random period, custom/duty cycle
-// sparkle generator: impulse, then decay., random repeat
-
-
-// New pattern stuff
-// - 3d function source
-// - complementary color source
 
 void heap_setup(uint8_t *heap)
 {
@@ -208,8 +194,25 @@ void *create_object(uint8_t   id,
             }
             break;
 
-        case GEN_SIN:
         case GEN_SQUARE:
+            {
+                if (value_count == 5)
+                {
+                    obj = heap_alloc(sizeof(square_t));
+                    if (!obj)
+                        return NULL;
+
+                    g_square_init(obj, g_square, values[0], values[1], values[2], values[3], values[4]);
+                }
+                else
+                {
+                    g_error = ERR_PARSE_FAILURE;
+                    return NULL;
+                }
+            }
+            break;
+                     
+        case GEN_SIN:
         case GEN_SAWTOOTH:
         case GEN_STEP:
             {
@@ -223,9 +226,6 @@ void *create_object(uint8_t   id,
                         case GEN_SIN:
                             g_generator_init(obj, g_sin, values[0], values[1], values[2], values[3]);
                         break;
-                        case GEN_SQUARE:
-                            g_generator_init(obj, g_square, values[0], values[1], values[2], values[3]);
-                        break;
                         case GEN_SAWTOOTH:
                             g_generator_init(obj, g_sawtooth, values[0], values[1], values[2], values[3]);
                         break;
@@ -233,6 +233,23 @@ void *create_object(uint8_t   id,
                             g_generator_init(obj, g_step, values[0], values[1], values[2], values[3]);
                         break;
                     }
+                }
+                else
+                {
+                    g_error = ERR_PARSE_FAILURE;
+                    return NULL;
+                }
+            }
+            break;
+        // plan: add flag about local value, evaluate on the spot, return value. receiver casts to value accordingly.     
+        case FUNC_LOCAL_RANDOM:
+            {
+                if (value_count == 2)
+                {
+                    obj = heap_alloc(sizeof(f_local_random_t));
+                    if (!obj)
+                        return NULL;
+                    f_local_random_init((s_local_random_t *)obj, values[0], values[1]);
                 }
                 else
                 {
@@ -290,8 +307,6 @@ void *parse_func(uint8_t *code, uint16_t len, uint16_t *index)
                 case LOCAL_ID:
                     values[value_count++] = g_node_id;
                     break;
-                case LOCAL_RAND:
-                    break;
                 case LOCAL_POS_X:
                     values[value_count++] = g_pos[0];
                     break;
@@ -329,7 +344,6 @@ void *parse(uint8_t *code, uint16_t len, uint8_t *heap)
         if (!filter)
             return NULL;
 
-        
         ptr = (s_source_t *)source;
         while (((f_filter_t *)ptr)->next)
             ptr = ((f_filter_t *)ptr)->next;
