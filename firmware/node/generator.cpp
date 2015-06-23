@@ -66,6 +66,16 @@ int32_t g_step(void *_self, uint32_t t)
         return self->offset;
 }
 
+int32_t g_impulse(void *_self, uint32_t t)
+{
+    generator_t *self = (generator_t *)_self;
+    int32_t v = ((int32_t)t * SCALE_FACTOR / self->period) + self->phase;
+    if (v >= 0 && v < SCALE_FACTOR)
+        return self->amplitude + self->offset;
+    else
+        return self->offset;
+}
+
 int32_t g_line(void *_self, uint32_t t)
 {
     generator_t *self = (generator_t *)_self;

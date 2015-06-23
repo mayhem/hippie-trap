@@ -38,6 +38,7 @@ int32_t g_square(void *self, uint32_t t);
 int32_t g_sawtooth(void *self, uint32_t t);
 int32_t g_step(void *self, uint32_t t);
 int32_t g_line(void *self, uint32_t t);
+int32_t g_impulse(void *self, uint32_t t);
 
 const uint8_t OP_ADD = 0;
 const uint8_t OP_SUB = 1;

@@ -22,6 +22,7 @@ FUNC_LINE              = 15
 FUNC_CONSTANT          = 16
 FUNC_COMPLEMENTARY     = 17
 FUNC_LOCAL_RANDOM      = 18
+FUNC_IMPULSE           = 19
 
 FUNC_MAX               = 31
 

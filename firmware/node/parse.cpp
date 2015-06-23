@@ -40,6 +40,7 @@
 #define GEN_CONSTANT            16
 #define FUNC_COMPLEMENTARY      17
 #define FUNC_LOCAL_RANDOM       18
+#define GEN_IMPULSE             19
 
 // variables to help manage the heap.
 uint8_t *cur_heap = NULL;
@@ -223,6 +224,7 @@ void *create_object(uint8_t   id, uint8_t *is_local,
         case GEN_SAWTOOTH:
         case GEN_STEP:
         case GEN_LINE:
+        case GEN_IMPULSE:
             {
                 if (value_count == 4)
                 {
@@ -242,6 +244,9 @@ void *create_object(uint8_t   id, uint8_t *is_local,
                         break;
                         case GEN_LINE:
                             g_generator_init(obj, g_line, values[0], values[1], values[2], values[3]);
+                        break;
+                        case GEN_IMPULSE:
+                            g_generator_init(obj, g_impulse, values[0], values[1], values[2], values[3]);
                         break;
                     }
                 }

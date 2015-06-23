@@ -105,6 +105,9 @@ class Generator(object):
             self.period_f = self.period
             self.period = self.period_f[0]
 
+        if self.period == 0.0:
+            raise ValueError("Period 0 is invalid")
+
         if type(self.phase) in (int, float):
             self.phase_f = None
         else:
@@ -233,7 +236,23 @@ class Step(Generator):
 
     def __getitem__(self, t):
         v = (t / self.period) + self.phase
-        if v > 0.0:
+        if v >= 0.0:
+            return self.amplitude + self.offset
+        else:
+            return self.offset
+
+class Impulse(Generator):
+
+    def __init__(self, period = 1.0, phase = 0.0, amplitude = 1.0, offset = 0.0):
+        super(Impulse, self).__init__(period, phase, amplitude, offset)
+
+    def describe(self):
+        desc, args = self._describe()
+        return desc + common.make_function(common.FUNC_IMPULSE, args)
+
+    def __getitem__(self, t):
+        v = (t / self.period) + self.phase
+        if v >= 0.0 and v < 1.0:
             return self.amplitude + self.offset
         else:
             return self.offset
