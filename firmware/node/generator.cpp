@@ -42,7 +42,7 @@ int32_t g_square(void *_self, uint32_t t)
 {
     square_t *self = (square_t *)_self;
     int32_t v = ((int32_t)t * SCALE_FACTOR / self->period) + self->phase;
-    if (v % SCALE_FACTOR >= self->duty)
+    if (v % SCALE_FACTOR < self->duty)
         return self->amplitude + self->offset;
     else
         return self->offset;

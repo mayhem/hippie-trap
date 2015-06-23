@@ -4,6 +4,24 @@ import math
 import random
 import common
 
+def plot(g):
+    import matplotlib.pyplot as plt
+    t = 0.0
+    end = 2.0
+    step = .01
+
+    x = []
+    y = []
+    while t <= end:
+        x.append(t)
+        y.append(g[t])
+        t += step
+
+    plt.plot(x, y)
+    plt.ylabel('value')
+    plt.xlabel('time')
+    plt.show()
+
 class GenOp(object):
     def __init__(self, operation, gen1, gen2):
         self.operation = operation
@@ -147,9 +165,11 @@ class Generator(object):
     def __getitem__(self, t):
         pass
 
+
 class Sin(Generator):
 
-    def __init__(self, period = 1.0, phase = 0.0, amplitude = 1.0, offset = .0):
+    def __init__(self, period = 1.0, phase = 0, amplitude = .5, offset = .5):
+        period = math.pi / (period/2.0)
         super(Sin, self).__init__(period, phase, amplitude, offset)
 
     def describe(self):
@@ -185,7 +205,7 @@ class Square(Generator):
 
     def __getitem__(self, t):
         v = (t / self.period) + self.phase
-        if float(v) % 1 >= self.duty:
+        if float(v) % 1 < self.duty:
             return self.amplitude + self.offset
         else:
             return self.offset
