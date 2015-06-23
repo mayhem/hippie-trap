@@ -135,8 +135,12 @@ class Chandelier(object):
         while True:
             t = time() - start_t
             col = function[t]
+            #print "%2.3f - %3d,%3d,%3d" % (t, col[0], col[1], col[2])
             self.set_color(BROADCAST, col)
             self.debug_serial(delay)
 
             if duration > 0 and t > duration:
                 break
+
+        # clean up local variables
+        generator.clear_local_random_values()

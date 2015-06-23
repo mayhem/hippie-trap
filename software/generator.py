@@ -22,6 +22,22 @@ def plot(g):
     plt.xlabel('time')
     plt.show()
 
+local_random_values = []
+
+def clear_local_random_values():
+    global local_random_values
+    local_random_values = []
+
+def set_local_random_value(value):
+    global local_random_values
+    local_random_values.append(value)
+
+def get_local_random_value(index):
+    global local_random_values
+    if len(local_random_values) <= index:
+        raise KeyError("Invalid get local random index: %d" % index)
+    return local_random_values[index]
+
 class GenOp(object):
     def __init__(self, operation, gen1, gen2):
         self.operation = operation
@@ -80,12 +96,28 @@ class LocalRandomValue(object):
     def __init__(self, lower, upper):
         self.lower = lower
         self.upper = upper
+        print lower, upper
         self.value = lower + random.random() * (upper - lower)
+        set_local_random_value(self.value)
 
     def describe(self):
         desc = common.make_function(common.FUNC_LOCAL_RANDOM, (common.ARG_VALUE,common.ARG_VALUE))
         desc += common.pack_fixed(self.lower)
         desc += common.pack_fixed(self.upper)
+        return desc
+
+    def __getitem__(self, t):
+        return self.value
+
+class RepeatLocalRandomValue(object):
+
+    def __init__(self, index):
+        self.index = index
+        self.value = get_local_random_value(index)
+
+    def describe(self):
+        desc = common.make_function(common.FUNC_REPEAT_LOCAL_RANDOM, (common.ARG_VALUE,))
+        desc += common.pack_fixed(self.index)
         return desc
 
     def __getitem__(self, t):
@@ -173,13 +205,13 @@ class Sin(Generator):
 
     def __init__(self, period = 1.0, phase = 0, amplitude = .5, offset = .5):
         # convert from using pesky pi to using parametric values
-        period = math.pi / (period/2.0)
-        phase = (-math.pi / 2.0) + (math.pi * 2 * phase)
         super(Sin, self).__init__(period, phase, amplitude, offset)
+        self.period = math.pi / (self.period/2.0)
+        self.phase = (-math.pi / 2.0) + (math.pi * 2 * self.phase)
 
     def describe(self):
         desc, args = self._describe()
-        return desc + common.make_function(common.FUNC_SIN, args)
+        return common.make_function(common.FUNC_SIN, args) + desc
 
     def __getitem__(self, t):
         v = math.sin(t * self.period + self.phase) * self.amplitude + self.offset
@@ -206,7 +238,7 @@ class Square(Generator):
             desc += self.duty_f.describe()
             args.append(common.ARG_FUNC)
 
-        return desc + common.make_function(common.FUNC_SQUARE, args)
+        return common.make_function(common.FUNC_SQUARE, args) + desc
 
     def __getitem__(self, t):
         v = (t / self.period) + self.phase
@@ -222,7 +254,7 @@ class Sawtooth(Generator):
 
     def describe(self):
         desc, args = self._describe()
-        return desc + common.make_function(common.FUNC_SAWTOOTH, args)
+        return common.make_function(common.FUNC_SAWTOOTH, args) + desc
 
     def __getitem__(self, t):
         return (t * self.period + self.phase) % 1.0 * self.amplitude + self.offset
@@ -234,7 +266,7 @@ class Step(Generator):
 
     def describe(self):
         desc, args = self._describe()
-        return desc + common.make_function(common.FUNC_STEP, args)
+        return common.make_function(common.FUNC_STEP, args) + desc
 
     def __getitem__(self, t):
         v = (t / self.period) + self.phase
@@ -250,7 +282,7 @@ class Impulse(Generator):
 
     def describe(self):
         desc, args = self._describe()
-        return desc + common.make_function(common.FUNC_IMPULSE, args)
+        return common.make_function(common.FUNC_IMPULSE, args) + desc
 
     def __getitem__(self, t):
         v = (t / self.period) + self.phase
@@ -266,7 +298,7 @@ class Sparkle(Generator):
 
     def describe(self):
         desc, args = self._describe()
-        return desc + common.make_function(common.FUNC_SPARKLE, args)
+        return common.make_function(common.FUNC_SPARKLE, args) + desc
 
     def __getitem__(self, t):
         v = (t / self.period) + self.phase
@@ -282,7 +314,7 @@ class Line(Generator):
 
     def describe(self):
         desc, args = self._describe()
-        return desc + common.make_function(common.FUNC_LINE, args)
+        return common.make_function(common.FUNC_LINE, args) + desc
 
     def __getitem__(self, t):
         return (t * self.amplitude) + self.offset
