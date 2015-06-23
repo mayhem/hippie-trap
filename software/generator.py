@@ -109,6 +109,40 @@ class Generator(object):
     def describe(self):
         pass
 
+    def _describe(self):
+        args = []
+        desc = bytearray()
+
+        if type(self.period) in (int, float):
+            desc += common.pack_fixed(self.period)
+            args.append(common.ARG_VALUE)
+        else:
+            desc += self.period_f.describe()
+            args.append(common.ARG_FUNC)
+
+        if type(self.phase) in (int, float):
+            desc += common.pack_fixed(self.phase)
+            args.append(common.ARG_VALUE)
+        else:
+            desc += self.phase_f.describe()
+            args.append(common.ARG_FUNC)
+
+        if type(self.amplitude) in (int, float):
+            desc += common.pack_fixed(self.amplitude)
+            args.append(common.ARG_VALUE)
+        else:
+            desc += self.amplitude_f.describe()
+            args.append(common.ARG_FUNC)
+
+        if type(self.offset) in (int, float):
+            desc += common.pack_fixed(self.offset)
+            args.append(common.ARG_VALUE)
+        else:
+            desc += self.offset_f.describe()
+            args.append(common.ARG_FUNC)
+
+        return (desc, args)
+
     @abc.abstractmethod
     def __getitem__(self, t):
         pass
@@ -119,13 +153,8 @@ class Sin(Generator):
         super(Sin, self).__init__(period, phase, amplitude, offset)
 
     def describe(self):
-        desc = common.make_function(common.FUNC_SIN, (common.ARG_VALUE, common.ARG_VALUE, common.ARG_VALUE, common.ARG_VALUE))
-        desc += common.pack_fixed(self.period)
-        desc += common.pack_fixed(self.phase)
-        desc += common.pack_fixed(self.amplitude)
-        desc += common.pack_fixed(self.offset)
-        #print "%s(%.3f, %.3f, %.3f, %.3f)" % (self.__class__.__name__, self.period, self.phase, self.amplitude, self.offset),
-        return desc
+        desc, args = self._describe()
+        return desc + common.make_function(common.FUNC_SIN, args)
 
     def __getitem__(self, t):
         v = math.sin(t * self.period + self.phase) * self.amplitude + self.offset
@@ -143,18 +172,16 @@ class Square(Generator):
             self.duty = self.duty_f[0]
 
     def describe(self):
-        if self.period_f:
-            desc = common.make_function(common.FUNC_SQUARE, (common.ARG_FUNC, common.ARG_VALUE, common.ARG_VALUE, common.ARG_VALUE, common.ARG_VALUE))
-            desc += self.period_f.describe()
+        desc, args = self._describe()
+
+        if type(self.duty) in (int, float):
+            desc += common.pack_fixed(self.duty)
+            args.append(common.ARG_VALUE)
         else:
-            desc = common.make_function(common.FUNC_SQUARE, (common.ARG_VALUE, common.ARG_VALUE, common.ARG_VALUE, common.ARG_VALUE, common.ARG_VALUE))
-            desc += common.pack_fixed(self.period)
-        desc += common.pack_fixed(self.phase)
-        desc += common.pack_fixed(self.amplitude)
-        desc += common.pack_fixed(self.offset)
-        desc += common.pack_fixed(self.duty)
-        #print "%s(%.3f, %.3f, %.3f, %.3f)" % (self.__class__.__name__, self.period, self.phase, self.amplitude, self.offset),
-        return desc
+            desc += self.duty_f.describe()
+            args.append(common.ARG_FUNC)
+
+        return desc + common.make_function(common.FUNC_SQUARE, args)
 
     def __getitem__(self, t):
         v = (t / self.period) + self.phase
@@ -169,13 +196,8 @@ class Sawtooth(Generator):
         super(Sawtooth, self).__init__(period, phase, amplitude, offset)
 
     def describe(self):
-        desc = common.make_function(common.FUNC_SAWTOOTH, (common.ARG_VALUE, common.ARG_VALUE, common.ARG_VALUE, common.ARG_VALUE))
-        desc += common.pack_fixed(self.period)
-        desc += common.pack_fixed(self.phase)
-        desc += common.pack_fixed(self.amplitude)
-        desc += common.pack_fixed(self.offset)
-        #print "%s(%.3f, %.3f, %.3f, %.3f)" % (self.__class__.__name__, self.period, self.phase, self.amplitude, self.offset),
-        return desc
+        desc, args = self._describe()
+        return desc + common.make_function(common.FUNC_SAWTOOTH, args)
 
     def __getitem__(self, t):
         return (t * self.period + self.phase) % 1.0 * self.amplitude + self.offset
@@ -186,13 +208,8 @@ class Step(Generator):
         super(Step, self).__init__(period, phase, amplitude, offset)
 
     def describe(self):
-        desc = common.make_function(common.FUNC_STEP, (common.ARG_VALUE, common.ARG_VALUE, common.ARG_VALUE, common.ARG_VALUE))
-        desc += common.pack_fixed(self.period)
-        desc += common.pack_fixed(self.phase)
-        desc += common.pack_fixed(self.amplitude)
-        desc += common.pack_fixed(self.offset)
-        #print "%s(%.3f, %.3f, %.3f, %.3f)" % (self.__class__.__name__, self.period, self.phase, self.amplitude, self.offset),
-        return desc
+        desc, args = self._describe()
+        return desc + common.make_function(common.FUNC_STEP, args)
 
     def __getitem__(self, t):
         v = (t / self.period) + self.phase
@@ -207,13 +224,8 @@ class Sparkle(Generator):
         super(Sparkle, self).__init__(period, phase, amplitude, offset)
 
     def describe(self):
-        desc = common.make_function(common.FUNC_SPARKLE, (common.ARG_VALUE, common.ARG_VALUE, common.ARG_VALUE, common.ARG_VALUE))
-        desc += common.pack_fixed(self.period)
-        desc += common.pack_fixed(self.phase)
-        desc += common.pack_fixed(self.amplitude)
-        desc += common.pack_fixed(self.offset)
-        #print "%s(%.3f, %.3f, %.3f, %.3f)" % (self.__class__.__name__, self.period, self.phase, self.amplitude, self.offset),
-        return desc
+        desc, args = self._describe()
+        return desc + common.make_function(common.FUNC_SPARKLE, args)
 
     def __getitem__(self, t):
         v = (t / self.period) + self.phase
@@ -228,12 +240,8 @@ class Line(Generator):
         super(Line, self).__init__(period, phase, amplitude, offset)
 
     def describe(self):
-        desc = common.make_function(common.FUNC_LINE, (common.ARG_VALUE, common.ARG_VALUE, common.ARG_VALUE, common.ARG_VALUE))
-        desc += common.pack_fixed(self.period)
-        desc += common.pack_fixed(self.phase)
-        desc += common.pack_fixed(self.amplitude)
-        desc += common.pack_fixed(self.offset)
-        return desc
+        desc, args = self._describe()
+        return desc + common.make_function(common.FUNC_LINE, args)
 
     def __getitem__(self, t):
         return (t * self.amplitude) + self.offset
