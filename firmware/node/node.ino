@@ -4,6 +4,7 @@
 #include <avr/pgmspace.h>
 #include "parse.h"
 
+const uint8_t NUM_NODES = 101;
 const uint8_t NUM_PIXELS = 4;
 const uint8_t OUT_PIN = 2;
 
@@ -20,6 +21,7 @@ const uint8_t PACKET_POSITION     = 7;
 const uint8_t PACKET_DELAY        = 8;
 const uint8_t PACKET_ADDR         = 9;
 const uint8_t PACKET_SPEED        = 10;
+const uint8_t PACKET_CLASSES      = 11;
 
 // where in EEPROM our node id is stored
 const int id_address = 0;
@@ -61,6 +63,11 @@ color_t  g_begin_color, g_end_color;
 int32_t g_pos[3];
 int8_t  g_ring = -1;
 int8_t  g_arm = -1;
+
+// broadcast classes
+const uint8_t NUM_CLASSES = 10;
+const uint8_t NO_CLASS = 255;
+uint8_t g_classes[NUM_CLASSES];
 
 // Gamma correction table in progmem
 const uint8_t PROGMEM gamma[] = {
@@ -157,6 +164,18 @@ void handle_packet(uint16_t len, uint8_t *packet)
     uint8_t   *data;
 
     target = packet[0];
+    if (target > NUM_NODES + 1)
+    {
+        uint8_t cls = target - (NUM_NODES + 1), i;
+
+        for(i = 0; i < NUM_CLASSES; i++)
+            if (g_classes[i] == cls)
+            {
+                target = g_node_id;
+                break;
+            }
+    }
+
     if (target != BROADCAST && target != g_node_id)
          return;
     
@@ -269,6 +288,22 @@ void handle_packet(uint16_t len, uint8_t *packet)
         case PACKET_SPEED:
             g_speed = data[0];
             break;  
+
+        case PACKET_CLASSES:
+            {
+                uint8_t i;
+
+                for(i = 0; i < NUM_CLASSES; i++)
+                    g_classes[i] = NO_CLASS;
+
+                for(i = 0; i < len - 2; i++)
+                {
+                    Serial.println("set class " + String(data[i]));
+                    g_classes[i] = data[i];
+                }
+
+                break;
+            }
     }
 }
 

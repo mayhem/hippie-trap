@@ -15,6 +15,7 @@ from time import sleep, time
 BAUD_RATE = 38400
 NUM_PIXELS = 4
 NUM_NODES = 101
+MAX_CLASSES = 10
 
 PACKET_SINGLE_COLOR = 0
 PACKET_COLOR_ARRAY  = 1
@@ -27,6 +28,7 @@ PACKET_POSITION     = 7
 PACKET_DELAY        = 8
 PACKET_ADDRR        = 9
 PACKET_SPEED        = 10
+PACKET_CLASSES      = 11
 BROADCAST = 0
 
 def crc16_update(crc, a):
@@ -37,6 +39,11 @@ def crc16_update(crc, a):
         else:
             crc = (crc >> 1)
     return crc
+
+def mkcls(cls):
+    if cls >= MAX_CLASSES:
+        raise ValueError("Invalid class id %d. Max class id is %d." % (cls, MAX_CLASSES))
+    return cls + NUM_NODES + 1
 
 class Chandelier(object):
 
@@ -107,6 +114,13 @@ class Chandelier(object):
 
     def set_speed(self, dest, speed):
         self._send_packet(dest, PACKET_SPEED, bytearray(struct.pack("<b", speed))) 
+
+    def set_classes(self, dest, classes):
+        if dest == BROADCAST:
+            raise ValueError("Cannot broadcast class definitions.")
+        if len(classes) > MAX_CLASSES:
+            raise ValueError("Too many classes defined. Max %d allowed." % MAX_CLASSES)
+        self._send_packet(dest, PACKET_CLASSES, bytearray(classes))
 
     def debug_serial(self, duration):
         finish = duration + time()
