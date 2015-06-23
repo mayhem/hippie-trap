@@ -19,6 +19,7 @@ const uint8_t PACKET_CLEAR_NEXT   = 6;
 const uint8_t PACKET_POSITION     = 7;
 const uint8_t PACKET_DELAY        = 8;
 const uint8_t PACKET_ADDR         = 9;
+const uint8_t PACKET_SPEED        = 10;
 
 // where in EEPROM our node id is stored
 const int id_address = 0;
@@ -30,6 +31,7 @@ uint8_t    g_error = ERR_OK;
 // time keeping
 uint32_t   g_target = 0, g_pattern_start = 0;
 uint8_t    g_delay = 10;
+uint32_t   g_speed = SCALE_FACTOR;
 
 // random seed
 uint32_t    g_random_seed = 0;
@@ -262,6 +264,10 @@ void handle_packet(uint16_t len, uint8_t *packet)
 
         case PACKET_DELAY:
             g_delay = data[0];
+            break;  
+
+        case PACKET_SPEED:
+            g_speed = data[0];
             break;  
     }
 }

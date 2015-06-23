@@ -25,6 +25,8 @@ PACKET_OFF          = 5
 PACKET_CLEAR_NEXT   = 6
 PACKET_POSITION     = 7
 PACKET_DELAY        = 8
+PACKET_ADDRR        = 9
+PACKET_SPEED        = 10
 BROADCAST = 0
 
 def crc16_update(crc, a):
@@ -102,6 +104,9 @@ class Chandelier(object):
 
     def set_delay(self, dest, delay):
         self._send_packet(dest, PACKET_DELAY, bytearray(struct.pack("<b", delay))) 
+
+    def set_speed(self, dest, speed):
+        self._send_packet(dest, PACKET_SPEED, bytearray(struct.pack("<b", speed))) 
 
     def debug_serial(self, duration):
         finish = duration + time()

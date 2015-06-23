@@ -7,6 +7,7 @@
 #include "filter.h"
 #include "function.h"
 #include "generator.h"
+#include "parse.h"
 
 #define MAX_CODE_LEN           512
 #define MAX_NUM_ARGS             8
@@ -448,10 +449,13 @@ void *parse(uint8_t *code, uint16_t len, uint8_t *heap)
     return source;
 }
 
-void evaluate(s_source_t *src, uint32_t t, color_t *color)
+void evaluate(s_source_t *src, uint32_t _t, color_t *color)
 {
     color_t  temp, dest;
     void    *filter;
+    uint32_t t;
+
+    t = (_t * g_speed) / SCALE_FACTOR;
 
     src->method((void *)src, t, &dest);
     filter = src->next;

@@ -3,6 +3,8 @@
 
 #include "source.h"
 #include "filter.h"
+
+extern uint32_t g_speed;
     
 void heap_setup(uint8_t *heap);
 void *heap_alloc(uint8_t *heap, uint8_t bytes);
