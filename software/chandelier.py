@@ -69,6 +69,8 @@ class Chandelier(object):
         self.ser.write(chr(0))
         self.ser.write(chr(0))
 
+        self.set_speed(BROADCAST, 1000)
+
     def _send_packet(self, dest, type, data):
         if not self.ser:
             return
