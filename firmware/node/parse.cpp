@@ -22,26 +22,27 @@
 #define LOCAL_POS_Y              3
 #define LOCAL_POS_Z              4
 
-#define FILTER_FADE_IN           0
-#define FILTER_FADE_OUT          1
-#define FILTER_BRIGHTNESS        2
-#define GEN_SIN                  3
-#define GEN_SQUARE               4
-#define GEN_SAWTOOTH             5
-#define SRC_CONSTANT_COLOR       6
-#define SRC_RAND_COL_SEQ         7
-#define SRC_HSV                  8
-#define SRC_RAINBOW              9
-#define GEN_STEP                10
-#define FUNC_SPARKLE            11
-#define FUNC_GENOP              12
-#define FUNC_SRCOP              13
-#define FUNC_ABS                14
-#define GEN_LINE                15
-#define GEN_CONSTANT            16
-#define FUNC_COMPLEMENTARY      17
-#define FUNC_LOCAL_RANDOM       18
-#define GEN_IMPULSE             19
+#define FILTER_FADE_IN            0
+#define FILTER_FADE_OUT           1
+#define FILTER_BRIGHTNESS         2
+#define GEN_SIN                   3
+#define GEN_SQUARE                4
+#define GEN_SAWTOOTH              5
+#define SRC_CONSTANT_COLOR        6
+#define SRC_RAND_COL_SEQ          7
+#define SRC_HSV                   8
+#define SRC_RAINBOW               9
+#define GEN_STEP                 10
+#define FUNC_SPARKLE             11
+#define FUNC_GENOP               12
+#define FUNC_SRCOP               13
+#define FUNC_ABS                 14
+#define GEN_LINE                 15
+#define GEN_CONSTANT             16
+#define FUNC_COMPLEMENTARY       17
+#define FUNC_LOCAL_RANDOM        18
+#define GEN_IMPULSE              19
+#define FUNC_REPEAT_LOCAL_RANDOM 20
 
 // variables to help manage the heap.
 uint8_t *cur_heap = NULL;
@@ -222,6 +223,23 @@ void *create_object(uint8_t   id, uint8_t *is_local,
             break;
                      
         case GEN_SIN:
+            {
+                if (value_count == 4)
+                {
+                    obj = heap_alloc(sizeof(generator_t));
+                    if (!obj)
+                        return NULL;
+
+                    g_sin_init(obj, g_sin, values[0], values[1], values[2], values[3]);
+                }
+                else
+                {
+                    g_error = ERR_PARSE_FAILURE;
+                    return NULL;
+                }
+            }
+            break;  
+            
         case GEN_SAWTOOTH:
         case GEN_STEP:
         case GEN_LINE:
@@ -317,7 +335,7 @@ void *create_object(uint8_t   id, uint8_t *is_local,
                     obj = heap_alloc(sizeof(g_constant_t));
                     if (!obj)
                         return NULL;
-                    g_constant_init((g_constant_t *)obj, (uint8_t)values[0]);
+                    g_constant_init((g_constant_t *)obj, values[0]);
                 }
                 else
                 {
@@ -330,12 +348,10 @@ void *create_object(uint8_t   id, uint8_t *is_local,
         case FUNC_LOCAL_RANDOM:
             {
                 *is_local = 1;
-                Serial.println("is local!");
                 if (value_count == 2)
                 {
 
                     int32_t ret = fu_local_random(values[0], values[1]);
-                    Serial.println(ret);
                     return (void *)ret;
                 }
                 else
@@ -345,6 +361,23 @@ void *create_object(uint8_t   id, uint8_t *is_local,
                 }
             }
             break;
+            
+        case FUNC_REPEAT_LOCAL_RANDOM:
+            {
+                *is_local = 1;
+                if (value_count == 1)
+                {
+
+                    int32_t ret = fu_repeat_local_random(values[0] / SCALE_FACTOR);
+                    return (void *)ret;
+                }
+                else
+                {
+                    g_error = ERR_PARSE_FAILURE;
+                    return NULL;
+                }
+            }
+            break;            
     }
     return obj;
 }
@@ -384,7 +417,6 @@ void *parse_func(uint8_t *code, uint16_t len, uint16_t *index, uint8_t *is_local
             {
                 gen_count--;
                 values[value_count++] = (uint32_t)gens[gen_count];
-                Serial.println("local result: " + String(values[value_count-1]));
             }
         }
         else if (arg == ARG_COLOR)
@@ -429,6 +461,8 @@ void *parse(uint8_t *code, uint16_t len, uint8_t *heap)
     uint8_t     local;
 
     heap_setup(heap);
+    clear_local_random_values();
+    
     source = parse_func(code, len, &offset, &local);
     if (!source)
         return NULL;

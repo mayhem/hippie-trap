@@ -13,12 +13,23 @@ void g_generator_init(void *_self, g_method method, int32_t period, int32_t phas
     self->offset = offset;
 }
 
+void g_sin_init(void *_self, g_method method, int32_t period, int32_t phase, int32_t amplitude, int32_t offset)
+{
+    generator_t *self = (generator_t *)_self;
+    
+    self->period = (int32_t)S_PIM2 * (int32_t)SCALE_FACTOR / period;    
+    self->phase = -S_PID2 + (S_PIM2 * phase / SCALE_FACTOR);
+    self->method = method;
+    self->amplitude = amplitude;
+    self->offset = offset;
+}
+
 void g_square_init(void *_self, g_method method, int32_t period, int32_t phase, int32_t amplitude, int32_t offset, int32_t duty)
 {
     square_t *self = (square_t *)_self;
     self->method = method;
     self->period = period;
-    self->phase = phase;
+    self->phase = phase;    
     self->amplitude = amplitude;
     self->offset = offset;
     self->duty = duty;
@@ -31,8 +42,8 @@ int32_t g_sin(void *_self, uint32_t t)
     generator_t *self = (generator_t *)_self;
     int32_t index = (((int32_t)t * self->period / SCALE_FACTOR + self->phase) % S_PIM2) * NUM_SIN_TABLE_ENTRIES / S_PIM2;
     if (index < 0)
-        index = NUM_SIN_TABLE_ENTRIES + index;
- 
+        index += NUM_SIN_TABLE_ENTRIES;
+
     // first explicitly cast to int16_t, to make sure negative numbers are handled correctly
     value = (int16_t)pgm_read_word_near(sin_table + index);
     return (int32_t)value * self->amplitude / SCALE_FACTOR + self->offset;
@@ -131,6 +142,7 @@ int32_t g_abs_get(void *_self, uint32_t t)
 void g_constant_init(void *_self, int32_t value)
 {
     g_constant_t *self = (g_constant_t *)_self;
+    self->method = g_constant_get;
     self->value = value;
 }
 

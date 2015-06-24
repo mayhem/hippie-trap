@@ -9,18 +9,31 @@ void hsv_to_rgb(int32_t h, int32_t s, int32_t v, color_t *color)
     uint16_t hue;
     uint8_t  r, g, b, sat, val;
     uint8_t  base;
-
-    if (s == 0) 
-    {
-        color->c[0]=val;
-        color->c[1]=val;
-        color->c[2]=val;  
-        return;
-    } 
-
+    
+    if (h >= SCALE_FACTOR)
+        h = SCALE_FACTOR - 1;
+    if (s >= SCALE_FACTOR)
+        s = SCALE_FACTOR - 1;
+    if (v >= SCALE_FACTOR)
+        v = SCALE_FACTOR - 1;
+    if (h < 0)
+        h = 0;
+    if (s < 0)
+        s = 0;
+    if (v < 0)
+        v = 0;
+          
     hue = h * 360 / SCALE_FACTOR; 
     sat = s * 255 / SCALE_FACTOR; 
     val = v * 255 / SCALE_FACTOR; 
+
+    if (sat == 0) 
+    {
+        color->c[0]=val;
+        color->c[1]=val;
+        color->c[2]=val;   
+        return;
+    } 
 
     base = ((255 - sat) * val)>>8;
 
@@ -124,8 +137,8 @@ void s_hsv_get(void *_self, uint32_t t, color_t *dest)
 {
     s_hsv_t *self = (s_hsv_t *)_self;
 
-    if (self->gen2 && self->gen3)
-        hsv_to_rgb(self->gen1->method(self->gen1, t), self->gen2->method(self->gen2, t), self->gen3->method(self->gen2, t), dest);
+    if (self->gen2 && self->gen3)    
+        hsv_to_rgb(self->gen1->method(self->gen1, t), self->gen2->method(self->gen2, t), self->gen3->method(self->gen3, t), dest);     
     else
     if (self->gen2)
         hsv_to_rgb(self->gen1->method(self->gen1, t), self->gen2->method(self->gen2, t), SCALE_FACTOR, dest);
