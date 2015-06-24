@@ -173,7 +173,7 @@ class Sin(Generator):
 
     def __init__(self, period = 1.0, phase = 0, amplitude = .5, offset = .5):
         # convert from using pesky pi to using parametric values
-        period = math.pi / (period/2.0)
+        period = 2.0 * math.pi / period
         phase = (-math.pi / 2.0) + (math.pi * 2 * phase)
         super(Sin, self).__init__(period, phase, amplitude, offset)
 

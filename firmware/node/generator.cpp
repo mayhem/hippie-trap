@@ -13,12 +13,23 @@ void g_generator_init(void *_self, g_method method, int32_t period, int32_t phas
     self->offset = offset;
 }
 
+void g_sin_init(void *_self, g_method method, int32_t period, int32_t phase, int32_t amplitude, int32_t offset)
+{
+    generator_t *self = (generator_t *)_self;
+    
+    self->period = (int32_t)S_PIM2 * (int32_t)SCALE_FACTOR / period;    
+    self->phase = -S_PID2 + (S_PIM2 * phase / SCALE_FACTOR);
+    self->method = method;
+    self->amplitude = amplitude;
+    self->offset = offset;
+}
+
 void g_square_init(void *_self, g_method method, int32_t period, int32_t phase, int32_t amplitude, int32_t offset, int32_t duty)
 {
     square_t *self = (square_t *)_self;
     self->method = method;
     self->period = period;
-    self->phase = phase;
+    self->phase = phase;    
     self->amplitude = amplitude;
     self->offset = offset;
     self->duty = duty;

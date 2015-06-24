@@ -18,5 +18,7 @@ typedef struct fu_function_t
 } fu_function_t;
 
 int32_t fu_local_random(int32_t lower, int32_t upper);
+void clear_local_random_values(void);
+int32_t fu_repeat_local_random(int32_t index);
 
 #endif
