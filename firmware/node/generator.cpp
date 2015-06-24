@@ -39,7 +39,7 @@ void g_sawtooth_init(void *_self, g_method method, int32_t period, int32_t phase
 {
     generator_t *self = (generator_t *)_self;
     
-    self->period = SCALE_FACTOR / period;    
+    self->period = (int32_t)SCALE_FACTOR * (int32_t)SCALE_FACTOR/ period;    
     self->phase = phase;
     self->method = method;
     self->amplitude = amplitude;
