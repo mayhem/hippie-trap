@@ -63,19 +63,19 @@ class RandomColorSequence(ColorSource):
         args = []
         desc = bytearray()
 
-        if type(self.period) in (int, float):
-            desc += common.pack_fixed(self.period)
-            args.append(common.ARG_VALUE)
-        else:
+        if self.period_f:
             desc += self.period_f.describe()
             args.append(common.ARG_FUNC)
-
-        if type(self.seed) in (int, float):
-            desc += common.pack_fixed(self.seed)
-            args.append(common.ARG_VALUE)
         else:
+            desc += common.pack_fixed(self.period)
+            args.append(common.ARG_VALUE)
+
+        if self.seed_f:
             desc += self.seed_f.describe()
             args.append(common.ARG_FUNC)
+        else:
+            desc += common.pack_fixed(self.seed)
+            args.append(common.ARG_VALUE)
 
         return common.make_function(common.FUNC_RAND_COL_SEQ, args) + desc + self.describe_next()
 
@@ -176,19 +176,19 @@ class CompColorSource(common.ChainLink):
         args = []
         desc = self.color.describe()
 
-        if type(self.dist) in (int, float):
-            desc += common.pack_fixed(self.dist)
-            args.append(common.ARG_VALUE)
-        else:
+        if self.dist_f:
             desc += self.dist_f.describe()
             args.append(common.ARG_FUNC)
-
-        if type(self.index) in (int, float):
-            desc += common.pack_fixed(self.index)
-            args.append(common.ARG_VALUE)
         else:
+            desc += common.pack_fixed(self.dist)
+            args.append(common.ARG_VALUE)
+
+        if self.index_f:
             desc += self.index_f.describe()
             args.append(common.ARG_FUNC)
+        else:
+            desc += common.pack_fixed(self.index)
+            args.append(common.ARG_VALUE)
 
         return common.make_function(common.FUNC_COMPLEMENTARY, args) + desc + self.describe_next()
 

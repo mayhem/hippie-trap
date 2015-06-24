@@ -15,8 +15,6 @@ from color import Color
 DELAY = .02
 
 device = "/dev/ttyAMA0"
-if len(sys.argv) == 2:
-    device = sys.argv[1]
 
 ch = Chandelier()
 ch.open(device)
@@ -29,22 +27,34 @@ period_s = 1
 def pfs(seconds):
     return (math.pi * 2) / seconds
 
-#hsv = function.HSV(generator.Sawtooth(.15))
-#
-#rainbow = function.Rainbow(generator.Sawtooth(.15))
-##rainbow.chain(filter.FadeIn(1))
-##rainbow.chain(filter.FadeOut(1.0, 5.0))
-#
-#green = function.ConstantColor(Color(255, 0, 0))
-##green.chain(filter.FadeIn(1.0))
-#
-#purple = function.ConstantColor(Color(0, 0, 255))
-##purple.chain(filter.FadeIn(1.0))
-##purple.chain(filter.FadeOut(1.0, 5.0))
+# Debugged patterns
+
+# Wobble: Sin, Random Color Seq, Local Random, Brightness
+wobble = function.RandomColorSequence(generator.LocalRandomValue(1.0, 1.50), generator.LocalRandomValue(0.0, 1.00))
+wobble.chain(filter.Brightness(generator.Sin(generator.RepeatLocalRandomValue(0))))
+
+# Green saw: sawtooth, Brightness, constant color
+green = function.ConstantColor(Color(0,255,0))
+green.chain(filter.Brightness(generator.Sawtooth(2)))
+
+# Rainbow, sawtooth, filter
+rainbow = function.Rainbow(generator.Sawtooth(3))
+rainbow.chain(filter.FadeIn(1))
+
+# Rainbow/white, HSV, local randoms
+hsv = function.HSV(generator.Sawtooth(3), generator.Sin(generator.LocalRandomValue(.25, .99)), generator.LocalRandomValue(.25, .99))
+
+# fadein, fade out, constant color
+purple = function.ConstantColor(Color(255, 0, 255))
+purple.chain(filter.FadeIn(1.0))
+purple.chain(filter.FadeOut(1.0, 5.0))
 
 wobble = function.RandomColorSequence(period_s, random.randint(0, 255))
 g = generator.Sin()
 wobble.chain(filter.Brightness(g))
+
+# to test:
+# step, square, abs, constant
 
 #src1 = function.ConstantColor(Color(255,0,0))
 #src1.chain(filter.Brightness(generator.Sin((math.pi * 3) / period_s, 2, .5, .5)))
@@ -75,20 +85,23 @@ wobble.chain(filter.Brightness(g))
 #    ch.set_color(BROADCAST, triad[0])
 #    sleep(1)
 
-RUN_LOCAL = 1
+# this python crashes
+#hsv = function.HSV(generator.Sawtooth(.15), generator.Sin(generator.LocalRandomValue(.25, .99)), generator.Constant(generator.LocalRandomValue(.25, .99)))
 
-r = generator.LocalRandomValue(.25, 1.00)
-src = function.ConstantColor(Color(255,0,0))
-src.chain(filter.Brightness(generator.Sawtooth(r)))
 
-wobble = function.RandomColorSequence(generator.LocalRandomValue(.5, 1.00), generator.LocalRandomValue(0.0, 1.00))
-wobble.chain(filter.Brightness(generator.Sin(generator.RepeatLocalRandomValue(1))))
-src = wobble
+hsv = function.HSV(generator.Sawtooth(3), generator.Sin(3))
+src = hsv
 
-if RUN_LOCAL:
-    ch.run(src, DELAY, 20)
+if len(sys.argv) == 2:
+    local = int(sys.argv[1])
+else:
+    local = 0
+
+if local:
+    print "running local"
+    ch.run(src, DELAY, 0)
 else:
     print "Sending %d bytes." % len(src.describe())
     ch.send_pattern(BROADCAST, src) 
     ch.next_pattern(BROADCAST, 0)
-    ch.debug_serial(10)
+    ch.debug_serial(0)
