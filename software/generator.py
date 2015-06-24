@@ -22,6 +22,7 @@ def plot(g):
     plt.xlabel('time')
     plt.show()
 
+MAX_LOCAL_RANDOM_VALUES = 6
 local_random_values = []
 
 def clear_local_random_values():
@@ -30,6 +31,8 @@ def clear_local_random_values():
 
 def set_local_random_value(value):
     global local_random_values
+    if len(local_random_values) >= MAX_LOCAL_RANDOM_VALUES:
+        print "Warning: attempting to store more than %d random values -- it won't be repeatable." % MAX_LOCAL_RANDOM_VALUES
     local_random_values.append(value)
 
 def get_local_random_value(index):
@@ -96,7 +99,6 @@ class LocalRandomValue(object):
     def __init__(self, lower, upper):
         self.lower = lower
         self.upper = upper
-        print lower, upper
         self.value = lower + random.random() * (upper - lower)
         set_local_random_value(self.value)
 
@@ -166,33 +168,33 @@ class Generator(object):
         args = []
         desc = bytearray()
 
-        if type(self.period) in (int, float):
-            desc += common.pack_fixed(self.period)
-            args.append(common.ARG_VALUE)
-        else:
+        if self.period_f:
             desc += self.period_f.describe()
             args.append(common.ARG_FUNC)
-
-        if type(self.phase) in (int, float):
-            desc += common.pack_fixed(self.phase)
-            args.append(common.ARG_VALUE)
         else:
+            desc += common.pack_fixed(self.period)
+            args.append(common.ARG_VALUE)
+
+        if self.phase_f:
             desc += self.phase_f.describe()
             args.append(common.ARG_FUNC)
-
-        if type(self.amplitude) in (int, float):
-            desc += common.pack_fixed(self.amplitude)
-            args.append(common.ARG_VALUE)
         else:
+            desc += common.pack_fixed(self.phase)
+            args.append(common.ARG_VALUE)
+
+        if self.amplitude_f:
             desc += self.amplitude_f.describe()
             args.append(common.ARG_FUNC)
-
-        if type(self.offset) in (int, float):
-            desc += common.pack_fixed(self.offset)
-            args.append(common.ARG_VALUE)
         else:
+            desc += common.pack_fixed(self.amplitude)
+            args.append(common.ARG_VALUE)
+
+        if self.offset_f:
             desc += self.offset_f.describe()
             args.append(common.ARG_FUNC)
+        else:
+            desc += common.pack_fixed(self.offset)
+            args.append(common.ARG_VALUE)
 
         return (desc, args)
 
@@ -206,15 +208,16 @@ class Sin(Generator):
     def __init__(self, period = 1.0, phase = 0, amplitude = .5, offset = .5):
         # convert from using pesky pi to using parametric values
         super(Sin, self).__init__(period, phase, amplitude, offset)
-        self.period = math.pi / (self.period/2.0)
-        self.phase = (-math.pi / 2.0) + (math.pi * 2 * self.phase)
 
     def describe(self):
         desc, args = self._describe()
         return common.make_function(common.FUNC_SIN, args) + desc
 
     def __getitem__(self, t):
-        v = math.sin(t * self.period + self.phase) * self.amplitude + self.offset
+        period = math.pi / (self.period/2.0)
+        phase = (-math.pi / 2.0) + (math.pi * 2 * self.phase)
+#        print period, phase
+        v = math.sin(t * period + phase) * self.amplitude + self.offset
         return v
 
 class Square(Generator):
@@ -231,12 +234,12 @@ class Square(Generator):
     def describe(self):
         desc, args = self._describe()
 
-        if type(self.duty) in (int, float):
-            desc += common.pack_fixed(self.duty)
-            args.append(common.ARG_VALUE)
-        else:
+        if self.duty_f: 
             desc += self.duty_f.describe()
             args.append(common.ARG_FUNC)
+        else:
+            desc += common.pack_fixed(self.duty)
+            args.append(common.ARG_VALUE)
 
         return common.make_function(common.FUNC_SQUARE, args) + desc
 
