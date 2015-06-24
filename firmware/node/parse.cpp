@@ -241,6 +241,23 @@ void *create_object(uint8_t   id, uint8_t *is_local,
             break;  
             
         case GEN_SAWTOOTH:
+            {
+                if (value_count == 4)
+                {
+                    obj = heap_alloc(sizeof(generator_t));
+                    if (!obj)
+                        return NULL;
+
+                    g_sawtooth_init(obj, g_sawtooth, values[0], values[1], values[2], values[3]);
+                }
+                else
+                {
+                    g_error = ERR_PARSE_FAILURE;
+                    return NULL;
+                }
+            }
+            break;  
+            
         case GEN_STEP:
         case GEN_LINE:
         case GEN_IMPULSE:
@@ -254,9 +271,6 @@ void *create_object(uint8_t   id, uint8_t *is_local,
                     {
                         case GEN_SIN:
                             g_generator_init(obj, g_sin, values[0], values[1], values[2], values[3]);
-                        break;
-                        case GEN_SAWTOOTH:
-                            g_generator_init(obj, g_sawtooth, values[0], values[1], values[2], values[3]);
                         break;
                         case GEN_STEP:
                             g_generator_init(obj, g_step, values[0], values[1], values[2], values[3]);

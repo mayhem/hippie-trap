@@ -257,7 +257,8 @@ class Sawtooth(Generator):
         return common.make_function(common.FUNC_SAWTOOTH, args) + desc
 
     def __getitem__(self, t):
-        return (t * self.period + self.phase) % 1.0 * self.amplitude + self.offset
+        period = 1.0 / self.period
+        return (t * period + self.phase) % 1.0 * self.amplitude + self.offset
 
 class Step(Generator):
 

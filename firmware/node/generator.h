@@ -34,6 +34,8 @@ typedef struct square_t
 void g_generator_init(void *self, g_method method, int32_t period, int32_t phase, int32_t amplitude, int32_t offset);
 void g_square_init(void *self, g_method method, int32_t period, int32_t phase, int32_t amplitude, int32_t offset, int32_t duty);
 void g_sin_init(void *self, g_method method, int32_t period, int32_t phase, int32_t amplitude, int32_t offset);
+void g_sawtooth_init(void *self, g_method method, int32_t period, int32_t phase, int32_t amplitude, int32_t offset);
+
 int32_t g_sin(void *self, uint32_t t);
 int32_t g_square(void *self, uint32_t t);
 int32_t g_sawtooth(void *self, uint32_t t);
