@@ -49,10 +49,6 @@ purple = function.ConstantColor(Color(255, 0, 255))
 purple.chain(filter.FadeIn(1.0))
 purple.chain(filter.FadeOut(1.0, 5.0))
 
-wobble = function.RandomColorSequence(period_s, random.randint(0, 255))
-g = generator.Sin()
-wobble.chain(filter.Brightness(g))
-
 # to test:
 # step, square, abs, constant
 
@@ -90,7 +86,9 @@ wobble.chain(filter.Brightness(g))
 
 
 hsv = function.HSV(generator.Sawtooth(3), generator.Sin(3))
-src = hsv
+green = function.ConstantColor(Color(0,255,0))
+green.chain(filter.Brightness(generator.Sawtooth(2)))
+src = green
 
 if len(sys.argv) == 2:
     local = int(sys.argv[1])
@@ -102,6 +100,7 @@ if local:
     ch.run(src, DELAY, 0)
 else:
     print "Sending %d bytes." % len(src.describe())
+    ch.set_speed(BROADCAST, 2000)
     ch.send_pattern(BROADCAST, src) 
     ch.next_pattern(BROADCAST, 0)
     ch.debug_serial(0)
