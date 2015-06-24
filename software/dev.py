@@ -43,8 +43,7 @@ def pfs(seconds):
 ##purple.chain(filter.FadeOut(1.0, 5.0))
 
 wobble = function.RandomColorSequence(period_s, random.randint(0, 255))
-g = generator.Sin(pfs(1), -math.pi/2, .5, .5)
-g = generator.Sparkle()
+g = generator.Sin()
 wobble.chain(filter.Brightness(g))
 
 #src1 = function.ConstantColor(Color(255,0,0))
@@ -76,11 +75,15 @@ wobble.chain(filter.Brightness(g))
 #    ch.set_color(BROADCAST, triad[0])
 #    sleep(1)
 
-RUN_LOCAL = 0
+RUN_LOCAL = 1
 
 r = generator.LocalRandomValue(.25, 1.00)
 src = function.ConstantColor(Color(255,0,0))
 src.chain(filter.Brightness(generator.Sawtooth(r)))
+
+wobble = function.RandomColorSequence(generator.LocalRandomValue(.5, 1.00), generator.LocalRandomValue(0.0, 1.00))
+wobble.chain(filter.Brightness(generator.Sin(generator.RepeatLocalRandomValue(1))))
+src = wobble
 
 if RUN_LOCAL:
     ch.run(src, DELAY, 20)

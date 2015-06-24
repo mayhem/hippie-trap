@@ -79,4 +79,5 @@ class Brightness(Filter):
 
     def filter(self, t, color):
         percent = self.gen[t]
+        #print "  %3.2f  %3d,%3d,%3d" % (percent, color[0], color[1], color[2])
         return self.call_next(t, Color(int(color[0] * percent), int(color[1] * percent), int(color[2] * percent)))

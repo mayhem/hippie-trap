@@ -40,18 +40,44 @@ class RandomColorSequence(ColorSource):
        Return colors that appear _random_ to a human.
     '''
 
-    def __init__(self, period, phase=0, seed=0):
-        self.period = period
-        self.phase = phase
-        self.seed = seed
+    def __init__(self, period=1, seed=0):
         super(RandomColorSequence, self).__init__(None)
+        self.period = period
+        self.seed = seed
+
+        if type(self.period) in (int, float):
+            self.period_f = None
+        else:
+            self.period_f = self.period
+            self.period = self.period_f[0]
+
+        if type(self.seed) in (int, float):
+            self.seed_f = None
+        else:
+            self.seed_f = self.seed
+            self.seed = self.seed_f[0]
 
     def describe(self):
         desc = common.make_function(common.FUNC_RAND_COL_SEQ, (common.ARG_VALUE,common.ARG_VALUE))
-        desc += common.pack_fixed(self.period)
-        desc += common.pack_fixed(self.seed)
-        #print "%s(%.3f, %.3f)" % (self.__class__.__name__, self.period, self.seed)
-        return desc + self.describe_next()
+
+        args = []
+        desc = bytearray()
+
+        if type(self.period) in (int, float):
+            desc += common.pack_fixed(self.period)
+            args.append(common.ARG_VALUE)
+        else:
+            desc += self.period_f.describe()
+            args.append(common.ARG_FUNC)
+
+        if type(self.seed) in (int, float):
+            desc += common.pack_fixed(self.seed)
+            args.append(common.ARG_VALUE)
+        else:
+            desc += self.seed_f.describe()
+            args.append(common.ARG_FUNC)
+
+        return common.make_function(common.FUNC_RAND_COL_SEQ, args) + desc + self.describe_next()
 
     def __getitem__(self, t):
         random.seed(self.seed + (int)(t / self.period))
@@ -134,12 +160,37 @@ class CompColorSource(common.ChainLink):
         self.dist = dist
         self.index = index
 
+        if type(self.dist) in (int, float):
+            self.dist_f = None
+        else:
+            self.dist_f = self.dist
+            self.dist = self.dist_f[0]
+
+        if type(self.index) in (int, float):
+            self.index_f = None
+        else:
+            self.index_f = self.index
+            self.index = self.index_f[0]
+
     def describe(self):
-        desc = common.make_function(common.FUNC_COMPLEMENTARY, (common.ARG_FUNC, common.ARG_FUNC, common.ARG_VALUE))
-        desc += self.hue.describe()
-        desc += self.dist.describe()
-        desc += common.pack_fixed(self.index)
-        return desc + self.describe_next()
+        args = []
+        desc = self.color.describe()
+
+        if type(self.dist) in (int, float):
+            desc += common.pack_fixed(self.dist)
+            args.append(common.ARG_VALUE)
+        else:
+            desc += self.dist_f.describe()
+            args.append(common.ARG_FUNC)
+
+        if type(self.index) in (int, float):
+            desc += common.pack_fixed(self.index)
+            args.append(common.ARG_VALUE)
+        else:
+            desc += self.index_f.describe()
+            args.append(common.ARG_FUNC)
+
+        return common.make_function(common.FUNC_COMPLEMENTARY, args) + desc + self.describe_next()
 
     def __getitem__(self, t):
         if self.index == 0:
