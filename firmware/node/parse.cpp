@@ -335,7 +335,7 @@ void *create_object(uint8_t   id, uint8_t *is_local,
                     obj = heap_alloc(sizeof(g_constant_t));
                     if (!obj)
                         return NULL;
-                    g_constant_init((g_constant_t *)obj, (uint8_t)values[0]);
+                    g_constant_init((g_constant_t *)obj, values[0]);
                 }
                 else
                 {
