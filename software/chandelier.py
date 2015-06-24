@@ -115,6 +115,9 @@ class Chandelier(object):
     def set_speed(self, dest, speed):
         self._send_packet(dest, PACKET_SPEED, bytearray(struct.pack("<H", speed))) 
 
+    def clear_next_pattern(self, dest):
+        self._send_packet(dest, PACKET_CLEAR_NEXT, bytearray()) 
+
     def set_classes(self, dest, classes):
         if dest == BROADCAST:
             raise ValueError("Cannot broadcast class definitions.")
