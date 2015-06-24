@@ -286,7 +286,7 @@ void handle_packet(uint16_t len, uint8_t *packet)
             break;  
 
         case PACKET_SPEED:
-            g_speed = data[0];
+            g_speed = *(uint16_t *)data;
             break;  
 
         case PACKET_CLASSES:
