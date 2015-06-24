@@ -122,9 +122,9 @@ class Chandelier(object):
             raise ValueError("Too many classes defined. Max %d allowed." % MAX_CLASSES)
         self._send_packet(dest, PACKET_CLASSES, bytearray(classes))
 
-    def debug_serial(self, duration):
+    def debug_serial(self, duration = 0):
         finish = duration + time()
-        while time() < finish:
+        while duration == 0 or time() < finish:
             if self.ser.inWaiting() > 0:
                 ch = self.ser.read(1)
                 sys.stdout.write(ch);
