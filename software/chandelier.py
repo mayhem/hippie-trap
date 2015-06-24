@@ -113,7 +113,7 @@ class Chandelier(object):
         self._send_packet(dest, PACKET_DELAY, bytearray(struct.pack("<b", delay))) 
 
     def set_speed(self, dest, speed):
-        self._send_packet(dest, PACKET_SPEED, bytearray(struct.pack("<b", speed))) 
+        self._send_packet(dest, PACKET_SPEED, bytearray(struct.pack("<H", speed))) 
 
     def set_classes(self, dest, classes):
         if dest == BROADCAST:
