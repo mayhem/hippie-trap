@@ -6,13 +6,15 @@ import math
 from chandelier import Chandelier, BROADCAST
 import function
 import generator
+import filter
+import random
+import common
+from time import sleep, time
+from color import Color
 
 device = "/dev/ttyAMA0"
-if len(sys.argv) == 2:
-    device = sys.argv[1]
 
 ch = Chandelier()
 ch.open(device)
-rainbow = function.Rainbow(generator.Sawtooth(5))
-ch.send_pattern(BROADCAST, rainbow)
-ch.next_pattern(BROADCAST, 0)
+ch.off(BROADCAST)
+ch.calibrate_timers()

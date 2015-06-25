@@ -22,9 +22,11 @@ const uint8_t PACKET_DELAY        = 8;
 const uint8_t PACKET_ADDR         = 9;
 const uint8_t PACKET_SPEED        = 10;
 const uint8_t PACKET_CLASSES      = 11;
+const uint8_t PACKET_CALIBRATE    = 12;
 
 // where in EEPROM our node id is stored
 const int id_address = 0;
+const int calibration_address = 16;
 
 // ----- globals ------------
 
@@ -91,6 +93,33 @@ const uint8_t PROGMEM gamma[] = {
 
 // ---- prototypes -----
 void next_pattern(void);
+
+#if F_CPU == 16000000UL
+#define    TIMER1_INIT         0xF82F
+#else
+#define    TIMER1_INIT         0xFC17
+#endif
+#define    TIMER1_FLAGS        _BV(CS11); // 8Mhz / 8 = 1us per tick.
+
+volatile uint32_t g_time = 0;
+uint16_t g_timer_init = TIMER1_INIT;
+
+ISR (TIMER1_OVF_vect)
+{
+    g_time++;
+    TCNT1 = g_timer_init;
+}
+
+uint32_t cmillis(void)
+{
+    uint32_t temp;
+
+    noInterrupts();
+    temp = g_time;
+    interrupts();
+
+    return temp;
+}
 
 void show_color(color_t *col)
 {
@@ -304,6 +333,40 @@ void handle_packet(uint16_t len, uint8_t *packet)
 
                 break;
             }
+        case PACKET_CALIBRATE:
+            {
+                uint32_t duration = data[0];
+                color_t col;
+
+                col.c[1] = col.c[2] = 0;
+                col.c[0] = 255;
+
+                // clear out any stray characters
+                while(Serial.available() > 0) 
+                    Serial.read();
+
+                show_color(&col);
+
+                // Wait for the next character, which starts the calibration interval for duration seconds
+                Serial.read();
+                noInterrupts();
+                TCNT1 = 0;
+                g_time = 0;
+                interrupts();
+
+                // Wait for the next character, which ends the calibration
+                Serial.read();
+
+                // Now calculate our calibration routine
+                noInterrupts();
+                TCNT1 = g_timer_init = 2000 - ((g_time * 1000 + TCNT1) / duration);
+                interrupts();
+                EEPROM.put(calibration_address, g_timer_init);
+
+                col.c[0] = col.c[1] = 0;
+                col.c[2] = 255;
+                show_color(&col);
+            }
     }
 }
 
@@ -330,12 +393,12 @@ void next(uint16_t transition_steps)
         g_transition_steps = transition_steps;
 
         // start the transition and get last color
-        evaluate(g_cur_pattern, millis() - g_pattern_start, &g_begin_color);
+        evaluate(g_cur_pattern, cmillis() - g_pattern_start, &g_begin_color);
 
         // get the first color of the new pattern
         evaluate(g_next_pattern, 0, &g_end_color);
 
-        g_transition_end = millis() + (uint32_t)transition_steps;
+        g_transition_end = cmillis() + (uint32_t)transition_steps;
         return;
     }
     next_pattern();
@@ -349,7 +412,7 @@ void next_pattern(void)
     g_cur_pattern = g_next_pattern;
     g_next_pattern = NULL;
     
-    g_pattern_start = millis();
+    g_pattern_start = cmillis();
     g_target = g_pattern_start;
     g_error = ERR_OK;
     update_pattern();
@@ -367,7 +430,7 @@ void update_pattern(void)
     }
 
     // check to see if the transtion is finished
-    if (g_transition_end && millis() >= g_transition_end)
+    if (g_transition_end && cmillis() >= g_transition_end)
     {
         g_transition_end = 0;
         g_transition_steps = 0;
@@ -378,10 +441,10 @@ void update_pattern(void)
     // check for a transition
     if (g_transition_end)
     {
-        if (millis() >= g_target)
+        if (cmillis() >= g_target)
         {
             int32_t steps;
-            int32_t p = g_transition_steps - (g_transition_end - millis());
+            int32_t p = g_transition_steps - (g_transition_end - cmillis());
             
             g_target += g_delay;
             g_pixels.show();
@@ -404,7 +467,7 @@ void update_pattern(void)
     if (!g_cur_pattern)
         return;
        
-    if (g_target && millis() >= g_target)
+    if (g_target && cmillis() >= g_target)
     {
         g_target += g_delay;
         g_pixels.show();
@@ -428,7 +491,7 @@ void error_pattern(void)
     uint8_t  i;
     color_t  col;
 
-    t = millis() % (ERROR_DELAY * 2);
+    t = cmillis() % (ERROR_DELAY * 2);
     if (t > ERROR_DELAY)
     {
         switch(g_error)
@@ -468,6 +531,12 @@ void error_pattern(void)
 
 void setup()
 { 
+    uint16_t timer_cal;
+
+    TCNT1 = TIMER1_INIT;
+    TIMSK1 |= (1<<TOIE1);
+    interrupts();
+
     g_pixels.begin();
     startup_animation();
     
@@ -475,6 +544,9 @@ void setup()
     Serial.println("led-board hello!");
     
     g_node_id = EEPROM.read(id_address);
+    EEPROM.get(calibration_address, timer_cal);
+    if (timer_cal > 1)
+        g_timer_init = timer_cal;
 }
 
 void loop()
