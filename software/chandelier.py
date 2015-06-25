@@ -16,6 +16,7 @@ BAUD_RATE = 38400
 NUM_PIXELS = 4
 NUM_NODES = 101
 MAX_CLASSES = 10
+CALIBRATION_DURATION = 10
 
 PACKET_SINGLE_COLOR = 0
 PACKET_COLOR_ARRAY  = 1
@@ -29,6 +30,7 @@ PACKET_DELAY        = 8
 PACKET_ADDRR        = 9
 PACKET_SPEED        = 10
 PACKET_CLASSES      = 11
+PACKET_CALIBRATE    = 12
 BROADCAST = 0
 
 def crc16_update(crc, a):
@@ -126,6 +128,17 @@ class Chandelier(object):
         if len(classes) > MAX_CLASSES:
             raise ValueError("Too many classes defined. Max %d allowed." % MAX_CLASSES)
         self._send_packet(dest, PACKET_CLASSES, bytearray(classes))
+
+    def calibrate_timers(self, dest):
+        self._send_packet(dest, PACKET_CALIBRATE, bytearray((CALIBRATION_DURATION,))) 
+        sleep(1)
+        print "start calibration"
+        self.ser.write(chr(1));
+        sleep(CALIBRATION_DURATION);
+        self.ser.write(chr(0));
+        print "calibration complete"
+        sleep(1)
+        self.set_color(BROADCAST, (0,0,0))
 
     def debug_serial(self, duration = 0):
         finish = duration + time()
