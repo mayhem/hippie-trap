@@ -92,6 +92,33 @@ const uint8_t PROGMEM gamma[] = {
 // ---- prototypes -----
 void next_pattern(void);
 
+#if F_CPU == 16000000UL
+#define    TIMER1_INIT         0xF82F
+#else
+#define    TIMER1_INIT         0xFC17
+#endif
+#define    TIMER1_FLAGS        _BV(CS11); // 8Mhz / 8 = 1us per tick.
+
+volatile uint32_t g_time = 0;
+uint16_t g_timer_init = TIMER1_INIT;
+
+ISR (TIMER1_OVF_vect)
+{
+    g_time++;
+    TCNT1 = g_timer_init;
+}
+
+uint32_t cmillis(void)
+{
+    uint32_t temp;
+
+    noInterrupts();
+    temp = g_time;
+    interrupts();
+
+    return temp;
+}
+
 void show_color(color_t *col)
 {
     uint8_t j;
@@ -330,12 +357,12 @@ void next(uint16_t transition_steps)
         g_transition_steps = transition_steps;
 
         // start the transition and get last color
-        evaluate(g_cur_pattern, millis() - g_pattern_start, &g_begin_color);
+        evaluate(g_cur_pattern, cmillis() - g_pattern_start, &g_begin_color);
 
         // get the first color of the new pattern
         evaluate(g_next_pattern, 0, &g_end_color);
 
-        g_transition_end = millis() + (uint32_t)transition_steps;
+        g_transition_end = cmillis() + (uint32_t)transition_steps;
         return;
     }
     next_pattern();
@@ -349,7 +376,7 @@ void next_pattern(void)
     g_cur_pattern = g_next_pattern;
     g_next_pattern = NULL;
     
-    g_pattern_start = millis();
+    g_pattern_start = cmillis();
     g_target = g_pattern_start;
     g_error = ERR_OK;
     update_pattern();
@@ -367,7 +394,7 @@ void update_pattern(void)
     }
 
     // check to see if the transtion is finished
-    if (g_transition_end && millis() >= g_transition_end)
+    if (g_transition_end && cmillis() >= g_transition_end)
     {
         g_transition_end = 0;
         g_transition_steps = 0;
@@ -378,10 +405,10 @@ void update_pattern(void)
     // check for a transition
     if (g_transition_end)
     {
-        if (millis() >= g_target)
+        if (cmillis() >= g_target)
         {
             int32_t steps;
-            int32_t p = g_transition_steps - (g_transition_end - millis());
+            int32_t p = g_transition_steps - (g_transition_end - cmillis());
             
             g_target += g_delay;
             g_pixels.show();
@@ -404,7 +431,7 @@ void update_pattern(void)
     if (!g_cur_pattern)
         return;
        
-    if (g_target && millis() >= g_target)
+    if (g_target && cmillis() >= g_target)
     {
         g_target += g_delay;
         g_pixels.show();
@@ -428,7 +455,7 @@ void error_pattern(void)
     uint8_t  i;
     color_t  col;
 
-    t = millis() % (ERROR_DELAY * 2);
+    t = cmillis() % (ERROR_DELAY * 2);
     if (t > ERROR_DELAY)
     {
         switch(g_error)
@@ -468,6 +495,10 @@ void error_pattern(void)
 
 void setup()
 { 
+
+    TCNT1 = TIMER1_INIT;
+    TIMSK1 |= (1<<TOIE1);
+
     g_pixels.begin();
     startup_animation();
     
