@@ -22,9 +22,11 @@ const uint8_t PACKET_DELAY        = 8;
 const uint8_t PACKET_ADDR         = 9;
 const uint8_t PACKET_SPEED        = 10;
 const uint8_t PACKET_CLASSES      = 11;
+const uint8_t PACKET_CALIBRATE    = 12;
 
 // where in EEPROM our node id is stored
 const int id_address = 0;
+const int calibration_address = 16;
 
 // ----- globals ------------
 
@@ -331,6 +333,40 @@ void handle_packet(uint16_t len, uint8_t *packet)
 
                 break;
             }
+        case PACKET_CALIBRATE:
+            {
+                uint32_t duration = data[0];
+                color_t col;
+
+                col.c[1] = col.c[2] = 0;
+                col.c[0] = 255;
+
+                // clear out any stray characters
+                while(Serial.available() > 0) 
+                    Serial.read();
+
+                show_color(&col);
+
+                // Wait for the next character, which starts the calibration interval for duration seconds
+                Serial.read();
+                noInterrupts();
+                TCNT1 = 0;
+                g_time = 0;
+                interrupts();
+
+                // Wait for the next character, which ends the calibration
+                Serial.read();
+
+                // Now calculate our calibration routine
+                noInterrupts();
+                TCNT1 = g_timer_init = 2000 - ((g_time * 1000 + TCNT1) / duration);
+                interrupts();
+                EEPROM.put(calibration_address, g_timer_init);
+
+                col.c[0] = col.c[1] = 0;
+                col.c[2] = 255;
+                show_color(&col);
+            }
     }
 }
 
@@ -495,9 +531,11 @@ void error_pattern(void)
 
 void setup()
 { 
+    uint16_t timer_cal;
 
     TCNT1 = TIMER1_INIT;
     TIMSK1 |= (1<<TOIE1);
+    interrupts();
 
     g_pixels.begin();
     startup_animation();
@@ -506,6 +544,9 @@ void setup()
     Serial.println("led-board hello!");
     
     g_node_id = EEPROM.read(id_address);
+    EEPROM.get(calibration_address, timer_cal);
+    if (timer_cal > 1)
+        g_timer_init = timer_cal;
 }
 
 void loop()
