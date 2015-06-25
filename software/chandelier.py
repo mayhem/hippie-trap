@@ -89,7 +89,7 @@ class Chandelier(object):
         self.ser.write(packet)
 
     def send_entropy(self):
-        for dest in xrange(NUM_NODES):
+        for dest in xrange(1, NUM_NODES + 1):
             self._send_packet(dest, PACKET_ENTROPY, bytearray(os.urandom(1)))
 
     def set_color(self, dest, col):
