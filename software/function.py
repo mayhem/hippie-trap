@@ -35,6 +35,62 @@ class ConstantColor(ColorSource):
     def __getitem__(self, t):
         return self.call_next(t, self.color)
 
+class ConstantRandomColor(ColorSource):
+
+    def __init__(self, hue, sat, value):
+        super(ConstantColor, self).__init__(None)
+        self.hue = hue
+        self.sat = sat
+        self.vaue = value
+
+        if type(self.hue) in (int, float):
+            self.hue_f = None
+        else:
+            self.hue_f = self.hue
+            self.hue = self.hue_f[0]
+
+        if type(self.sat) in (int, float):
+            self.sat_f = None
+        else:
+            self.sat_f = self.sat
+            self.sat = self.sat_f[0]
+
+        if type(self.value) in (int, float):
+            self.value_f = None
+        else:
+            self.value_f = self.value
+            self.value = self.value_f[0]
+
+    def describe(self):
+        args = []
+        desc = bytearray()
+
+        if self.hue_f:
+            desc += self.hue_f.describe()
+            args.append(common.ARG_FUNC)
+        else:
+            desc += common.pack_fixed(self.hue)
+            args.append(common.ARG_VALUE)
+
+        if self.sat_f:
+            desc += self.sat_f.describe()
+            args.append(common.ARG_FUNC)
+        else:
+            desc += common.pack_fixed(self.sat)
+            args.append(common.ARG_VALUE)
+
+        if self.value_f:
+            desc += self.value_f.describe()
+            args.append(common.ARG_FUNC)
+        else:
+            desc += common.pack_fixed(self.value)
+            args.append(common.ARG_VALUE)
+
+        return common.make_function(common.FUNC_CONSTANT_RANDOM_COLOR, args) + desc + self.describe_next()
+
+    def __getitem__(self, t):
+        return self.call_next(t, self.color)
+
 class RandomColorSequence(ColorSource):
     '''
        Return colors that appear _random_ to a human.
@@ -58,8 +114,6 @@ class RandomColorSequence(ColorSource):
             self.seed = self.seed_f[0]
 
     def describe(self):
-        desc = common.make_function(common.FUNC_RAND_COL_SEQ, (common.ARG_VALUE,common.ARG_VALUE))
-
         args = []
         desc = bytearray()
 

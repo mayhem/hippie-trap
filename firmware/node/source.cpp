@@ -113,6 +113,8 @@ void rgb_to_hsv(color_t *col, int32_t *_h, int32_t *_s, int32_t *_v)
     *_v = v;
 }
 
+//--
+
 void s_constant_color_init(s_constant_color_t *self, color_t *color)
 {
     self->color.c[0] = color->c[0];

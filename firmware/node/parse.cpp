@@ -22,27 +22,28 @@
 #define LOCAL_POS_Y              3
 #define LOCAL_POS_Z              4
 
-#define FILTER_FADE_IN            0
-#define FILTER_FADE_OUT           1
-#define FILTER_BRIGHTNESS         2
-#define GEN_SIN                   3
-#define GEN_SQUARE                4
-#define GEN_SAWTOOTH              5
-#define SRC_CONSTANT_COLOR        6
-#define SRC_RAND_COL_SEQ          7
-#define SRC_HSV                   8
-#define SRC_RAINBOW               9
-#define GEN_STEP                 10
-#define FUNC_SPARKLE             11
-#define FUNC_GENOP               12
-#define FUNC_SRCOP               13
-#define FUNC_ABS                 14
-#define GEN_LINE                 15
-#define GEN_CONSTANT             16
-#define FUNC_COMPLEMENTARY       17
-#define FUNC_LOCAL_RANDOM        18
-#define GEN_IMPULSE              19
-#define FUNC_REPEAT_LOCAL_RANDOM 20
+#define FILTER_FADE_IN              0
+#define FILTER_FADE_OUT             1
+#define FILTER_BRIGHTNESS           2
+#define GEN_SIN                     3
+#define GEN_SQUARE                  4
+#define GEN_SAWTOOTH                5
+#define SRC_CONSTANT_COLOR          6
+#define SRC_RAND_COL_SEQ            7
+#define SRC_HSV                     8
+#define SRC_RAINBOW                 9
+#define GEN_STEP                   10
+#define FUNC_SPARKLE               11
+#define FUNC_GENOP                 12
+#define FUNC_SRCOP                 13
+#define FUNC_ABS                   14
+#define GEN_LINE                   15
+#define GEN_CONSTANT               16
+#define FUNC_COMPLEMENTARY         17
+#define FUNC_LOCAL_RANDOM          18
+#define GEN_IMPULSE                19
+#define FUNC_REPEAT_LOCAL_RANDOM   20
+#define SRC_CONSTANT_RANDOM_COLOR  21
 
 // for the final output color shift filter
 f_color_shift_t color_shift;
@@ -140,6 +141,27 @@ void *create_object(uint8_t   id, uint8_t *is_local,
                     if (!obj)
                         return NULL;
                     s_constant_color_init((s_constant_color_t *)obj, &colors[0]);
+                }
+                else
+                {
+                    g_error = ERR_PARSE_FAILURE;
+                    return NULL;
+                }
+            }
+            break;
+
+        case SRC_CONSTANT_RANDOM_COLOR:
+            {
+                if (value_count == 3)
+                {
+                    color_t col;
+
+                    obj = heap_alloc(sizeof(s_constant_color_t));
+                    if (!obj)
+                        return NULL;
+
+                    hsv_to_rgb(values[0], values[1], values[2], &col);
+                    s_constant_color_init((s_constant_color_t *)obj, &col);
                 }
                 else
                 {
