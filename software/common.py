@@ -3,27 +3,29 @@
 import abc
 from struct import pack
 
-FUNC_FADE_IN           = 0
-FUNC_FADE_OUT          = 1
-FUNC_BRIGHTNESS        = 2
-FUNC_SIN               = 3
-FUNC_SQUARE            = 4
-FUNC_SAWTOOTH          = 5
-FUNC_CONSTANT_COLOR    = 6
-FUNC_RAND_COL_SEQ      = 7
-FUNC_HSV               = 8
-FUNC_RAINBOW           = 9
-FUNC_STEP              = 10
-FUNC_SPARKLE           = 11
-FUNC_GENOP             = 12
-FUNC_SRCOP             = 13
-FUNC_ABS               = 14
-FUNC_LINE              = 15
-FUNC_CONSTANT          = 16
-FUNC_COMPLEMENTARY     = 17
-FUNC_LOCAL_RANDOM      = 18
-FUNC_IMPULSE           = 19
-FUNC_REPEAT_LOCAL_RANDOM =20
+FUNC_FADE_IN               = 0
+FUNC_FADE_OUT              = 1
+FUNC_BRIGHTNESS            = 2
+FUNC_SIN                   = 3
+FUNC_SQUARE                = 4
+FUNC_SAWTOOTH              = 5
+FUNC_CONSTANT_COLOR        = 6
+FUNC_RAND_COL_SEQ          = 7
+FUNC_HSV                   = 8
+FUNC_RAINBOW               = 9
+FUNC_STEP                  = 10
+FUNC_SPARKLE               = 11
+FUNC_GENOP                 = 12
+FUNC_SRCOP                 = 13
+FUNC_ABS                   = 14
+FUNC_LINE                  = 15
+FUNC_CONSTANT              = 16
+FUNC_COMPLEMENTARY         = 17
+FUNC_LOCAL_RANDOM          = 18
+FUNC_IMPULSE               = 19
+FUNC_REPEAT_LOCAL_RANDOM   = 20
+FUNC_COLOR_SHIFT           = 22
+FUNC_CONSTANT_RANDOM_COLOR = 21
 
 FUNC_MAX               = 31
 

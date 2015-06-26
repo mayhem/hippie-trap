@@ -2,6 +2,7 @@
 #include <Arduino.h>
 #include "filter.h"
 #include "generator.h"
+#include "source.h"
 
 void f_fade_in_init(f_fade_in_t *self, f_method method, int32_t duration, int32_t offset)
 {
@@ -82,4 +83,26 @@ void f_brightness_get(void *_self, uint32_t t, color_t *src, color_t *dest)
     dest->c[0] = src->c[0] * percent / SCALE_FACTOR;
     dest->c[1] = src->c[1] * percent / SCALE_FACTOR;
     dest->c[2] = src->c[2] * percent / SCALE_FACTOR;
+}
+
+void f_color_shift_init(f_color_shift_t *self, int32_t h_shift, int32_t s_shift, int32_t v_shift)
+{
+    self->method = f_color_shift_get;
+    self->next = NULL;
+    self->h_shift = h_shift;
+    self->s_shift = s_shift;
+    self->v_shift = v_shift;
+}
+
+void f_color_shift_get(void *_self, uint32_t t, color_t *src, color_t *dest)
+{
+    int32_t h, s, v;
+    
+    f_color_shift_t *self = (f_color_shift_t *)_self;
+
+    rgb_to_hsv(src, &h, &s, &v);
+    h = (h + self->h_shift) % SCALE_FACTOR;
+    s = min(0, max(SCALE_FACTOR, s + self->s_shift));
+    v = min(0, max(SCALE_FACTOR, v + self->v_shift));
+    hsv_to_rgb(h, s, v, dest);
 }

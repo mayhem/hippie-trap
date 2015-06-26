@@ -80,10 +80,40 @@ void hsv_to_rgb(int32_t h, int32_t s, int32_t v, color_t *color)
     color->c[2] = b;
 }
 
-void rgb_to_hsv(color_t *color, int32_t *h, int32_t *s, int32_t *v)
+void rgb_to_hsv(color_t *col, int32_t *_h, int32_t *_s, int32_t *_v)
 {
-    // finish me!
+    int32_t rd = ((int32_t)col->c[0] * (int32_t)SCALE_FACTOR)/(int32_t)255;
+    int32_t gd = ((int32_t)col->c[1] * (int32_t)SCALE_FACTOR)/(int32_t)255;
+    int32_t bd = ((int32_t)col->c[2] * (int32_t)SCALE_FACTOR)/(int32_t)255;
+    int32_t mx = max(rd, max(gd, bd)); 
+    int32_t mn = min(rd, min(gd, bd));
+    int32_t h, s, v = mx;
+
+    int32_t d = mx - mn;
+    s = mx == 0 ? 0 : d * SCALE_FACTOR / mx;
+
+    if (mx == mn) 
+    { 
+        h = 0; 
+    } 
+    else 
+    {
+        if (mx == rd) 
+            h = (gd - bd) * SCALE_FACTOR / d + (gd < bd ? 6000 : 0);
+        else 
+        if (mx == gd) 
+            h = (bd - rd) * SCALE_FACTOR / d + 2000;
+        else 
+        if (mx == bd) 
+            h = (rd - gd) * SCALE_FACTOR / d + 4000;
+        h = h / 6;
+    }
+    *_h = h;
+    *_s = s;
+    *_v = v;
 }
+
+//--
 
 void s_constant_color_init(s_constant_color_t *self, color_t *color)
 {

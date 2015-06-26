@@ -5,6 +5,7 @@
 #include "generator.h"
 
 void hsv_to_rgb(int32_t h, int32_t s, int32_t v, color_t *color);
+void rgb_to_hsv(color_t *col, int32_t *_h, int32_t *_s, int32_t *_v);
 
 typedef void (*s_method)(void *self, uint32_t t, color_t *col);
 

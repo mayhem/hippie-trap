@@ -23,6 +23,7 @@ const uint8_t PACKET_ADDR         = 9;
 const uint8_t PACKET_SPEED        = 10;
 const uint8_t PACKET_CLASSES      = 11;
 const uint8_t PACKET_CALIBRATE    = 12;
+const uint8_t PACKET_ADJ_COLOR    = 13;
 
 // where in EEPROM our node id is stored
 const int id_address = 0;
@@ -219,7 +220,6 @@ void handle_packet(uint16_t len, uint8_t *packet)
                 col.c[1] = data[1];
                 col.c[2] = data[2];
 
-                //print_col(&col);
                 for(int j=0; j < NUM_PIXELS; j++)
                     show_color(&col);
 
@@ -254,7 +254,6 @@ void handle_packet(uint16_t len, uint8_t *packet)
                 g_next_pattern = (s_source_t *)parse(data, len - 2, heap);
                 if (!g_next_pattern)
                 {
-                    Serial.println("Parse failed.");
                     g_next_pattern = NULL;
                     return;
                 }
@@ -367,9 +366,19 @@ void handle_packet(uint16_t len, uint8_t *packet)
                 col.c[2] = 255;
                 show_color(&col);
             }
+        case PACKET_ADJ_COLOR:
+            {
+                int32_t h,s,v;
+
+                h = (int32_t)data[0] * 10;
+                s = (int32_t)data[0] * 10;
+                v = (int32_t)data[0] * 10;
+                set_color_filter(h, s, v);
+            }
     }
 }
 
+#if 0
 void print_col(color_t *c)
 {
     Serial.print(c->c[0], DEC);
@@ -378,6 +387,7 @@ void print_col(color_t *c)
     Serial.print(", ");
     Serial.println(c->c[2], DEC);
 }
+#endif
 
 void next(uint16_t transition_steps)
 {
@@ -541,7 +551,7 @@ void setup()
     startup_animation();
     
     Serial.begin(38400);
-    Serial.println("led-board hello!");
+    Serial.println("!!!");
     
     g_node_id = EEPROM.read(id_address);
     EEPROM.get(calibration_address, timer_cal);
