@@ -1,3 +1,5 @@
+#include <TimerOne.h>
+
 #include <util/crc16.h>
 #include <EEPROM.h>
 #include <Adafruit_NeoPixel.h>
@@ -71,6 +73,9 @@ const uint8_t NUM_CLASSES = 10;
 const uint8_t NO_CLASS = 255;
 uint8_t g_classes[NUM_CLASSES];
 
+// calibration values
+uint8_t g_calibrate = 0;
+
 // Gamma correction table in progmem
 const uint8_t PROGMEM gamma[] = {
     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
@@ -95,19 +100,15 @@ const uint8_t PROGMEM gamma[] = {
 void next_pattern(void);
 
 #if F_CPU == 16000000UL
-#define    TIMER1_INIT         0xF82F
+#define    TIMER1_INIT         1000
 #else
-#define    TIMER1_INIT         0xFC17
-#endif
-#define    TIMER1_FLAGS        _BV(CS11); // 8Mhz / 8 = 1us per tick.
+#define    TIMER1_INIT         61535
+#endif     
 
 volatile uint32_t g_time = 0;
-uint16_t g_timer_init = TIMER1_INIT;
-
-ISR (TIMER1_OVF_vect)
+void tick(void)
 {
     g_time++;
-    TCNT1 = g_timer_init;
 }
 
 uint32_t cmillis(void)
@@ -118,7 +119,7 @@ uint32_t cmillis(void)
     temp = g_time;
     interrupts();
 
-    return temp;
+    return temp >> 5; 
 }
 
 void show_color(color_t *col)
@@ -336,6 +337,7 @@ void handle_packet(uint16_t len, uint8_t *packet)
         case PACKET_CALIBRATE:
             {
                 uint32_t duration = data[0];
+                uint32_t ticks, ticks2;
                 color_t col;
 
                 col.c[1] = col.c[2] = 0;
@@ -346,26 +348,9 @@ void handle_packet(uint16_t len, uint8_t *packet)
                     Serial.read();
 
                 show_color(&col);
+                
+                g_calibrate = 1;
 
-                // Wait for the next character, which starts the calibration interval for duration seconds
-                Serial.read();
-                noInterrupts();
-                TCNT1 = 0;
-                g_time = 0;
-                interrupts();
-
-                // Wait for the next character, which ends the calibration
-                Serial.read();
-
-                // Now calculate our calibration routine
-                noInterrupts();
-                TCNT1 = g_timer_init = 2000 - ((g_time * 1000 + TCNT1) / duration);
-                interrupts();
-                EEPROM.put(calibration_address, g_timer_init);
-
-                col.c[0] = col.c[1] = 0;
-                col.c[2] = 255;
-                show_color(&col);
             }
     }
 }
@@ -533,20 +518,30 @@ void setup()
 { 
     uint16_t timer_cal;
 
-    TCNT1 = TIMER1_INIT;
-    TIMSK1 |= (1<<TOIE1);
-    interrupts();
-
     g_pixels.begin();
     startup_animation();
     
     Serial.begin(38400);
     Serial.println("led-board hello!");
     
+    Timer1.initialize(32);
+    Timer1.attachInterrupt(tick);
+    
     g_node_id = EEPROM.read(id_address);
-    EEPROM.get(calibration_address, timer_cal);
-    if (timer_cal > 1)
-        g_timer_init = timer_cal;
+//    EEPROM.get(calibration_address, timer_cal);
+//    if (timer_cal > 1)
+//        g_timer_init = timer_cal;
+
+//    uint32_t t, last_t = 0;
+//    for(;;)
+//    {
+//          t = cmillis() / 1000;
+//          if (t != last_t)
+//          {
+//              Serial.println(t);
+//              last_t = t;
+//          }
+//    }
 }
 
 void loop()
@@ -554,6 +549,45 @@ void loop()
     uint8_t            i, ch, data[3];
     static uint8_t     found_header = 0;
     static uint16_t    crc = 0, len = 0, recd = 0;
+    static uint32_t    calibrate_start = 0;
+    
+    if (g_calibrate)
+    {
+        if (Serial.available() > 0 && calibrate_start == 0)
+        {
+             noInterrupts();
+             calibrate_start = g_time;
+             interrupts();
+             //calibrate_start = cmillis();
+             Serial.println("start: " + String(calibrate_start));
+             
+             Serial.read();
+             return;
+        }
+        if (Serial.available() > 0 && calibrate_start > 0)
+        {
+             uint32_t done, duration;
+             noInterrupts();
+             done = g_time;
+             interrupts();
+             //done = cmillis();
+             Serial.println(" done: " + String(done));
+             
+             show_color(NULL);
+             
+             duration = done - calibrate_start;
+
+             Serial.println("start: " + String(calibrate_start));
+             Serial.println(" done: " + String(done));
+             Serial.println("  dur: " + String(duration));
+             Serial.read();
+                       
+             g_calibrate = 0;
+             calibrate_start = 0;
+             
+             return;
+        }
+    }
     
     update_pattern();
     
