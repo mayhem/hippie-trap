@@ -46,4 +46,14 @@ typedef struct f_brightness_t
 void f_brightness_init(f_brightness_t *self, generator_t *gen);
 void f_brightness_get(void *self, uint32_t t, color_t *src, color_t *dest);
 
+typedef struct f_color_shift_t
+{
+    f_method      method;
+    void         *next;
+    int32_t       h_shift, v_shift, s_shift;
+} f_color_shift_t;
+
+void f_color_shift_init(f_color_shift_t *self, int32_t h_shift, int32_t s_shift, int32_t v_shift);
+void f_color_shift_get(void *self, uint32_t t, color_t *src, color_t *dest);
+
 #endif

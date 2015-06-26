@@ -81,3 +81,26 @@ class Brightness(Filter):
         percent = self.gen[t]
         #print "  %3.2f  %3d,%3d,%3d" % (percent, color[0], color[1], color[2])
         return self.call_next(t, Color(int(color[0] * percent), int(color[1] * percent), int(color[2] * percent)))
+
+class ColorShift(Filter):
+
+    def __init__(self, h_shift, s_shift, v_shift):
+        self.h_shift = h_shift
+        self.s_shift = s_shift
+        self.v_shift = v_shift
+        super(ColorShift, self).__init__()
+
+    def describe(self):
+        desc = common.make_function(common.FUNC_COLORSHIFT, (common.ARG_VALUE,common.ARG_VALUE,common.ARG_VALUE))
+        desc += common.pack_fixed(self.h_shift)
+        desc += common.pack_fixed(self.s_shift)
+        desc += common.pack_fixed(self.v_shift)
+        return desc + self.describe_next()
+
+    def filter(self, t, color):
+        h,s,v = colorsys.rgb_to_hsv(self.color.color[0] / 255.0, self.color.color[1] / 255.0, self.color.color[2] / 255.0)
+        h = (h + self.h_shift) % 1.0
+        s = min(0.0, max(1.0, s + self.s_shift))
+        v = min(0.0, max(1.0, v + self.v_shift))
+        col = colorsys.hsv_to_rgb(h, s, v)
+        return self.call_next(t, Color(int(col[0] * 255), int(col[1] * 255), int(col[2] * 255)))
