@@ -207,8 +207,8 @@ void handle_packet(uint16_t len, uint8_t *packet)
     }
 
     if (target != BROADCAST && target != g_node_id)
-         return;
-    
+        return;
+      
     type = packet[1];
     data = &packet[2];
     switch(type)
@@ -322,6 +322,7 @@ void handle_packet(uint16_t len, uint8_t *packet)
             {
                 uint8_t i;
 
+                Serial.println("set classes!");
                 for(i = 0; i < NUM_CLASSES; i++)
                     g_classes[i] = NO_CLASS;
 
@@ -558,6 +559,7 @@ void setup()
     init_color_filter();
         
     g_node_id = EEPROM.read(id_address);
+    Serial.println("node " + String(g_node_id) + " ready");
     EEPROM.get(calibration_address, timer_cal);
     if (timer_cal > 1)
         g_timer_init = timer_cal;

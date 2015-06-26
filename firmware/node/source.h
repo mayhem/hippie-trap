@@ -79,7 +79,7 @@ typedef struct s_comp_t
     int32_t      index;
 } s_comp_t;
 
-void s_comp_init(s_op_t *self, color_t *col, int32_t dist, int32_t index);
+void s_comp_init(s_comp_t *self, color_t *col, int32_t dist, int32_t index);
 void s_comp_get(void *self, uint32_t t, color_t *dest);
 
 #endif

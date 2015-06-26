@@ -96,12 +96,9 @@ void rgb_to_hsv(color_t *col, int32_t *_h, int32_t *_s, int32_t *_v)
         //Serial.print(" g " + String(col->c[1]));
         //Serial.println(" b " + String(col->c[2]));
     
-    if (mx == 0)
-    {
+//    if (mx == 0)
+//        Serial.println("mx = 0. d = " + String(d));
 
-        
-        Serial.println("mx = 0. d = " + String(d));
-    }
     
     if (mx == mn) 
     { 
@@ -287,7 +284,7 @@ void s_comp_init(s_comp_t *self, color_t *col, int32_t dist, int32_t index)
     self->col.c[1] = col->c[1];
     self->col.c[2] = col->c[2];
     self->dist = dist;
-    self->index = index;
+    self->index = index / SCALE_FACTOR;
 }
 
 void s_comp_get(void *_self, uint32_t t, color_t *dest)

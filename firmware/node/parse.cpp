@@ -229,6 +229,23 @@ void *create_object(uint8_t   id, uint8_t *is_local,
             }
             break;
 
+        case FUNC_COMPLEMENTARY:
+            {
+                if (color_count == 1 && value_count == 2)
+                {
+                    obj = heap_alloc(sizeof(s_comp_t));
+                    if (!obj)
+                        return NULL;
+                    s_comp_init((s_comp_t *)obj,  &colors[0], values[0], values[1]);
+                }
+                else
+                {
+                    g_error = ERR_PARSE_FAILURE;
+                    return NULL;
+                }
+            }
+            break;
+        
         case GEN_SQUARE:
             {
                 if (value_count == 5)
