@@ -49,6 +49,10 @@ purple = function.ConstantColor(Color(255, 0, 255))
 purple.chain(filter.FadeIn(1.0))
 purple.chain(filter.FadeOut(1.0, 5.0))
 
+# constant random color
+src = function.ConstantRandomColor(generator.LocalRandomValue(.25, .75), 
+                                   generator.LocalRandomValue(.25, .5),
+                                   generator.LocalRandomValue(.25, .5))
 # to test:
 # step, square, abs, constant
 
@@ -88,7 +92,8 @@ purple.chain(filter.FadeOut(1.0, 5.0))
 hsv = function.HSV(generator.Sawtooth(3), generator.Sin(3))
 green = function.ConstantColor(Color(0,255,0))
 green.chain(filter.Brightness(generator.Sawtooth(2)))
-src = green
+
+src = wobble
 
 if len(sys.argv) == 2:
     local = int(sys.argv[1])
