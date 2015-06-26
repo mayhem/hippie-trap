@@ -390,7 +390,7 @@ void *create_object(uint8_t   id, uint8_t *is_local,
                 if (value_count == 2)
                 {
 
-                    int32_t ret = fu_local_random(values[0], values[1]);
+                    int32_t ret = fu_local_random(values[0], values[1]);                   
                     return (void *)ret;
                 }
                 else
@@ -541,12 +541,14 @@ void evaluate(s_source_t *src, uint32_t _t, color_t *color)
 
         filter = ((f_filter_t *)filter)->next;
     }
-
+    color->c[0] = dest.c[0];
+    color->c[1] = dest.c[1];
+    color->c[2] = dest.c[2];
     // apply the final color shift filter
-    ((f_filter_t *)&color_shift)->method(filter, t, &dest, color);
+    //((f_filter_t *)&color_shift)->method(filter, t, &dest, color);
 }
 
-void int_color_filter(void)
+void init_color_filter(void)
 {
     f_color_shift_init(&color_shift, 0, 0, 0);
 }

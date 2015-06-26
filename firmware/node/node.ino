@@ -549,6 +549,7 @@ void setup()
 
     g_pixels.begin();
     startup_animation();
+    init_color_filter();
     
     Serial.begin(38400);
     Serial.println("!!!");
