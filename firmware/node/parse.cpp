@@ -44,6 +44,9 @@
 #define GEN_IMPULSE              19
 #define FUNC_REPEAT_LOCAL_RANDOM 20
 
+// for the final output color shift filter
+f_color_shift_t color_shift;
+
 // variables to help manage the heap.
 uint8_t *cur_heap = NULL;
 uint16_t heap_offset = 0;
@@ -516,7 +519,19 @@ void evaluate(s_source_t *src, uint32_t _t, color_t *color)
 
         filter = ((f_filter_t *)filter)->next;
     }
-    color->c[0] = dest.c[0];
-    color->c[1] = dest.c[1];
-    color->c[2] = dest.c[2];
+
+    // apply the final color shift filter
+    ((f_filter_t *)&color_shift)->method(filter, t, &dest, color);
+}
+
+void int_color_filter(void)
+{
+    f_color_shift_init(&color_shift, 0, 0, 0);
+}
+
+void set_color_filter(int32_t h_shift, int32_t s_shift, int32_t v_shift)
+{
+    color_shift.h_shift = h_shift;
+    color_shift.s_shift = s_shift;
+    color_shift.v_shift = v_shift;
 }
