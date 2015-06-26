@@ -93,12 +93,9 @@ purple.chain(filter.FadeOut(1.0, 5.0))
 # this python crashes
 #hsv = function.HSV(generator.Sawtooth(.15), generator.Sin(generator.LocalRandomValue(.25, .99)), generator.Constant(generator.LocalRandomValue(.25, .99)))
 
+cc = function.CompColorSource(Color(255, 255, 0), .05, 1)
 
-hsv = function.HSV(generator.Sawtooth(3), generator.Sin(3))
-green = function.ConstantColor(Color(0,255,0))
-green.chain(filter.Brightness(generator.Sawtooth(1)))
-
-src = sq
+src = cc
 
 if len(sys.argv) == 2:
     local = int(sys.argv[1])

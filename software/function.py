@@ -210,7 +210,7 @@ class Rainbow(ColorSource):
 
 class CompColorSource(common.ChainLink):
 
-    def __init__(self, color, dist, index):
+    def __init__(self, color, dist = .1, index = 0):
         '''color - base color for the triad. const or gen
            index - which of the parts of the complement are we: 0 anchor, 1 secondary color 1, 2 secondary color 2
            dist - the distribution angle between secondary colors'''
@@ -232,8 +232,8 @@ class CompColorSource(common.ChainLink):
             self.index = self.index_f[0]
 
     def describe(self):
-        args = []
-        desc = self.color.describe()
+        args = [common.ARG_COLOR]
+        desc = common.pack_color(self.color)
 
         if self.dist_f:
             desc += self.dist_f.describe()
