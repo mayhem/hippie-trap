@@ -37,11 +37,11 @@ class ConstantColor(ColorSource):
 
 class ConstantRandomColor(ColorSource):
 
-    def __init__(self, hue, sat, value):
-        super(ConstantColor, self).__init__(None)
+    def __init__(self, hue, sat = 1.0, value = 1.0):
+        super(ConstantRandomColor, self).__init__(None)
         self.hue = hue
         self.sat = sat
-        self.vaue = value
+        self.value = value
 
         if type(self.hue) in (int, float):
             self.hue_f = None
@@ -60,6 +60,7 @@ class ConstantRandomColor(ColorSource):
         else:
             self.value_f = self.value
             self.value = self.value_f[0]
+
 
     def describe(self):
         args = []
@@ -86,9 +87,13 @@ class ConstantRandomColor(ColorSource):
             desc += common.pack_fixed(self.value)
             args.append(common.ARG_VALUE)
 
+        print args
+
         return common.make_function(common.FUNC_CONSTANT_RANDOM_COLOR, args) + desc + self.describe_next()
 
     def __getitem__(self, t):
+        col = colorsys.hsv_to_rgb(self.hue, self.sat, self.value)
+        self.color = Color(int(col[0] * 255), int(col[1] * 255), int(col[2] * 255))
         return self.call_next(t, self.color)
 
 class RandomColorSequence(ColorSource):

@@ -41,6 +41,10 @@ green.chain(filter.Brightness(generator.Sawtooth(2)))
 rainbow = function.Rainbow(generator.Sawtooth(3))
 rainbow.chain(filter.FadeIn(1))
 
+# Blinking random color
+sq = function.RandomColorSequence(generator.LocalRandomValue(1.0, 1.50), generator.LocalRandomValue(0.0, 1.00))
+sq.chain(filter.Brightness(generator.Square(.5)))
+
 # Rainbow/white, HSV, local randoms
 hsv = function.HSV(generator.Sawtooth(3), generator.Sin(generator.LocalRandomValue(.25, .99)), generator.LocalRandomValue(.25, .99))
 
@@ -48,6 +52,11 @@ hsv = function.HSV(generator.Sawtooth(3), generator.Sin(generator.LocalRandomVal
 purple = function.ConstantColor(Color(255, 0, 255))
 purple.chain(filter.FadeIn(1.0))
 purple.chain(filter.FadeOut(1.0, 5.0))
+
+# constant random color
+#src = function.ConstantRandomColor(generator.LocalRandomValue(.25, .75), 
+#                                   generator.LocalRandomValue(.25, .5),
+#                                   generator.LocalRandomValue(.25, .5))
 
 # to test:
 # step, square, abs, constant
@@ -87,8 +96,9 @@ purple.chain(filter.FadeOut(1.0, 5.0))
 
 hsv = function.HSV(generator.Sawtooth(3), generator.Sin(3))
 green = function.ConstantColor(Color(0,255,0))
-green.chain(filter.Brightness(generator.Sawtooth(2)))
-src = green
+green.chain(filter.Brightness(generator.Sawtooth(1)))
+
+src = sq
 
 if len(sys.argv) == 2:
     local = int(sys.argv[1])
@@ -100,7 +110,6 @@ if local:
     ch.run(src, DELAY, 0)
 else:
     print "Sending %d bytes." % len(src.describe())
-    ch.set_speed(BROADCAST, 2000)
     ch.send_pattern(BROADCAST, src) 
     ch.next_pattern(BROADCAST, 0)
     ch.debug_serial(0)

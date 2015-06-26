@@ -41,7 +41,7 @@ def get_node_id():
 
     try:
         id_file = open(PUMP_ID_FILE, "w")
-        id_file.write("%d\n" % id)
+        id_file.write(chr(id))
     except IOError:
         print "Failed to save node id to %s" % PUMP_ID_FILE
 

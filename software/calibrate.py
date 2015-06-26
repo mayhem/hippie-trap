@@ -17,4 +17,5 @@ device = "/dev/ttyAMA0"
 ch = Chandelier()
 ch.open(device)
 ch.off(BROADCAST)
-ch.calibrate_timers()
+ch.calibrate_timers(BROADCAST)
+ch.debug_serial(10)
