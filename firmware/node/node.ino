@@ -279,6 +279,7 @@ void handle_packet(uint16_t len, uint8_t *packet)
                 g_load_pattern = 0;
                 g_transition_end = 0;
                 g_target = 0;
+                init_color_filter();
                 show_color(NULL);
             }
             break;
@@ -365,15 +366,17 @@ void handle_packet(uint16_t len, uint8_t *packet)
                 col.c[0] = col.c[1] = 0;
                 col.c[2] = 255;
                 show_color(&col);
+                break;
             }
         case PACKET_ADJ_COLOR:
             {
                 int32_t h,s,v;
 
                 h = (int32_t)data[0] * 10;
-                s = (int32_t)data[0] * 10;
-                v = (int32_t)data[0] * 10;
+                s = (int32_t)data[1] * 10;
+                v = (int32_t)data[2] * 10;
                 set_color_filter(h, s, v);
+                break;
             }
     }
 }
@@ -543,6 +546,9 @@ void setup()
 { 
     uint16_t timer_cal;
 
+    Serial.begin(38400);
+    Serial.println("!!!");
+
     TCNT1 = TIMER1_INIT;
     TIMSK1 |= (1<<TOIE1);
     interrupts();
@@ -550,10 +556,7 @@ void setup()
     g_pixels.begin();
     startup_animation();
     init_color_filter();
-    
-    Serial.begin(38400);
-    Serial.println("!!!");
-    
+        
     g_node_id = EEPROM.read(id_address);
     EEPROM.get(calibration_address, timer_cal);
     if (timer_cal > 1)

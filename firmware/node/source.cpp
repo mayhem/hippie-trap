@@ -91,7 +91,18 @@ void rgb_to_hsv(color_t *col, int32_t *_h, int32_t *_s, int32_t *_v)
 
     int32_t d = mx - mn;
     s = mx == 0 ? 0 : d * SCALE_FACTOR / mx;
+    
+//Serial.print("r " + String(col->c[0]));
+        //Serial.print(" g " + String(col->c[1]));
+        //Serial.println(" b " + String(col->c[2]));
+    
+    if (mx == 0)
+    {
 
+        
+        Serial.println("mx = 0. d = " + String(d));
+    }
+    
     if (mx == mn) 
     { 
         h = 0; 
@@ -108,6 +119,10 @@ void rgb_to_hsv(color_t *col, int32_t *_h, int32_t *_s, int32_t *_v)
             h = (rd - gd) * SCALE_FACTOR / d + 4000;
         h = h / 6;
     }
+    //Serial.print("h " + String(h));
+    //Serial.print(" s " + String(s));
+    //Serial.print(" v " + String(v));
+    
     *_h = h;
     *_s = s;
     *_v = v;

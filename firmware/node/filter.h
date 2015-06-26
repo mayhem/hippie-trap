@@ -50,7 +50,7 @@ typedef struct f_color_shift_t
 {
     f_method      method;
     void         *next;
-    int32_t       h_shift, v_shift, s_shift;
+    int32_t       h_shift, s_shift, v_shift;
 } f_color_shift_t;
 
 void f_color_shift_init(f_color_shift_t *self, int32_t h_shift, int32_t s_shift, int32_t v_shift);

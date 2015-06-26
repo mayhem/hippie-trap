@@ -101,8 +101,17 @@ void f_color_shift_get(void *_self, uint32_t t, color_t *src, color_t *dest)
     f_color_shift_t *self = (f_color_shift_t *)_self;
 
     rgb_to_hsv(src, &h, &s, &v);
+     
+    //Serial.print("ss " + String(self->s_shift)); 
+    //Serial.print("  s " + String(s)); 
+     
     h = (h + self->h_shift) % SCALE_FACTOR;
-    s = min(0, max(SCALE_FACTOR, s + self->s_shift));
-    v = min(0, max(SCALE_FACTOR, v + self->v_shift));
+    v = max(min(v + self->v_shift, SCALE_FACTOR - 1), 0);
+    s = max(min(v + self->s_shift, SCALE_FACTOR - 1), 0);    
+    //Serial.println(" -> s " + String(s));
+    
     hsv_to_rgb(h, s, v, dest);
+    //Serial.print("  r: " + String(dest->c[0]));
+    //Serial.print(" g: " + String(dest->c[1]));
+    //Serial.println(" b: " + String(dest->c[2]));
 }

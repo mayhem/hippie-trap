@@ -541,11 +541,8 @@ void evaluate(s_source_t *src, uint32_t _t, color_t *color)
 
         filter = ((f_filter_t *)filter)->next;
     }
-    color->c[0] = dest.c[0];
-    color->c[1] = dest.c[1];
-    color->c[2] = dest.c[2];
     // apply the final color shift filter
-    //((f_filter_t *)&color_shift)->method(filter, t, &dest, color);
+    ((f_color_shift_t *)&color_shift)->method(&color_shift, t, &dest, color);
 }
 
 void init_color_filter(void)
