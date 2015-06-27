@@ -13,6 +13,6 @@ if len(sys.argv) == 2:
 
 ch = Chandelier()
 ch.open(device)
-rainbow = function.Rainbow(generator.Sawtooth(5))
+rainbow = function.Rainbow(generator.Sawtooth(1))
 ch.send_pattern(BROADCAST, rainbow)
 ch.next_pattern(BROADCAST, 0)

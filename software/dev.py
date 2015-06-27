@@ -19,6 +19,7 @@ device = "/dev/ttyAMA0"
 ch = Chandelier()
 ch.open(device)
 ch.off(BROADCAST)
+#ch.set_delay(BROADCAST, 30)
 ch.send_entropy()
 
 random.seed()
@@ -30,12 +31,12 @@ def pfs(seconds):
 # Debugged patterns
 
 # Wobble: Sin, Random Color Seq, Local Random, Brightness
-wobble = function.RandomColorSequence(generator.LocalRandomValue(1.0, 1.50), generator.LocalRandomValue(0.0, 1.00))
+wobble = function.RandomColorSequence(generator.LocalRandomValue(.5, .75), generator.LocalRandomValue(0.0, 1.00))
 wobble.chain(filter.Brightness(generator.Sin(generator.RepeatLocalRandomValue(0))))
 
 # Green saw: sawtooth, Brightness, constant color
 green = function.ConstantColor(Color(0,255,0))
-green.chain(filter.Brightness(generator.Sawtooth(2)))
+green.chain(filter.Brightness(generator.Sawtooth(1)))
 
 # Rainbow, sawtooth, filter
 rainbow = function.Rainbow(generator.Sawtooth(3))
@@ -59,18 +60,18 @@ purple.chain(filter.FadeOut(1.0, 5.0))
 #                                   generator.LocalRandomValue(.25, .5))
 
 # to test:
-# step, square, abs, constant
+# step, abs, constant
 
-#src1 = function.ConstantColor(Color(255,0,0))
-#src1.chain(filter.Brightness(generator.Sin((math.pi * 3) / period_s, 2, .5, .5)))
-#
-#src2 = function.ConstantColor(Color(0,0,255))
-#src2.chain(filter.Brightness(generator.Sin((math.pi * 2) / period_s, 1, .5, .5)))
-#
-#src3 = function.ConstantColor(Color(0,255,0))
-#src3.chain(filter.Brightness(generator.Sin(math.pi / period_s, 1, .5, .5)))
-#
-#op = function.SourceOp(common.OP_ADD, src1, src2, src3)
+src1 = function.ConstantColor(Color(255,0,0))
+src1.chain(filter.Brightness(generator.Sin((math.pi * 3) / period_s, 2, .5, .5)))
+
+src2 = function.ConstantColor(Color(0,0,255))
+src2.chain(filter.Brightness(generator.Sin((math.pi * 2) / period_s, 1, .5, .5)))
+
+src3 = function.ConstantColor(Color(0,255,0))
+src3.chain(filter.Brightness(generator.Sin(math.pi / period_s, 1, .5, .5)))
+
+op = function.SourceOp(common.OP_ADD, src1, src2, src3)
 
 #dist = .15
 #base = Color(255, 0, 64)
@@ -94,8 +95,7 @@ purple.chain(filter.FadeOut(1.0, 5.0))
 #hsv = function.HSV(generator.Sawtooth(.15), generator.Sin(generator.LocalRandomValue(.25, .99)), generator.Constant(generator.LocalRandomValue(.25, .99)))
 
 cc = function.CompColorSource(Color(255, 255, 0), .05, 1)
-
-src = cc
+src = green
 
 if len(sys.argv) == 2:
     local = int(sys.argv[1])
