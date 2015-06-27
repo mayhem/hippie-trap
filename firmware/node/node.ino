@@ -9,6 +9,7 @@
 const uint8_t NUM_NODES = 101;
 const uint8_t NUM_PIXELS = 4;
 const uint8_t OUT_PIN = 2;
+const uint8_t US_PER_TICK = 10;
 
 const uint16_t MAX_PACKET_LEN     = 200;
 const uint8_t BROADCAST = 0;
@@ -74,7 +75,8 @@ const uint8_t NO_CLASS = 255;
 uint8_t g_classes[NUM_CLASSES];
 
 // calibration values
-uint8_t g_calibrate = 0;
+uint8_t  g_calibrate = 0; // stores the duration of the calibration in seconds
+uint32_t g_calibrate_start = 0;
 
 // Gamma correction table in progmem
 const uint8_t PROGMEM gamma[] = {
@@ -97,18 +99,19 @@ const uint8_t PROGMEM gamma[] = {
 };
 
 // ---- prototypes -----
-void next_pattern(void);
-
-#if F_CPU == 16000000UL
-#define    TIMER1_INIT         1000
-#else
-#define    TIMER1_INIT         61535
-#endif     
+void next_pattern(void);  
 
 volatile uint32_t g_time = 0;
 void tick(void)
 {
     g_time++;
+}
+
+void reset_ticks(void)
+{
+    noInterrupts();
+    g_time = 0;
+    interrupts();
 }
 
 uint32_t cmillis(void)
@@ -335,9 +338,7 @@ void handle_packet(uint16_t len, uint8_t *packet)
                 break;
             }
         case PACKET_CALIBRATE:
-            {
-                uint32_t duration = data[0];
-                uint32_t ticks, ticks2;
+            {  
                 color_t col;
 
                 col.c[1] = col.c[2] = 0;
@@ -349,8 +350,9 @@ void handle_packet(uint16_t len, uint8_t *packet)
 
                 show_color(&col);
                 
-                g_calibrate = 1;
-
+                reset_ticks();
+                g_calibrate = data[0];
+                g_calibrate_start = 0;
             }
     }
 }
@@ -396,6 +398,8 @@ void next_pattern(void)
         
     g_cur_pattern = g_next_pattern;
     g_next_pattern = NULL;
+    
+    reset_ticks();
     
     g_pattern_start = cmillis();
     g_target = g_pattern_start;
@@ -524,24 +528,13 @@ void setup()
     Serial.begin(38400);
     Serial.println("led-board hello!");
     
-    Timer1.initialize(32);
+    Timer1.initialize(US_PER_TICK);
     Timer1.attachInterrupt(tick);
     
     g_node_id = EEPROM.read(id_address);
 //    EEPROM.get(calibration_address, timer_cal);
 //    if (timer_cal > 1)
 //        g_timer_init = timer_cal;
-
-//    uint32_t t, last_t = 0;
-//    for(;;)
-//    {
-//          t = cmillis() / 1000;
-//          if (t != last_t)
-//          {
-//              Serial.println(t);
-//              last_t = t;
-//          }
-//    }
 }
 
 void loop()
@@ -549,44 +542,41 @@ void loop()
     uint8_t            i, ch, data[3];
     static uint8_t     found_header = 0;
     static uint16_t    crc = 0, len = 0, recd = 0;
-    static uint32_t    calibrate_start = 0;
     
     if (g_calibrate)
     {
-        if (Serial.available() > 0 && calibrate_start == 0)
+        if (Serial.available() > 0 && g_calibrate_start == 0)
         {
              noInterrupts();
-             calibrate_start = g_time;
+             g_calibrate_start = g_time;
              interrupts();
-             //calibrate_start = cmillis();
-             Serial.println("start: " + String(calibrate_start));
-             
              Serial.read();
+             
              return;
         }
-        if (Serial.available() > 0 && calibrate_start > 0)
+        if (Serial.available() > 0 && g_calibrate_start > 0)
         {
-             uint32_t done, duration;
+             uint32_t done, diff;
              noInterrupts();
              done = g_time;
              interrupts();
-             //done = cmillis();
-             Serial.println(" done: " + String(done));
              
              show_color(NULL);
              
-             duration = done - calibrate_start;
+             diff = ((done - g_calibrate_start) * US_PER_TICK) - (g_calibrate * 1000000); // in us for period
+             diff /= g_calibrate; // us per second off
 
-             Serial.println("start: " + String(calibrate_start));
-             Serial.println(" done: " + String(done));
-             Serial.println("  dur: " + String(duration));
+
+             Serial.println("dur: " + String(done - g_calibrate_start));
+             Serial.println("  diff: " + String(diff));
              Serial.read();
                        
              g_calibrate = 0;
-             calibrate_start = 0;
+             g_calibrate_start = 0;
              
              return;
         }
+        return;
     }
     
     update_pattern();
