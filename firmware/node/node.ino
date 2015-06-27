@@ -12,7 +12,7 @@ const uint8_t OUT_PIN = 2;
 const uint8_t US_PER_TICK = 32;
 
 
-const uint16_t MAX_PACKET_LEN     = 200;
+const uint16_t MAX_PACKET_LEN     = 230;
 const uint8_t BROADCAST = 0;
 const uint8_t PACKET_SINGLE_COLOR = 0;
 const uint8_t PACKET_COLOR_ARRAY  = 1;

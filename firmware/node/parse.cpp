@@ -435,6 +435,8 @@ void *create_object(uint8_t   id, uint8_t *is_local,
             }
             break;            
     }
+    
+    
     return obj;
 }
 
