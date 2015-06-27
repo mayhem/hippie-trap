@@ -9,7 +9,8 @@
 const uint8_t NUM_NODES = 101;
 const uint8_t NUM_PIXELS = 4;
 const uint8_t OUT_PIN = 2;
-const uint8_t US_PER_TICK = 10;
+const uint8_t US_PER_TICK = 32;
+
 
 const uint16_t MAX_PACKET_LEN     = 200;
 const uint8_t BROADCAST = 0;
@@ -77,6 +78,8 @@ uint8_t g_classes[NUM_CLASSES];
 // calibration values
 uint8_t  g_calibrate = 0; // stores the duration of the calibration in seconds
 uint32_t g_calibrate_start = 0;
+
+uint16_t g_us_per_tick = US_PER_TICK;
 
 // Gamma correction table in progmem
 const uint8_t PROGMEM gamma[] = {
@@ -528,13 +531,16 @@ void setup()
     Serial.begin(38400);
     Serial.println("led-board hello!");
     
-    Timer1.initialize(US_PER_TICK);
-    Timer1.attachInterrupt(tick);
+
     
     g_node_id = EEPROM.read(id_address);
-//    EEPROM.get(calibration_address, timer_cal);
-//    if (timer_cal > 1)
-//        g_timer_init = timer_cal;
+    EEPROM.get(calibration_address, timer_cal);
+    Serial.println("read calibration: " + String(timer_cal));
+    if (timer_cal > 1 && timer_cal < 200)
+        g_us_per_tick = timer_cal;
+
+    Timer1.initialize(g_us_per_tick);
+    Timer1.attachInterrupt(tick);
 }
 
 void loop()
@@ -556,19 +562,29 @@ void loop()
         }
         if (Serial.available() > 0 && g_calibrate_start > 0)
         {
-             uint32_t done, diff;
+             int32_t done, ticks_per_sec;
              noInterrupts();
-             done = g_time;
+             done = (int32_t)g_time;
              interrupts();
              
              show_color(NULL);
              
-             diff = ((done - g_calibrate_start) * US_PER_TICK) - (g_calibrate * 1000000); // in us for period
-             diff /= g_calibrate; // us per second off
+             // Calculate the number of ticks for the calibration period in theory and actual
+             ticks_per_sec = 1000000 / g_us_per_tick;
+             int32_t actual = done - g_calibrate_start;
+             int32_t theory = g_calibrate * ticks_per_sec;
+             
+             g_us_per_tick = US_PER_TICK + (US_PER_TICK * (theory - actual) * SCALE_FACTOR / theory / SCALE_FACTOR);
+             Serial.println("theory: " + String(theory));
+             Serial.println("actual: " + String(actual));
+             Serial.println("new us per tick: " + String(g_us_per_tick));
+             
+             EEPROM.put(calibration_address, g_us_per_tick);
+             
+             Timer1.detachInterrupt();
+             Timer1.initialize(g_us_per_tick);
+             Timer1.attachInterrupt(tick);
 
-
-             Serial.println("dur: " + String(done - g_calibrate_start));
-             Serial.println("  diff: " + String(diff));
              Serial.read();
                        
              g_calibrate = 0;
