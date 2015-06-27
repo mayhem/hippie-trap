@@ -1,3 +1,5 @@
+#include <TimerOne.h>
+
 #include <util/crc16.h>
 #include <EEPROM.h>
 #include <Adafruit_NeoPixel.h>
@@ -7,6 +9,8 @@
 const uint8_t NUM_NODES = 101;
 const uint8_t NUM_PIXELS = 4;
 const uint8_t OUT_PIN = 2;
+const uint8_t US_PER_TICK = 32;
+
 
 const uint16_t MAX_PACKET_LEN     = 200;
 const uint8_t BROADCAST = 0;
@@ -72,6 +76,12 @@ const uint8_t NUM_CLASSES = 10;
 const uint8_t NO_CLASS = 255;
 uint8_t g_classes[NUM_CLASSES];
 
+// calibration values
+uint8_t  g_calibrate = 0; // stores the duration of the calibration in seconds
+uint32_t g_calibrate_start = 0;
+
+uint16_t g_us_per_tick = US_PER_TICK;
+
 // Gamma correction table in progmem
 const uint8_t PROGMEM gamma[] = {
     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
@@ -93,22 +103,19 @@ const uint8_t PROGMEM gamma[] = {
 };
 
 // ---- prototypes -----
-void next_pattern(void);
-
-#if F_CPU == 16000000UL
-#define    TIMER1_INIT         0xF82F
-#else
-#define    TIMER1_INIT         0xFC17
-#endif
-#define    TIMER1_FLAGS        _BV(CS11); // 8Mhz / 8 = 1us per tick.
+void next_pattern(void);  
 
 volatile uint32_t g_time = 0;
-uint16_t g_timer_init = TIMER1_INIT;
-
-ISR (TIMER1_OVF_vect)
+void tick(void)
 {
     g_time++;
-    TCNT1 = g_timer_init;
+}
+
+void reset_ticks(void)
+{
+    noInterrupts();
+    g_time = 0;
+    interrupts();
 }
 
 uint32_t cmillis(void)
@@ -119,7 +126,7 @@ uint32_t cmillis(void)
     temp = g_time;
     interrupts();
 
-    return temp;
+    return temp >> 5; 
 }
 
 void show_color(color_t *col)
@@ -207,7 +214,10 @@ void handle_packet(uint16_t len, uint8_t *packet)
     }
 
     if (target != BROADCAST && target != g_node_id)
+    {
+        Serial.println("ignore packet for target " + String(target));
         return;
+    }
       
     type = packet[1];
     data = &packet[2];
@@ -335,8 +345,7 @@ void handle_packet(uint16_t len, uint8_t *packet)
                 break;
             }
         case PACKET_CALIBRATE:
-            {
-                uint32_t duration = data[0];
+            {  
                 color_t col;
 
                 col.c[1] = col.c[2] = 0;
@@ -347,27 +356,9 @@ void handle_packet(uint16_t len, uint8_t *packet)
                     Serial.read();
 
                 show_color(&col);
-
-                // Wait for the next character, which starts the calibration interval for duration seconds
-                Serial.read();
-                noInterrupts();
-                TCNT1 = 0;
-                g_time = 0;
-                interrupts();
-
-                // Wait for the next character, which ends the calibration
-                Serial.read();
-
-                // Now calculate our calibration routine
-                noInterrupts();
-                TCNT1 = g_timer_init = 2000 - ((g_time * 1000 + TCNT1) / duration);
-                interrupts();
-                EEPROM.put(calibration_address, g_timer_init);
-
-                col.c[0] = col.c[1] = 0;
-                col.c[2] = 255;
-                show_color(&col);
-                break;
+                reset_ticks();
+                g_calibrate = data[0];
+                g_calibrate_start = 0;
             }
         case PACKET_ADJ_COLOR:
             {
@@ -425,6 +416,8 @@ void next_pattern(void)
         
     g_cur_pattern = g_next_pattern;
     g_next_pattern = NULL;
+    
+    reset_ticks();
     
     g_pattern_start = cmillis();
     g_target = g_pattern_start;
@@ -550,10 +543,6 @@ void setup()
     Serial.begin(38400);
     Serial.println("!!!");
 
-    TCNT1 = TIMER1_INIT;
-    TIMSK1 |= (1<<TOIE1);
-    interrupts();
-
     g_pixels.begin();
     startup_animation();
     init_color_filter();
@@ -561,8 +550,24 @@ void setup()
     g_node_id = EEPROM.read(id_address);
     Serial.println("node " + String(g_node_id) + " ready");
     EEPROM.get(calibration_address, timer_cal);
-    if (timer_cal > 1)
-        g_timer_init = timer_cal;
+    Serial.println("read calibration: " + String(timer_cal));
+    if (timer_cal > 1 && timer_cal < 200)
+        g_us_per_tick = timer_cal;
+
+    Timer1.initialize(g_us_per_tick);
+    Timer1.attachInterrupt(tick);
+    
+//    for(;;)
+//    {
+//        uint32_t temp;
+//        temp = cmillis();
+//        
+//        if (temp % 1000 == 0)
+//        {
+//             Serial.println(temp);
+//             delay(1);
+//        }
+//    }
 }
 
 void loop()
@@ -570,6 +575,52 @@ void loop()
     uint8_t            i, ch, data[3];
     static uint8_t     found_header = 0;
     static uint16_t    crc = 0, len = 0, recd = 0;
+    
+    if (g_calibrate)
+    {
+        if (Serial.available() > 0 && g_calibrate_start == 0)
+        {
+             noInterrupts();
+             g_calibrate_start = g_time;
+             interrupts();
+             Serial.read();
+             
+             return;
+        }
+        if (Serial.available() > 0 && g_calibrate_start > 0)
+        {
+             int32_t done, ticks_per_sec;
+             noInterrupts();
+             done = (int32_t)g_time;
+             interrupts();
+             
+             show_color(NULL);
+             
+             // Calculate the number of ticks for the calibration period in theory and actual
+             ticks_per_sec = 1000000 / g_us_per_tick;
+             int32_t actual = done - g_calibrate_start;
+             int32_t theory = g_calibrate * ticks_per_sec;
+             
+             g_us_per_tick = US_PER_TICK + (US_PER_TICK * (theory - actual) * SCALE_FACTOR / theory / SCALE_FACTOR);
+             Serial.println("theory: " + String(theory));
+             Serial.println("actual: " + String(actual));
+             Serial.println("new us per tick: " + String(g_us_per_tick));
+             
+             EEPROM.put(calibration_address, g_us_per_tick);
+             
+             Timer1.detachInterrupt();
+             Timer1.initialize(g_us_per_tick);
+             Timer1.attachInterrupt(tick);
+
+             Serial.read();
+                       
+             g_calibrate = 0;
+             g_calibrate_start = 0;
+             
+             return;
+        }
+        return;
+    }
     
     update_pattern();
     
