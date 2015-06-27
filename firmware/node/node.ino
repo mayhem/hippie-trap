@@ -114,7 +114,7 @@ void tick(void)
 void reset_ticks(void)
 {
     noInterrupts();
-    g_time = 0;
+    g_time = 2000;
     interrupts();
 }
 
@@ -214,10 +214,7 @@ void handle_packet(uint16_t len, uint8_t *packet)
     }
 
     if (target != BROADCAST && target != g_node_id)
-    {
-        Serial.println("ignore packet for target " + String(target));
         return;
-    }
       
     type = packet[1];
     data = &packet[2];
@@ -332,15 +329,12 @@ void handle_packet(uint16_t len, uint8_t *packet)
             {
                 uint8_t i;
 
-                Serial.println("set classes!");
                 for(i = 0; i < NUM_CLASSES; i++)
                     g_classes[i] = NO_CLASS;
 
                 for(i = 0; i < len - 2; i++)
-                {
-                    Serial.println("set class " + String(data[i]));
                     g_classes[i] = data[i];
-                }
+
 
                 break;
             }
@@ -386,7 +380,7 @@ void print_col(color_t *c)
 
 void next(uint16_t transition_steps)
 {
-    
+
     if (!g_next_pattern)
     {
         g_error = ERR_NO_VALID_PATTERN;
@@ -413,12 +407,12 @@ void next_pattern(void)
 {
     uint8_t  i;
     color_t     color;
-        
+      
     g_cur_pattern = g_next_pattern;
     g_next_pattern = NULL;
     
     reset_ticks();
-    
+        
     g_pattern_start = cmillis();
     g_target = g_pattern_start;
     g_error = ERR_OK;
@@ -473,7 +467,7 @@ void update_pattern(void)
 
     if (!g_cur_pattern)
         return;
-       
+ 
     if (g_target && cmillis() >= g_target)
     {
         g_target += g_delay;
@@ -548,9 +542,9 @@ void setup()
     init_color_filter();
         
     g_node_id = EEPROM.read(id_address);
-    Serial.println("node " + String(g_node_id) + " ready");
+    Serial.println("node " + String(g_node_id) + " ready. ");
     EEPROM.get(calibration_address, timer_cal);
-    Serial.println("read calibration: " + String(timer_cal));
+    Serial.println(String(timer_cal) + "us per tick");
     if (timer_cal > 1 && timer_cal < 200)
         g_us_per_tick = timer_cal;
 
