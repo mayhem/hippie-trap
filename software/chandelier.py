@@ -16,6 +16,7 @@ BAUD_RATE = 38400
 NUM_PIXELS = 4
 NUM_NODES = 101
 MAX_CLASSES = 10
+MAX_PACKET_LEN = 230
 CALIBRATION_DURATION = 10
 
 PACKET_SINGLE_COLOR = 0
@@ -87,6 +88,8 @@ class Chandelier(object):
         for ch in packet:
             crc = crc16_update(crc, ch)
         packet = struct.pack("<BB", 255,  len(packet) + 2) + packet + struct.pack("<H", crc)
+        if len(packet) > MAX_PACKET_LEN:
+            raise BufferError("Max packet len of %d exceeded. Make your pattern smaller." % MAX_PACKET_LEN)
         self.ser.write(packet)
 
     def send_entropy(self):

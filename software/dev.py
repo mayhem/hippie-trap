@@ -55,9 +55,9 @@ purple.chain(filter.FadeIn(1.0))
 purple.chain(filter.FadeOut(1.0, 5.0))
 
 # constant random color
-#src = function.ConstantRandomColor(generator.LocalRandomValue(.25, .75), 
-#                                   generator.LocalRandomValue(.25, .5),
-#                                   generator.LocalRandomValue(.25, .5))
+src = function.ConstantRandomColor(generator.LocalRandomValue(.25, .75), 
+                                   generator.LocalRandomValue(.25, .5),
+                                   generator.LocalRandomValue(.25, .5))
 
 # to test:
 # step, abs, constant
@@ -95,7 +95,7 @@ op = function.SourceOp(common.OP_ADD, src1, src2, src3)
 #hsv = function.HSV(generator.Sawtooth(.15), generator.Sin(generator.LocalRandomValue(.25, .99)), generator.Constant(generator.LocalRandomValue(.25, .99)))
 
 cc = function.CompColorSource(Color(255, 255, 0), .05, 1)
-src = green
+src = wobble
 
 if len(sys.argv) == 2:
     local = int(sys.argv[1])
