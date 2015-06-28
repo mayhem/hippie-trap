@@ -66,9 +66,7 @@ uint16_t g_transition_steps = 0;
 color_t  g_begin_color, g_end_color;
 
 // location in space
-int32_t g_pos[3];
-int8_t  g_ring = -1;
-int8_t  g_arm = -1;
+int16_t g_pos[3];
 
 // broadcast classes
 const uint8_t NUM_CLASSES = 10;
@@ -302,19 +300,6 @@ void handle_packet(uint16_t len, uint8_t *packet)
                 show_color(&col);
             }
             break;  
-            
-        case PACKET_POSITION:
-            {
-                color_t col;
-                g_pos[0] = data[0];
-                g_pos[1] = data[1];
-                g_pos[2] = data[2];
-
-                col.c[0] = col.c[1] = 0;
-                col.c[2] = 180;
-                show_color(&col);
-            }
-            break;  
 
         case PACKET_DELAY:
             g_delay = data[0];
@@ -323,7 +308,23 @@ void handle_packet(uint16_t len, uint8_t *packet)
         case PACKET_SPEED:
             g_speed = *(uint16_t *)data;
             break;  
-
+            
+        case PACKET_POSITION:
+        { 
+            color_t col;
+            g_pos[0] = *(uint16_t *)data;
+            g_pos[1] = *(uint16_t *)(&data[2]);
+            g_pos[2] = *(uint16_t *)(&data[4]);
+            
+            Serial.println("x pos: " + String(g_pos[0]));
+            Serial.println("y pos: " + String(g_pos[1]));
+            Serial.println("z pos: " + String(g_pos[2]));
+            
+            col.c[0] = col.c[1] = 0;
+            col.c[2] = 180;
+            show_color(&col);
+            break;       
+        }
         case PACKET_CLASSES:
             {
                 uint8_t i;

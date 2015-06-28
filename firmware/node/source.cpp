@@ -236,6 +236,8 @@ uint8_t s_rgb_get(void *_self, uint32_t t, color_t *dest)
     dest->c[0] = red * 255 / SCALE_FACTOR;
     dest->c[1] = green * 255 / SCALE_FACTOR;
     dest->c[2] = blue *255 / SCALE_FACTOR;
+    
+    return 1;
 }
 
 //--
