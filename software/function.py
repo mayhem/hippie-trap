@@ -87,8 +87,6 @@ class ConstantRandomColor(ColorSource):
             desc += common.pack_fixed(self.value)
             args.append(common.ARG_VALUE)
 
-        print args
-
         return common.make_function(common.FUNC_CONSTANT_RANDOM_COLOR, args) + desc + self.describe_next()
 
     def __getitem__(self, t):

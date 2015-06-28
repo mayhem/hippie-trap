@@ -91,7 +91,7 @@ class ColorShift(Filter):
         super(ColorShift, self).__init__()
 
     def describe(self):
-        desc = common.make_function(common.FUNC_COLORSHIFT, (common.ARG_VALUE,common.ARG_VALUE,common.ARG_VALUE))
+        desc = common.make_function(common.FUNC_COLOR_SHIFT, (common.ARG_VALUE,common.ARG_VALUE,common.ARG_VALUE))
         desc += common.pack_fixed(self.h_shift)
         desc += common.pack_fixed(self.s_shift)
         desc += common.pack_fixed(self.v_shift)
