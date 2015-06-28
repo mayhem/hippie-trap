@@ -111,7 +111,7 @@ src = function.SourceOp(common.OP_ADD, step, imp)
 hsv = function.HSV(generator.Sawtooth(6), generator.Sin(generator.LocalRandomValue(.25, .99)), generator.LocalRandomValue(.25, .99))
 ch.set_color_filter(BROADCAST, 50, 0, 0)
 
-rgb = function.RGBSource(generator.Sawtooth(1), generator.Constant(0), generator.Sin(1))
+rgb = function.RGBSource(generator.Sawtooth(1), generator.Constant(1), generator.Sin(1))
 src = rgb
 
 if len(sys.argv) == 2:

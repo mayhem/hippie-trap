@@ -338,10 +338,10 @@ class RGBSource(common.ChainLink):
         desc = self.red.describe()
         if self.green:
             args.append(common.ARG_FUNC)
-            desc = self.green.describe()
+            desc += self.green.describe()
         if self.blue:
             args.append(common.ARG_FUNC)
-            desc = self.blue.describe()
+            desc += self.blue.describe()
         return common.make_function(common.FUNC_RGB_SRC, args) + desc + self.describe_next()
 
     def __getitem__(self, t):
