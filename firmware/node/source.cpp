@@ -330,7 +330,7 @@ uint8_t s_op_get(void *_self, uint32_t t, color_t *dest)
 
 //--
 
-void s_comp_init(s_comp_t *self, color_t *col, int32_t dist, int32_t index)
+void s_comp_init(s_comp_t *self, color_t *col, generator_t *dist, int32_t index)
 {
     self->method = s_comp_get;
     self->next = NULL; 
@@ -344,28 +344,30 @@ void s_comp_init(s_comp_t *self, color_t *col, int32_t dist, int32_t index)
 uint8_t s_comp_get(void *_self, uint32_t t, color_t *dest)
 {
     s_comp_t *self = (s_comp_t *)_self;
-    int32_t h, s, v;
+    int32_t h, s, v, dist;
+    
+    dist = self->dist->method(self->dist, t);
 
     if (self->index == 0)
     {
         dest->c[0] = self->col.c[0];
         dest->c[1] = self->col.c[1];
         dest->c[2] = self->col.c[2];
-        return 1;
     }
     else
     if (self->index == 1)
     {
-        if (!rgb_to_hsv(&self->col, &h, &s, &v))
-            return 0;
-        h = (h - self->dist) % SCALE_FACTOR;
-        return hsv_to_rgb(h, s, v, dest);
+        rgb_to_hsv(&self->col, &h, &s, &v);
+        h = (h - dist) % SCALE_FACTOR;
+        if (h < 0)
+            h += SCALE_FACTOR;
+        hsv_to_rgb(h, s, v, dest);
     }
     else
     {
-        if (!rgb_to_hsv(&self->col, &h, &s, &v))
-            return 0;
-        h = (h + self->dist) % SCALE_FACTOR;
-        return hsv_to_rgb(h, s, v, dest);
+        rgb_to_hsv(&self->col, &h, &s, &v);
+        h = (h + dist) % SCALE_FACTOR;
+        hsv_to_rgb(h, s, v, dest);
     }
+    return 1;
 }
