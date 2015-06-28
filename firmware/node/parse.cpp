@@ -43,7 +43,7 @@
 #define GEN_IMPULSE                19
 #define FUNC_REPEAT_LOCAL_RANDOM   20
 #define SRC_CONSTANT_RANDOM_COLOR  21
-#define SRC_COLOR_SHIFT            22
+#define FUNC_COLOR_SHIFT           22
 #define SRC_RGB                    23
 
 int32_t master_brightness = 1000;
@@ -454,7 +454,25 @@ void *create_object(uint8_t   id, uint8_t *is_local,
                     return NULL;
                 }
             }
-            break;            
+            break;         
+         
+        case FUNC_COLOR_SHIFT:
+            {
+                if (value_count == 3)
+                {
+                    obj = heap_alloc(sizeof(f_color_shift_t));
+                    if (!obj)
+                        return NULL;
+
+                    f_color_shift_init((f_color_shift_t *)obj, values[0], values[1], values[2]);
+                }
+                else
+                {
+                    g_error = ERR_PARSE_FAILURE;
+                    return NULL;
+                }
+            }
+            break;   
     }
     
     return obj;
