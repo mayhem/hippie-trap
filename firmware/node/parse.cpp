@@ -46,8 +46,7 @@
 #define SRC_COLOR_SHIFT            22
 #define SRC_RGB                    23
 
-// for the final output color shift filter
-f_color_shift_t color_shift;
+int32_t master_brightness = 1000;
 
 // variables to help manage the heap.
 uint8_t *cur_heap = NULL;
@@ -571,13 +570,10 @@ uint8_t evaluate(s_source_t *src, uint32_t _t, color_t *color)
     if (!sub_evaluate(src, t, &dest))
         return 0;
 
-    // apply the final color shift filter
-//    if (!((f_color_shift_t *)&color_shift)->method(&color_shift, t, &dest, color))
-//        return 0;
-    color->c[0] = dest.c[0];
-    color->c[1] = dest.c[1];
-    color->c[2] = dest.c[2];
-
+    color->c[0] = dest.c[0] * master_brightness / SCALE_FACTOR;
+    color->c[1] = dest.c[1] * master_brightness / SCALE_FACTOR;
+    color->c[2] = dest.c[2] * master_brightness / SCALE_FACTOR;
+    
     return 1;
 }
 
@@ -607,14 +603,7 @@ uint8_t sub_evaluate(s_source_t *src, uint32_t t, color_t *color)
     return 1;
 }
 
-void init_color_filter(void)
+void set_brightness(int32_t brightness)
 {
-    f_color_shift_init(&color_shift, 0, 0, 0);
-}
-
-void set_color_filter(int32_t h_shift, int32_t s_shift, int32_t v_shift)
-{
-    color_shift.h_shift = h_shift;
-    color_shift.s_shift = s_shift;
-    color_shift.v_shift = v_shift;
+    master_brightness = brightness;
 }

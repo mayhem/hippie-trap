@@ -27,7 +27,7 @@ const uint8_t PACKET_ADDR         = 9;
 const uint8_t PACKET_SPEED        = 10;
 const uint8_t PACKET_CLASSES      = 11;
 const uint8_t PACKET_CALIBRATE    = 12;
-const uint8_t PACKET_ADJ_COLOR    = 13;
+const uint8_t PACKET_BRIGHTNESS   = 13;
 
 // where in EEPROM our node id is stored
 const int id_address = 0;
@@ -289,7 +289,7 @@ void handle_packet(uint16_t len, uint8_t *packet)
                 g_load_pattern = 0;
                 g_transition_end = 0;
                 g_target = 0;
-                init_color_filter();
+                set_brightness(1000);
                 show_color(NULL);
             }
             break;
@@ -360,14 +360,11 @@ void handle_packet(uint16_t len, uint8_t *packet)
                 g_calibrate = data[0];
                 g_calibrate_start = 0;
             }
-        case PACKET_ADJ_COLOR:
+        case PACKET_BRIGHTNESS:
             {
-                int32_t h,s,v;
-
-                h = (int32_t)data[0] * 10;
-                s = (int32_t)data[1] * 10;
-                v = (int32_t)data[2] * 10;
-                set_color_filter(h, s, v);
+                int32_t b;
+                b = (int32_t)data[0] * 10;
+                set_brightness(b);
                 break;
             }
     }
@@ -543,7 +540,6 @@ void setup()
 
     g_pixels.begin();
     startup_animation();
-    init_color_filter();
         
     g_node_id = EEPROM.read(id_address);
     Serial.println("node " + String(g_node_id) + " ready. ");
