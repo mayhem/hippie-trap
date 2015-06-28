@@ -9,7 +9,7 @@
 const uint8_t NUM_NODES = 101;
 const uint8_t NUM_PIXELS = 4;
 const uint8_t OUT_PIN = 2;
-const uint8_t US_PER_TICK = 32;
+const uint8_t US_PER_TICK = 25;
 
 
 const uint16_t MAX_PACKET_LEN     = 230;
