@@ -19,7 +19,9 @@ device = "/dev/ttyAMA0"
 ch = Chandelier()
 ch.open(device)
 ch.off(BROADCAST)
+#ch.set_delay(BROADCAST, 30)
 ch.send_entropy()
+ch.set_color_filter(BROADCAST, 0, 0, 0)
 
 random.seed()
 period_s = 1
@@ -30,12 +32,12 @@ def pfs(seconds):
 # Debugged patterns
 
 # Wobble: Sin, Random Color Seq, Local Random, Brightness
-wobble = function.RandomColorSequence(generator.LocalRandomValue(1.0, 1.50), generator.LocalRandomValue(0.0, 1.00))
+wobble = function.RandomColorSequence(generator.LocalRandomValue(.5, .75), generator.LocalRandomValue(0.0, 1.00))
 wobble.chain(filter.Brightness(generator.Sin(generator.RepeatLocalRandomValue(0))))
 
 # Green saw: sawtooth, Brightness, constant color
 green = function.ConstantColor(Color(0,255,0))
-green.chain(filter.Brightness(generator.Sawtooth(2)))
+green.chain(filter.Brightness(generator.Sawtooth(1)))
 
 # Rainbow, sawtooth, filter
 rainbow = function.Rainbow(generator.Sawtooth(3))
@@ -46,31 +48,42 @@ sq = function.RandomColorSequence(generator.LocalRandomValue(1.0, 1.50), generat
 sq.chain(filter.Brightness(generator.Square(.5)))
 
 # Rainbow/white, HSV, local randoms
-hsv = function.HSV(generator.Sawtooth(3), generator.Sin(generator.LocalRandomValue(.25, .99)), generator.LocalRandomValue(.25, .99))
+hsv = function.HSV(generator.Sawtooth(6), generator.Sin(generator.LocalRandomValue(.25, .99)), generator.LocalRandomValue(.25, .99))
 
 # fadein, fade out, constant color
 purple = function.ConstantColor(Color(255, 0, 255))
 purple.chain(filter.FadeIn(1.0))
 purple.chain(filter.FadeOut(1.0, 5.0))
 
+# Impulse
+imp = function.ConstantColor(Color(255,0,0))
+imp.chain(filter.Brightness(generator.Impulse(1)))
+
+# Step
+step = function.ConstantColor(Color(0,0,255))
+step.chain(filter.Brightness(generator.Step(1, -1)))
+
+# Comp color source
+cc = function.CompColorSource(Color(255, 255, 0), .05, 2)
+
 # constant random color
-#src = function.ConstantRandomColor(generator.LocalRandomValue(.25, .75), 
-#                                   generator.LocalRandomValue(.25, .5),
-#                                   generator.LocalRandomValue(.25, .5))
+src = function.ConstantRandomColor(generator.LocalRandomValue(.25, .75), 
+                                   generator.LocalRandomValue(.25, .5),
+                                   generator.LocalRandomValue(.25, .5))
 
 # to test:
-# step, square, abs, constant
+# step, abs, constant
 
-#src1 = function.ConstantColor(Color(255,0,0))
-#src1.chain(filter.Brightness(generator.Sin((math.pi * 3) / period_s, 2, .5, .5)))
-#
-#src2 = function.ConstantColor(Color(0,0,255))
-#src2.chain(filter.Brightness(generator.Sin((math.pi * 2) / period_s, 1, .5, .5)))
-#
-#src3 = function.ConstantColor(Color(0,255,0))
-#src3.chain(filter.Brightness(generator.Sin(math.pi / period_s, 1, .5, .5)))
-#
-#op = function.SourceOp(common.OP_ADD, src1, src2, src3)
+src1 = function.ConstantColor(Color(255,0,0))
+src1.chain(filter.Brightness(generator.Sin((math.pi * 3) / period_s, 2, .5, .5)))
+
+src2 = function.ConstantColor(Color(0,0,255))
+src2.chain(filter.Brightness(generator.Sin((math.pi * 2) / period_s, 1, .5, .5)))
+
+src3 = function.ConstantColor(Color(0,255,0))
+src3.chain(filter.Brightness(generator.Sin(math.pi / period_s, 1, .5, .5)))
+
+op = function.SourceOp(common.OP_ADD, src1, src2, src3)
 
 #dist = .15
 #base = Color(255, 0, 64)
@@ -93,9 +106,14 @@ purple.chain(filter.FadeOut(1.0, 5.0))
 # this python crashes
 #hsv = function.HSV(generator.Sawtooth(.15), generator.Sin(generator.LocalRandomValue(.25, .99)), generator.Constant(generator.LocalRandomValue(.25, .99)))
 
-cc = function.CompColorSource(Color(255, 255, 0), .05, 1)
+src = function.SourceOp(common.OP_ADD, step, imp)
 
-src = cc
+hsv = function.HSV(generator.Sawtooth(6), generator.Sin(generator.LocalRandomValue(.25, .99)), generator.LocalRandomValue(.25, .99))
+#ch.set_color_filter(BROADCAST, 50, 0, 0)
+ch.set_position(1, .1, .2, .3)
+
+rgb = function.RGBSource(generator.Sawtooth(1), generator.Constant(1), generator.Sin(1))
+src = rgb
 
 if len(sys.argv) == 2:
     local = int(sys.argv[1])

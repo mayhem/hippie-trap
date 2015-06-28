@@ -9,6 +9,7 @@ import function
 import generator
 import filter
 import random
+import common
 from color import Color
 from time import sleep, time
 
@@ -16,6 +17,7 @@ BAUD_RATE = 38400
 NUM_PIXELS = 4
 NUM_NODES = 101
 MAX_CLASSES = 10
+MAX_PACKET_LEN = 230
 CALIBRATION_DURATION = 10
 
 PACKET_SINGLE_COLOR = 0
@@ -87,6 +89,8 @@ class Chandelier(object):
         for ch in packet:
             crc = crc16_update(crc, ch)
         packet = struct.pack("<BB", 255,  len(packet) + 2) + packet + struct.pack("<H", crc)
+        if len(packet) > MAX_PACKET_LEN:
+            raise BufferError("Max packet len of %d exceeded. Make your pattern smaller." % MAX_PACKET_LEN)
         self.ser.write(packet)
 
     def send_entropy(self):
@@ -120,6 +124,12 @@ class Chandelier(object):
 
     def set_speed(self, dest, speed):
         self._send_packet(dest, PACKET_SPEED, bytearray(struct.pack("<H", speed))) 
+
+    def set_position(self, dest, x, y, z):
+        x = int(x * common.SCALE_FACTOR)
+        y = int(y * common.SCALE_FACTOR)
+        z = int(z * common.SCALE_FACTOR)
+        self._send_packet(dest, PACKET_POSITION, bytearray(struct.pack("<HHH", x, y, z))) 
 
     def set_color_filter(self, dest, hue, sat, value):
         self._send_packet(dest, PACKET_ADJ_COLOR, bytearray((hue, sat, value)))

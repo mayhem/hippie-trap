@@ -41,14 +41,19 @@ def get_local_random_value(index):
         raise KeyError("Invalid get local random index: %d" % index)
     return local_random_values[index]
 
-class GenOp(object):
+class GeneratorBase(object):
+    pass
+
+class GenOp(GeneratorBase):
     def __init__(self, operation, gen1, gen2):
+        if not isinstance(gen1, Generator) or not isinstance(gen2, Generator):
+            raise TypeError("GenOp needs to be passed two Generator objects")
         self.operation = operation
         self.g1 = gen1
         self.g2 = gen2
 
     def describe(self):
-        desc = common.make_function(common.FUNC_GENOP, (common.ARG_FUNC,command.ARG_FUNC))
+        desc = common.make_function(common.FUNC_GENOP, (common.ARG_FUNC,common.ARG_FUNC))
         desc += common.pack_fixed(self.operation)
         desc += self.g1.describe()
         desc += self.g2.describe()
@@ -62,13 +67,16 @@ class GenOp(object):
         elif self.operation == common.OP_MUL:
             return self.g1[t] * self.g2[t]
         elif self.operation == common.OP_SUB:
-            return self.g1[t] * SCALE_FACTOR / self.g2[t]
+            return self.g1[t] / self.g2[t]
         elif self.operation == common.OP_MOD:
             return self.g1[t] % self.g2[t]
 
         return 0.0
 
-class Abs(object):
+#    def describe_next(self):
+#        return bytearray([])
+
+class Abs(GeneratorBase):
 
     def __init__(self, gen):
         self.g = gen
@@ -81,7 +89,7 @@ class Abs(object):
     def __getitem__(self, t):
         return abs(self.g[t])
 
-class Constant(object):
+class Constant(GeneratorBase):
 
     def __init__(self, value):
         self.value = value
@@ -94,7 +102,7 @@ class Constant(object):
     def __getitem__(self, t):
         return self.value
 
-class LocalRandomValue(object):
+class LocalRandomValue(GeneratorBase):
 
     def __init__(self, lower, upper):
         self.lower = lower
@@ -111,7 +119,7 @@ class LocalRandomValue(object):
     def __getitem__(self, t):
         return self.value
 
-class RepeatLocalRandomValue(object):
+class RepeatLocalRandomValue(GeneratorBase):
 
     def __init__(self, index):
         self.index = index
@@ -125,7 +133,7 @@ class RepeatLocalRandomValue(object):
     def __getitem__(self, t):
         return self.value
 
-class Generator(object):
+class Generator(GeneratorBase):
 
     def __init__(self, period, phase, amplitude, offset):
         self.period = period

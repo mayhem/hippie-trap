@@ -24,8 +24,9 @@ FUNC_COMPLEMENTARY         = 17
 FUNC_LOCAL_RANDOM          = 18
 FUNC_IMPULSE               = 19
 FUNC_REPEAT_LOCAL_RANDOM   = 20
-FUNC_COLOR_SHIFT           = 22
 FUNC_CONSTANT_RANDOM_COLOR = 21
+FUNC_COLOR_SHIFT           = 22
+FUNC_RGB_SRC               = 23
 
 FUNC_MAX               = 31
 
@@ -42,6 +43,8 @@ OP_MUL = 2
 OP_DIV = 3
 OP_MOD = 4
 
+SCALE_FACTOR = 1000
+
 def make_function(id, args):
     flags = 0
     for i, arg in enumerate(args):
@@ -57,7 +60,7 @@ def make_function(id, args):
 
 def pack_fixed(value):
     '''Convert value to a signed, scaled 4 byte integer'''
-    return bytearray(pack("<i", int(value * 1000)))
+    return bytearray(pack("<i", int(value * SCALE_FACTOR)))
 
 def pack_color(col):
     return bytearray(pack("<BBB", col[0], col[1], col[2]))
