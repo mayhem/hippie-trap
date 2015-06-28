@@ -91,8 +91,6 @@ src3.chain(filter.Brightness(generator.Sin(math.pi / period_s, 1, .5, .5)))
 
 op = function.SourceOp(common.OP_ADD, src1, src2, src3)
 
-#dist = .15
-#base = Color(255, 0, 64)
 #while True:
 #    triad = function.CompColorSource(base, dist, 0)
 #    print triad[0]
@@ -116,7 +114,8 @@ src = function.SourceOp(common.OP_ADD, step, imp)
 
 hsv = function.HSV(generator.Sawtooth(6), generator.Sin(generator.LocalRandomValue(.25, .99)), generator.LocalRandomValue(.25, .99))
 
-src = const_rand
+comp = function.CompColorSource(Color(255,0,0), generator.Sin(1, 0, .1), generator.LocalRandomValue(0, 3))
+src = comp
 
 pattern_set = [(wobble, 5), (green, 3), (rainbow, 4), (purple, 2), (imp, 2), (step, 2), (const_rand, 2), (rgb, 3), (color_shift, 2)]
 

@@ -61,7 +61,6 @@ class ConstantRandomColor(ColorSource):
             self.value_f = self.value
             self.value = self.value_f[0]
 
-
     def describe(self):
         args = []
         desc = bytearray()
@@ -208,7 +207,7 @@ class Rainbow(ColorSource):
 
 class CompColorSource(common.ChainLink):
 
-    def __init__(self, color, dist = .1, index = 0):
+    def __init__(self, hue, dist, index = 0):
         '''color - base color for the triad. const or gen
            index - which of the parts of the complement are we: 0 anchor, 1 secondary color 1, 2 secondary color 2
            dist - the distribution angle between secondary colors'''
@@ -217,12 +216,6 @@ class CompColorSource(common.ChainLink):
         self.dist = dist
         self.index = index
 
-        if type(self.dist) in (int, float):
-            self.dist_f = None
-        else:
-            self.dist_f = self.dist
-            self.dist = self.dist_f[0]
-
         if type(self.index) in (int, float):
             self.index_f = None
         else:
@@ -230,15 +223,9 @@ class CompColorSource(common.ChainLink):
             self.index = self.index_f[0]
 
     def describe(self):
-        args = [common.ARG_COLOR]
+        args = [common.ARG_COLOR, common.ARG_FUNC]
         desc = common.pack_color(self.color)
-
-        if self.dist_f:
-            desc += self.dist_f.describe()
-            args.append(common.ARG_FUNC)
-        else:
-            desc += common.pack_fixed(self.dist)
-            args.append(common.ARG_VALUE)
+        desc += self.dist.describe()
 
         if self.index_f:
             desc += self.index_f.describe()
