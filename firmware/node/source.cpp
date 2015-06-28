@@ -4,7 +4,17 @@
 #include "source.h"
 #include "parse.h"
 
-void hsv_to_rgb(int32_t h, int32_t s, int32_t v, color_t *color)
+void print_col(color_t *c)
+{
+    Serial.print(c->c[0], DEC);
+    Serial.print(", ");
+    Serial.print(c->c[1], DEC);
+    Serial.print(", ");
+    Serial.print(c->c[2], DEC);
+}
+
+
+uint8_t hsv_to_rgb(int32_t h, int32_t s, int32_t v, color_t *color)
 {
     uint16_t hue;
     uint8_t  r, g, b, sat, val;
@@ -32,7 +42,7 @@ void hsv_to_rgb(int32_t h, int32_t s, int32_t v, color_t *color)
         color->c[0]=val;
         color->c[1]=val;
         color->c[2]=val;   
-        return;
+        return 0;
     } 
 
     base = ((255 - sat) * val)>>8;
@@ -78,9 +88,11 @@ void hsv_to_rgb(int32_t h, int32_t s, int32_t v, color_t *color)
     color->c[0] = r;
     color->c[1] = g;
     color->c[2] = b;
+
+    return 1;
 }
 
-void rgb_to_hsv(color_t *col, int32_t *_h, int32_t *_s, int32_t *_v)
+uint8_t rgb_to_hsv(color_t *col, int32_t *_h, int32_t *_s, int32_t *_v)
 {
     int32_t rd = ((int32_t)col->c[0] * (int32_t)SCALE_FACTOR)/(int32_t)255;
     int32_t gd = ((int32_t)col->c[1] * (int32_t)SCALE_FACTOR)/(int32_t)255;
@@ -91,14 +103,13 @@ void rgb_to_hsv(color_t *col, int32_t *_h, int32_t *_s, int32_t *_v)
 
     int32_t d = mx - mn;
     s = mx == 0 ? 0 : d * SCALE_FACTOR / mx;
-    
-//Serial.print("r " + String(col->c[0]));
-        //Serial.print(" g " + String(col->c[1]));
-        //Serial.println(" b " + String(col->c[2]));
-    
-//    if (mx == 0)
-//        Serial.println("mx = 0. d = " + String(d));
 
+    if (mx == 0)
+        return 0;
+    
+    //Serial.print("r " + String(col->c[0]));
+    //Serial.print(" g " + String(col->c[1]));
+    //Serial.println(" b " + String(col->c[2]));
     
     if (mx == mn) 
     { 
@@ -116,13 +127,16 @@ void rgb_to_hsv(color_t *col, int32_t *_h, int32_t *_s, int32_t *_v)
             h = (rd - gd) * SCALE_FACTOR / d + 4000;
         h = h / 6;
     }
+
     //Serial.print("h " + String(h));
     //Serial.print(" s " + String(s));
-    //Serial.print(" v " + String(v));
+    //Serial.println(" v " + String(v));
     
     *_h = h;
     *_s = s;
     *_v = v;
+
+    return 1;
 }
 
 //--
@@ -136,11 +150,13 @@ void s_constant_color_init(s_constant_color_t *self, color_t *color)
     self->next = NULL; 
 }
 
-void s_constant_color_get(void *self, uint32_t t, color_t *dest)
+uint8_t s_constant_color_get(void *self, uint32_t t, color_t *dest)
 {
     dest->c[0] = ((s_constant_color_t *)self)->color.c[0];
     dest->c[1] = ((s_constant_color_t *)self)->color.c[1];
     dest->c[2] = ((s_constant_color_t *)self)->color.c[2];
+
+    return 1;
 }
 
 //--
@@ -156,12 +172,13 @@ void s_random_color_seq_init(s_random_color_seq_t *self, int32_t period, uint32_
     g_random_seed = random();
 }
 
-void s_random_color_seq_get(void *self, uint32_t t, color_t *dest)
+uint8_t s_random_color_seq_get(void *self, uint32_t t, color_t *dest)
 {
     uint32_t seed = ((s_random_color_seq_t *)self)->seed;
+    
     if (seed)
         randomSeed(seed + (uint32_t)(t / ((s_random_color_seq_t *)self)->period));
-    hsv_to_rgb(random(SCALE_FACTOR), SCALE_FACTOR, SCALE_FACTOR, dest);
+    return hsv_to_rgb(random(SCALE_FACTOR), SCALE_FACTOR, SCALE_FACTOR, dest);
 }
 
 //--
@@ -175,17 +192,52 @@ void s_hsv_init(s_hsv_t *self, generator_t *gen1, generator_t *gen2, generator_t
     self->next = NULL; 
 }
 
-void s_hsv_get(void *_self, uint32_t t, color_t *dest)
+uint8_t s_hsv_get(void *_self, uint32_t t, color_t *dest)
 {
     s_hsv_t *self = (s_hsv_t *)_self;
 
     if (self->gen2 && self->gen3)    
-        hsv_to_rgb(self->gen1->method(self->gen1, t), self->gen2->method(self->gen2, t), self->gen3->method(self->gen3, t), dest);     
+        return hsv_to_rgb(self->gen1->method(self->gen1, t), self->gen2->method(self->gen2, t), self->gen3->method(self->gen3, t), dest);     
     else
     if (self->gen2)
-        hsv_to_rgb(self->gen1->method(self->gen1, t), self->gen2->method(self->gen2, t), SCALE_FACTOR, dest);
+        return hsv_to_rgb(self->gen1->method(self->gen1, t), self->gen2->method(self->gen2, t), SCALE_FACTOR, dest);
     else
-        hsv_to_rgb(self->gen1->method(self->gen1, t), SCALE_FACTOR, SCALE_FACTOR, dest);
+        return hsv_to_rgb(self->gen1->method(self->gen1, t), SCALE_FACTOR, SCALE_FACTOR, dest);
+}
+
+//--
+
+void s_rgb_init(s_rgb_t *self, generator_t *red, generator_t *green, generator_t *blue)
+{
+
+    self->method = s_rgb_get;
+    self->next = NULL; 
+    self->red = red;
+    self->green = green;
+    self->blue = blue;
+}
+
+uint8_t s_rgb_get(void *_self, uint32_t t, color_t *dest)
+{
+    s_rgb_t *self = (s_rgb_t *)_self;
+    int32_t red, green, blue;
+
+    red = self->red->method(self->red, t);
+    if (self->green)
+        green = self->green->method(self->green, t);
+    else
+        green = 0;
+        
+    if (self->blue)
+        blue = self->blue->method(self->blue, t);
+    else
+        blue = 0;
+
+    dest->c[0] = red * 255 / SCALE_FACTOR;
+    dest->c[1] = green * 255 / SCALE_FACTOR;
+    dest->c[2] = blue *255 / SCALE_FACTOR;
+    
+    return 1;
 }
 
 //--
@@ -197,10 +249,9 @@ void s_rainbow_init(s_rainbow_t *self, generator_t *gen)
     self->next = NULL; 
 }
 
-void s_rainbow_get(void *_self, uint32_t t, color_t *dest)
+uint8_t s_rainbow_get(void *_self, uint32_t t, color_t *dest)
 {
     uint8_t wheel_pos;
-
     s_rainbow_t *self = (s_rainbow_t *)_self;
     wheel_pos = 255 - (255 * self->gen->method(self->gen, t) / SCALE_FACTOR);
     if (wheel_pos < 85)
@@ -224,6 +275,7 @@ void s_rainbow_get(void *_self, uint32_t t, color_t *dest)
         dest->c[1] = 255 - (wheel_pos * 3);
         dest->c[2] = 0;
     }
+    return 1;
 }
 
 //--
@@ -236,13 +288,14 @@ void s_op_init(s_op_t *self, uint8_t op, s_source_t *s1, s_source_t *s2)
     self->s2 = s2;
 }
 
-void s_op_get(void *_self, uint32_t t, color_t *dest)
+
+uint8_t s_op_get(void *_self, uint32_t t, color_t *dest)
 {
     s_op_t *self = (s_op_t *)_self;
     color_t col1, col2;
 
-    evaluate(self->s1, t, &col1);
-    evaluate(self->s2, t, &col2);
+    sub_evaluate(self->s1, t, &col1);
+    sub_evaluate(self->s2, t, &col2);
 
     switch(self->op)
     {
@@ -272,6 +325,7 @@ void s_op_get(void *_self, uint32_t t, color_t *dest)
             dest->c[2] = max(0, min(255, (int32_t)col1.c[2] % (int32_t)col2.c[2]));
             break;
     }
+    return 1;
 }
 
 //--
@@ -287,7 +341,7 @@ void s_comp_init(s_comp_t *self, color_t *col, int32_t dist, int32_t index)
     self->index = index / SCALE_FACTOR;
 }
 
-void s_comp_get(void *_self, uint32_t t, color_t *dest)
+uint8_t s_comp_get(void *_self, uint32_t t, color_t *dest)
 {
     s_comp_t *self = (s_comp_t *)_self;
     int32_t h, s, v;
@@ -297,18 +351,21 @@ void s_comp_get(void *_self, uint32_t t, color_t *dest)
         dest->c[0] = self->col.c[0];
         dest->c[1] = self->col.c[1];
         dest->c[2] = self->col.c[2];
+        return 1;
     }
     else
     if (self->index == 1)
     {
-        rgb_to_hsv(&self->col, &h, &s, &v);
+        if (!rgb_to_hsv(&self->col, &h, &s, &v))
+            return 0;
         h = (h - self->dist) % SCALE_FACTOR;
-        hsv_to_rgb(h, s, v, dest);
+        return hsv_to_rgb(h, s, v, dest);
     }
     else
     {
-        rgb_to_hsv(&self->col, &h, &s, &v);
+        if (!rgb_to_hsv(&self->col, &h, &s, &v))
+            return 0;
         h = (h + self->dist) % SCALE_FACTOR;
-        hsv_to_rgb(h, s, v, dest);
+        return hsv_to_rgb(h, s, v, dest);
     }
 }

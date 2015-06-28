@@ -12,7 +12,7 @@ const uint8_t OUT_PIN = 2;
 const uint8_t US_PER_TICK = 32;
 
 
-const uint16_t MAX_PACKET_LEN     = 200;
+const uint16_t MAX_PACKET_LEN     = 230;
 const uint8_t BROADCAST = 0;
 const uint8_t PACKET_SINGLE_COLOR = 0;
 const uint8_t PACKET_COLOR_ARRAY  = 1;
@@ -34,7 +34,6 @@ const int id_address = 0;
 const int calibration_address = 16;
 
 // ----- globals ------------
-
 uint8_t    g_error = ERR_OK;
 
 // time keeping
@@ -67,9 +66,7 @@ uint16_t g_transition_steps = 0;
 color_t  g_begin_color, g_end_color;
 
 // location in space
-int32_t g_pos[3];
-int8_t  g_ring = -1;
-int8_t  g_arm = -1;
+int16_t g_pos[3];
 
 // broadcast classes
 const uint8_t NUM_CLASSES = 10;
@@ -114,7 +111,7 @@ void tick(void)
 void reset_ticks(void)
 {
     noInterrupts();
-    g_time = 0;
+    g_time = 2000;
     interrupts();
 }
 
@@ -214,10 +211,7 @@ void handle_packet(uint16_t len, uint8_t *packet)
     }
 
     if (target != BROADCAST && target != g_node_id)
-    {
-        Serial.println("ignore packet for target " + String(target));
         return;
-    }
       
     type = packet[1];
     data = &packet[2];
@@ -306,19 +300,6 @@ void handle_packet(uint16_t len, uint8_t *packet)
                 show_color(&col);
             }
             break;  
-            
-        case PACKET_POSITION:
-            {
-                color_t col;
-                g_pos[0] = data[0];
-                g_pos[1] = data[1];
-                g_pos[2] = data[2];
-
-                col.c[0] = col.c[1] = 0;
-                col.c[2] = 180;
-                show_color(&col);
-            }
-            break;  
 
         case PACKET_DELAY:
             g_delay = data[0];
@@ -327,20 +308,33 @@ void handle_packet(uint16_t len, uint8_t *packet)
         case PACKET_SPEED:
             g_speed = *(uint16_t *)data;
             break;  
-
+            
+        case PACKET_POSITION:
+        { 
+            color_t col;
+            g_pos[0] = *(uint16_t *)data;
+            g_pos[1] = *(uint16_t *)(&data[2]);
+            g_pos[2] = *(uint16_t *)(&data[4]);
+            
+            Serial.println("x pos: " + String(g_pos[0]));
+            Serial.println("y pos: " + String(g_pos[1]));
+            Serial.println("z pos: " + String(g_pos[2]));
+            
+            col.c[0] = col.c[1] = 0;
+            col.c[2] = 180;
+            show_color(&col);
+            break;       
+        }
         case PACKET_CLASSES:
             {
                 uint8_t i;
 
-                Serial.println("set classes!");
                 for(i = 0; i < NUM_CLASSES; i++)
                     g_classes[i] = NO_CLASS;
 
                 for(i = 0; i < len - 2; i++)
-                {
-                    Serial.println("set class " + String(data[i]));
                     g_classes[i] = data[i];
-                }
+
 
                 break;
             }
@@ -386,7 +380,7 @@ void print_col(color_t *c)
 
 void next(uint16_t transition_steps)
 {
-    
+
     if (!g_next_pattern)
     {
         g_error = ERR_NO_VALID_PATTERN;
@@ -413,12 +407,12 @@ void next_pattern(void)
 {
     uint8_t  i;
     color_t     color;
-        
+      
     g_cur_pattern = g_next_pattern;
     g_next_pattern = NULL;
     
     reset_ticks();
-    
+        
     g_pattern_start = cmillis();
     g_target = g_pattern_start;
     g_error = ERR_OK;
@@ -473,16 +467,16 @@ void update_pattern(void)
 
     if (!g_cur_pattern)
         return;
-       
+ 
     if (g_target && cmillis() >= g_target)
     {
         g_target += g_delay;
         g_pixels.show();
 
-        evaluate(g_cur_pattern, g_target - g_pattern_start, &color);
-        for(i = 0; i < NUM_PIXELS; i++)
-            set_pixel_color(i, &color);
-        //print_col(&color); 
+        if (evaluate(g_cur_pattern, g_target - g_pattern_start, &color))
+            for(i = 0; i < NUM_PIXELS; i++)
+                set_pixel_color(i, &color);
+
     }
 }
 
@@ -548,9 +542,9 @@ void setup()
     init_color_filter();
         
     g_node_id = EEPROM.read(id_address);
-    Serial.println("node " + String(g_node_id) + " ready");
+    Serial.println("node " + String(g_node_id) + " ready. ");
     EEPROM.get(calibration_address, timer_cal);
-    Serial.println("read calibration: " + String(timer_cal));
+    Serial.println(String(timer_cal) + "us per tick");
     if (timer_cal > 1 && timer_cal < 200)
         g_us_per_tick = timer_cal;
 
@@ -602,10 +596,6 @@ void loop()
              int32_t theory = g_calibrate * ticks_per_sec;
              
              g_us_per_tick = US_PER_TICK + (US_PER_TICK * (theory - actual) * SCALE_FACTOR / theory / SCALE_FACTOR);
-             Serial.println("theory: " + String(theory));
-             Serial.println("actual: " + String(actual));
-             Serial.println("new us per tick: " + String(g_us_per_tick));
-             
              EEPROM.put(calibration_address, g_us_per_tick);
              
              Timer1.detachInterrupt();

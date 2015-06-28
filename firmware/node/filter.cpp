@@ -13,14 +13,14 @@ void f_fade_in_init(f_fade_in_t *self, f_method method, int32_t duration, int32_
     self->next = NULL;
 }
 
-void f_fade_in_get(void *_self, uint32_t t, color_t *src, color_t *dest)
+uint8_t f_fade_in_get(void *_self, uint32_t t, color_t *src, color_t *dest)
 {
     f_fade_in_t *self = (f_fade_in_t *)_self;
     
     if (t < self->offset)
     {
         dest->c[0] = dest->c[1] = dest->c[2] = 0;
-        return;
+        return 1;
     }
     if (t < self->offset + self->duration)
     {
@@ -29,12 +29,13 @@ void f_fade_in_get(void *_self, uint32_t t, color_t *src, color_t *dest)
         dest->c[0] = src->c[0] * percent / SCALE_FACTOR;
         dest->c[1] = src->c[1] * percent / SCALE_FACTOR;
         dest->c[2] = src->c[2] * percent / SCALE_FACTOR;
-        return;
+        return 1;
     }
     dest->c[0] = src->c[0];
     dest->c[1] = src->c[1];
     dest->c[2] = src->c[2];
 
+    return 1;
 }
 
 void f_fade_out_init(f_fade_out_t *self, f_method method,  int32_t duration, int32_t offset)
@@ -46,13 +47,13 @@ void f_fade_out_init(f_fade_out_t *self, f_method method,  int32_t duration, int
     self->next = NULL;
 }
 
-void f_fade_out_get(void *_self, uint32_t t, color_t *src, color_t *dest)
+uint8_t f_fade_out_get(void *_self, uint32_t t, color_t *src, color_t *dest)
 {
     f_fade_out_t *self = (f_fade_out_t *)_self;
     if (t >= self->offset + self->duration)
     {
         dest->c[0] = dest->c[1] = dest->c[2] = 0;
-        return;
+        return 1;
     }
     if (t >= self->offset)
     {
@@ -60,11 +61,13 @@ void f_fade_out_get(void *_self, uint32_t t, color_t *src, color_t *dest)
         dest->c[0] = src->c[0] * percent / SCALE_FACTOR;
         dest->c[1] = src->c[1] * percent / SCALE_FACTOR;
         dest->c[2] = src->c[2] * percent / SCALE_FACTOR;
-        return;
+        return 1;
     }
     dest->c[0] = src->c[0];
     dest->c[1] = src->c[1];
     dest->c[2] = src->c[2];
+
+    return 1;
 }
 
 void f_brightness_init(f_brightness_t *self, generator_t *gen)
@@ -74,7 +77,7 @@ void f_brightness_init(f_brightness_t *self, generator_t *gen)
     self->next = NULL;
 }
 
-void f_brightness_get(void *_self, uint32_t t, color_t *src, color_t *dest)
+uint8_t f_brightness_get(void *_self, uint32_t t, color_t *src, color_t *dest)
 {
     f_brightness_t *self = (f_brightness_t *)_self;
 
@@ -83,6 +86,8 @@ void f_brightness_get(void *_self, uint32_t t, color_t *src, color_t *dest)
     dest->c[0] = src->c[0] * percent / SCALE_FACTOR;
     dest->c[1] = src->c[1] * percent / SCALE_FACTOR;
     dest->c[2] = src->c[2] * percent / SCALE_FACTOR;
+
+    return 1;
 }
 
 void f_color_shift_init(f_color_shift_t *self, int32_t h_shift, int32_t s_shift, int32_t v_shift)
@@ -94,24 +99,48 @@ void f_color_shift_init(f_color_shift_t *self, int32_t h_shift, int32_t s_shift,
     self->v_shift = v_shift;
 }
 
-void f_color_shift_get(void *_self, uint32_t t, color_t *src, color_t *dest)
+// r: 0 g: 252 b: 0 - h 333 s 1000 v 988  -  r: 0 g: 254 b: 148
+// r: 0 g: 0 b: 0 - h 0 s 0 v 0  -  r: 252 g: 151 b: 0
+// r: 0 g: 2 b: 0 - h 333 s 1000 v 7  -  r: 0 g: 254 b: 148
+
+uint8_t f_color_shift_get(void *_self, uint32_t t, color_t *src, color_t *dest)
 {
     int32_t h, s, v;
     
     f_color_shift_t *self = (f_color_shift_t *)_self;
 
-    rgb_to_hsv(src, &h, &s, &v);
-     
-    //Serial.print("ss " + String(self->s_shift)); 
-    //Serial.print("  s " + String(s)); 
+    if (self->h_shift == 0 && self->s_shift == 0 && self->v_shift == 0)
+    {
+        dest->c[0] = src->c[0];
+        dest->c[1] = src->c[1];
+        dest->c[2] = src->c[2];
+        return 1; 
+    }           
+
+    Serial.print("r: " + String(src->c[0]));
+    Serial.print(" g: " + String(src->c[1]));
+    Serial.print(" b: " + String(src->c[2]));
+
+    if (!rgb_to_hsv(src, &h, &s, &v))
+    {
+        Serial.println("skip!\n");
+        return 0;
+    }
+    
+    Serial.print(" - h " + String(h)); 
+    Serial.print(" s " + String(s)); 
+    Serial.print(" v " + String(v)); 
      
     h = (h + self->h_shift) % SCALE_FACTOR;
     v = max(min(v + self->v_shift, SCALE_FACTOR - 1), 0);
     s = max(min(v + self->s_shift, SCALE_FACTOR - 1), 0);    
-    //Serial.println(" -> s " + String(s));
     
-    hsv_to_rgb(h, s, v, dest);
-    //Serial.print("  r: " + String(dest->c[0]));
-    //Serial.print(" g: " + String(dest->c[1]));
-    //Serial.println(" b: " + String(dest->c[2]));
+    uint8_t ret = hsv_to_rgb(h, s, v, dest);
+    if (!ret)
+       Serial.println("skip 2!\n");
+    Serial.print("  -  r: " + String(dest->c[0]));
+    Serial.print(" g: " + String(dest->c[1]));
+    Serial.println(" b: " + String(dest->c[2]));
+    
+    return ret;
 }

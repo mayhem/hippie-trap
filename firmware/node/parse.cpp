@@ -9,7 +9,6 @@
 #include "generator.h"
 #include "parse.h"
 
-#define MAX_CODE_LEN           512
 #define MAX_NUM_ARGS             8
 #define VALUE_SIZE               4
 #define ARG_VALUE                0
@@ -44,6 +43,8 @@
 #define GEN_IMPULSE                19
 #define FUNC_REPEAT_LOCAL_RANDOM   20
 #define SRC_CONSTANT_RANDOM_COLOR  21
+#define SRC_COLOR_SHIFT            22
+#define SRC_RGB                    23
 
 // for the final output color shift filter
 f_color_shift_t color_shift;
@@ -212,6 +213,30 @@ void *create_object(uint8_t   id, uint8_t *is_local,
             }
             break;
 
+        case SRC_RGB:
+            {
+                if (gen_count > 0)
+                {
+                    obj = heap_alloc(sizeof(s_rgb_t));
+                    if (!obj)
+                        return NULL;
+                           
+                    if (gen_count > 2)
+                        s_rgb_init((s_rgb_t *)obj, (generator_t*)gens[0],  (generator_t*)gens[1],  (generator_t*)gens[2]);
+                    else
+                    if (gen_count > 1)
+                        s_rgb_init((s_rgb_t *)obj,  (generator_t*)gens[0],  (generator_t*)gens[1], NULL);
+                    else
+                        s_rgb_init((s_rgb_t *)obj,  (generator_t*)gens[0], NULL, NULL);  
+                }
+                else
+                {
+                    g_error = ERR_PARSE_FAILURE;
+                    return NULL;
+                }
+            }
+            break;
+
         case SRC_RAINBOW:
             {
                 if (gen_count == 1)
@@ -311,9 +336,6 @@ void *create_object(uint8_t   id, uint8_t *is_local,
                         return NULL;
                     switch(id)
                     {
-                        case GEN_SIN:
-                            g_generator_init(obj, g_sin, values[0], values[1], values[2], values[3]);
-                        break;
                         case GEN_STEP:
                             g_generator_init(obj, g_step, values[0], values[1], values[2], values[3]);
                         break;
@@ -407,7 +429,7 @@ void *create_object(uint8_t   id, uint8_t *is_local,
                 if (value_count == 2)
                 {
 
-                    int32_t ret = fu_local_random(values[0], values[1]);                   
+                    int32_t ret = fu_local_random(values[0], values[1]);   
                     return (void *)ret;
                 }
                 else
@@ -435,6 +457,7 @@ void *create_object(uint8_t   id, uint8_t *is_local,
             }
             break;            
     }
+    
     return obj;
 }
 
@@ -521,7 +544,7 @@ void *parse(uint8_t *code, uint16_t len, uint8_t *heap)
     
     source = parse_func(code, len, &offset, &local);
     if (!source)
-        return NULL;
+        return NULL;   
 
     for(; offset < len;)
     {
@@ -539,27 +562,49 @@ void *parse(uint8_t *code, uint16_t len, uint8_t *heap)
     return source;
 }
 
-void evaluate(s_source_t *src, uint32_t _t, color_t *color)
+uint8_t evaluate(s_source_t *src, uint32_t _t, color_t *color)
+{
+    uint32_t t;
+    color_t  dest;
+    
+    t = (_t * g_speed) / SCALE_FACTOR;
+    if (!sub_evaluate(src, t, &dest))
+        return 0;
+
+    // apply the final color shift filter
+//    if (!((f_color_shift_t *)&color_shift)->method(&color_shift, t, &dest, color))
+//        return 0;
+    color->c[0] = dest.c[0];
+    color->c[1] = dest.c[1];
+    color->c[2] = dest.c[2];
+
+    return 1;
+}
+
+uint8_t sub_evaluate(s_source_t *src, uint32_t t, color_t *color)
 {
     color_t  temp, dest;
     void    *filter;
-    uint32_t t;
 
-    t = (_t * g_speed) / SCALE_FACTOR;
+    if (!src->method((void *)src, t, &dest))
+        return 0;
 
-    src->method((void *)src, t, &dest);
     filter = src->next;
     while(filter)
     {
         temp.c[0] = dest.c[0];
         temp.c[1] = dest.c[1];
         temp.c[2] = dest.c[2];
-        ((f_filter_t *)filter)->method(filter, t, &temp, &dest);
+        if (!((f_filter_t *)filter)->method(filter, t, &temp, &dest))
+            return 0;
 
         filter = ((f_filter_t *)filter)->next;
     }
-    // apply the final color shift filter
-    ((f_color_shift_t *)&color_shift)->method(&color_shift, t, &dest, color);
+    color->c[0] = dest.c[0];
+    color->c[1] = dest.c[1];
+    color->c[2] = dest.c[2];
+
+    return 1;
 }
 
 void init_color_filter(void)
