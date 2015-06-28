@@ -52,8 +52,8 @@ hsv = function.HSV(generator.Sawtooth(6), generator.Sin(generator.LocalRandomVal
 
 # fadein, fade out, constant color
 purple = function.ConstantColor(Color(255, 0, 255))
-purple.chain(filter.FadeIn(1.0))
-purple.chain(filter.FadeOut(1.0, 5.0))
+purple.chain(filter.FadeIn(.5))
+purple.chain(filter.FadeOut(.5, 1.5))
 
 # Impulse
 imp = function.ConstantColor(Color(255,0,0))
@@ -67,7 +67,7 @@ step.chain(filter.Brightness(generator.Step(1, -1)))
 cc = function.CompColorSource(Color(255, 255, 0), .05, 2)
 
 # constant random color
-src = function.ConstantRandomColor(generator.LocalRandomValue(.25, .75), 
+const_rand = function.ConstantRandomColor(generator.LocalRandomValue(0, 1.0), 
                                    generator.LocalRandomValue(.25, .5),
                                    generator.LocalRandomValue(.25, .5))
 
@@ -113,16 +113,31 @@ hsv = function.HSV(generator.Sawtooth(6), generator.Sin(generator.LocalRandomVal
 ch.set_position(1, .1, .2, .3)
 
 rgb = function.RGBSource(generator.Sawtooth(1), generator.Constant(1), generator.Sin(1))
-src = rgb
+src = const_rand
 
-if len(sys.argv) == 2:
-    local = int(sys.argv[1])
-else:
-    local = 0
+pattern_set = [(wobble, 5), (green, 3), (rainbow, 4), (purple, 2), (imp, 2), (step, 2), (const_rand, 2)]
+
+local = 0
+test = 0
+for arg in sys.argv[1:]:
+    if arg.startswith("lo"):
+        local = 1
+    if arg.startswith("te"):
+        test = 1
 
 if local:
     print "running local"
     ch.run(src, DELAY, 0)
+elif test:
+    ch.send_pattern(BROADCAST, purple)
+    ch.next_pattern(BROADCAST, 0)
+    sleep(1)
+    while True:
+        for pattern, duration in pattern_set:
+            ch.send_pattern(BROADCAST, pattern) 
+            ch.next_pattern(BROADCAST, 500)
+            sleep(duration)
+        
 else:
     print "Sending %d bytes." % len(src.describe())
     ch.send_pattern(BROADCAST, src) 
