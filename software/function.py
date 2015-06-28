@@ -7,6 +7,16 @@ import random
 from color import Color, hueToColor
 import common
 
+node_position = []
+
+def set_position(x, y, z):
+    global node_position
+    node_postion = [x, y, z]
+
+def get_position():
+    global node_position
+    return node_position
+
 class ColorSource(common.ChainLink):
 
     def __init__(self, gen, gen2 = None, gen3 = None):
@@ -86,8 +96,6 @@ class ConstantRandomColor(ColorSource):
         else:
             desc += common.pack_fixed(self.value)
             args.append(common.ARG_VALUE)
-
-        print args
 
         return common.make_function(common.FUNC_CONSTANT_RANDOM_COLOR, args) + desc + self.describe_next()
 
@@ -354,4 +362,36 @@ class RGBSource(common.ChainLink):
             green = self.green[t]
         else:
             green = 0
+        return self.call_next(t, Color(int(red * 255), int(green * 255), int(blue * 255)))
+
+class XYZSource(common.ChainLink):
+    def __init__(self, scale, angle, x_func, y_func, z_func = None):
+        super(XYZSource, self).__init__()
+        for g in [scale, angle, x_func, y_func, z_func]:
+            if g and not isinstance(g, generator.GeneratorBase):
+            raise TypeError("XYZSource needs to be passed Generator objects")
+        self.scale = scale
+        self.angle = angle
+        self.x_func = x_func
+        self.y_func = y_func
+        self.z_func = z_func
+
+    def describe(self):
+        args = [common.ARG_FUNC, common.ARG_FUNC, common.ARG_FUNC, common.ARG_FUNC]
+        desc = self.scale.describe()
+        desc += self.angle.describe()
+        desc += self.x_func.describe()
+        desc += self.y_func.describe()
+        if self.z_func:
+            args.append(common.ARG_FUNC)
+            desc += self.z_func.describe()
+        return common.make_function(common.FUNC_XYZ_SRC, args) + desc + self.describe_next()
+
+    def __getitem__(self, t):
+        pos = get_node_position()
+
+        # TODO add scale and rotaton
+
+        x = self.x_func[pos[0]]
+        y = self.y_func[pos[1]]
         return self.call_next(t, Color(int(red * 255), int(green * 255), int(blue * 255)))
