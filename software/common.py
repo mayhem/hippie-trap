@@ -24,8 +24,9 @@ FUNC_COMPLEMENTARY         = 17
 FUNC_LOCAL_RANDOM          = 18
 FUNC_IMPULSE               = 19
 FUNC_REPEAT_LOCAL_RANDOM   = 20
-FUNC_COLOR_SHIFT           = 22
 FUNC_CONSTANT_RANDOM_COLOR = 21
+FUNC_COLOR_SHIFT           = 22
+FUNC_RGB_SRC               = 23
 
 FUNC_MAX               = 31
 

@@ -28,6 +28,7 @@ green.chain(filter.Brightness(generator.Sawtooth(1)))
 ch.send_pattern(BROADCAST, green) 
 ch.next_pattern(BROADCAST, 0)
 
-for hue in xrange(0, 100):
-    ch.set_color_filter(BROADCAST, hue, 100, 100)
-    ch.debug_serial(.1)
+while True:
+    for hue in xrange(0, 100):
+        ch.set_color_filter(BROADCAST, hue, 0, 0)
+        ch.debug_serial(.1)

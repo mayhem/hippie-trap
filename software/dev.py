@@ -21,6 +21,7 @@ ch.open(device)
 ch.off(BROADCAST)
 #ch.set_delay(BROADCAST, 30)
 ch.send_entropy()
+ch.set_color_filter(BROADCAST, 0, 0, 0)
 
 random.seed()
 period_s = 1
@@ -47,12 +48,23 @@ sq = function.RandomColorSequence(generator.LocalRandomValue(1.0, 1.50), generat
 sq.chain(filter.Brightness(generator.Square(.5)))
 
 # Rainbow/white, HSV, local randoms
-hsv = function.HSV(generator.Sawtooth(3), generator.Sin(generator.LocalRandomValue(.25, .99)), generator.LocalRandomValue(.25, .99))
+hsv = function.HSV(generator.Sawtooth(6), generator.Sin(generator.LocalRandomValue(.25, .99)), generator.LocalRandomValue(.25, .99))
 
 # fadein, fade out, constant color
 purple = function.ConstantColor(Color(255, 0, 255))
 purple.chain(filter.FadeIn(1.0))
 purple.chain(filter.FadeOut(1.0, 5.0))
+
+# Impulse
+imp = function.ConstantColor(Color(255,0,0))
+imp.chain(filter.Brightness(generator.Impulse(1)))
+
+# Step
+step = function.ConstantColor(Color(0,0,255))
+step.chain(filter.Brightness(generator.Step(1, -1)))
+
+# Comp color source
+cc = function.CompColorSource(Color(255, 255, 0), .05, 2)
 
 # constant random color
 src = function.ConstantRandomColor(generator.LocalRandomValue(.25, .75), 
@@ -94,8 +106,13 @@ op = function.SourceOp(common.OP_ADD, src1, src2, src3)
 # this python crashes
 #hsv = function.HSV(generator.Sawtooth(.15), generator.Sin(generator.LocalRandomValue(.25, .99)), generator.Constant(generator.LocalRandomValue(.25, .99)))
 
-cc = function.CompColorSource(Color(255, 255, 0), .05, 1)
-src = wobble
+src = function.SourceOp(common.OP_ADD, step, imp)
+
+hsv = function.HSV(generator.Sawtooth(6), generator.Sin(generator.LocalRandomValue(.25, .99)), generator.LocalRandomValue(.25, .99))
+ch.set_color_filter(BROADCAST, 50, 0, 0)
+
+rgb = function.RGBSource(generator.Sawtooth(1), generator.Constant(0), generator.Sin(1))
+src = rgb
 
 if len(sys.argv) == 2:
     local = int(sys.argv[1])

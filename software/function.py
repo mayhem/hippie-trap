@@ -268,6 +268,8 @@ class CompColorSource(common.ChainLink):
 class SourceOp(common.ChainLink):
     def __init__(self, operation, src1, src2, src3 = None):
         super(SourceOp, self).__init__()
+        if not isinstance(src1, ColorSource) or not isinstance(src2, ColorSource) or (src3 and not isinstance(src3, ColorSource)):
+            raise TypeError("SourceOp needs to be passed two ColorSource objects")
         self.operation = operation
         self.s1 = src1
         self.s2 = src2
@@ -282,7 +284,7 @@ class SourceOp(common.ChainLink):
         desc += self.s1.describe()
         desc += self.s2.describe()
         if self.s3:
-            desc += self.s2.describe()
+            desc += self.s3.describe()
         return desc + self.describe_next()
 
     def __getitem__(self, t):
@@ -291,7 +293,7 @@ class SourceOp(common.ChainLink):
         if self.s3:
             col3 = self.s3[t]
         else:
-            colr3 = Color(0,0,0)
+            col3 = Color(0,0,0)
         res = Color(0,0,0)
         if self.operation == common.OP_ADD:
             res.color[0] = max(0, min(255, col1.color[0] + col2.color[0] + col3.color[0]))
@@ -317,3 +319,39 @@ class SourceOp(common.ChainLink):
             res.color[2] = max(0, min(255, col1.color[2] % col2.color[2]))
 
         return self.call_next(t, res)
+
+class RGBSource(common.ChainLink):
+    def __init__(self, red, green = None, blue = None):
+        super(RGBSource, self).__init__()
+        if not isinstance(red, generator.GeneratorBase):
+            raise TypeError("RGBSource needs to be passed Generator objects")
+        if blue and not isinstance(blue, generator.GeneratorBase):
+            raise TypeError("RGBSource needs to be passed Generator objects")
+        if green and not isinstance(green, generator.GeneratorBase):
+            raise TypeError("RGBSource needs to be passed Generator objects")
+        self.red = red
+        self.green = green
+        self.blue = blue
+
+    def describe(self):
+        args = [common.ARG_FUNC]
+        desc = self.red.describe()
+        if self.green:
+            args.append(common.ARG_FUNC)
+            desc = self.green.describe()
+        if self.blue:
+            args.append(common.ARG_FUNC)
+            desc = self.blue.describe()
+        return common.make_function(common.FUNC_RGB_SRC, args) + desc + self.describe_next()
+
+    def __getitem__(self, t):
+        red = self.red[t]
+        if self.blue:
+            blue = self.blue[t]
+        else:
+            blue = 0
+        if self.green:
+            green = self.green[t]
+        else:
+            green = 0
+        return self.call_next(t, Color(int(red * 255), int(green * 255), int(blue * 255)))
