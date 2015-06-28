@@ -22,13 +22,13 @@ ch.off(BROADCAST)
 ch.send_entropy()
 
 random.seed()
-green = function.ConstantColor(Color(0,255,0))
-green.chain(filter.Brightness(generator.Sawtooth(1)))
+wobble = function.RandomColorSequence(generator.LocalRandomValue(.5, .75), generator.LocalRandomValue(0.0, 1.00))
+wobble.chain(filter.Brightness(generator.Sin(generator.RepeatLocalRandomValue(0))))
 
-ch.send_pattern(BROADCAST, green) 
+ch.send_pattern(BROADCAST, wobble) 
 ch.next_pattern(BROADCAST, 0)
 
 while True:
-    for hue in xrange(0, 100):
-        ch.set_color_filter(BROADCAST, hue, 0, 0)
+    for brightness in xrange(0, 100):
+        ch.set_brightness(BROADCAST, brightness)
         ch.debug_serial(.1)
