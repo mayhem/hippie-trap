@@ -9,6 +9,7 @@ import function
 import generator
 import filter
 import random
+import common
 from color import Color
 from time import sleep, time
 
@@ -123,6 +124,12 @@ class Chandelier(object):
 
     def set_speed(self, dest, speed):
         self._send_packet(dest, PACKET_SPEED, bytearray(struct.pack("<H", speed))) 
+
+    def set_position(self, dest, x, y, z):
+        x = int(x * common.SCALE_FACTOR)
+        y = int(y * common.SCALE_FACTOR)
+        z = int(z * common.SCALE_FACTOR)
+        self._send_packet(dest, PACKET_POSITION, bytearray(struct.pack("<HHH", x, y, z))) 
 
     def set_color_filter(self, dest, hue, sat, value):
         self._send_packet(dest, PACKET_ADJ_COLOR, bytearray((hue, sat, value)))

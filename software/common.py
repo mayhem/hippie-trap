@@ -43,6 +43,8 @@ OP_MUL = 2
 OP_DIV = 3
 OP_MOD = 4
 
+SCALE_FACTOR = 1000
+
 def make_function(id, args):
     flags = 0
     for i, arg in enumerate(args):
@@ -58,7 +60,7 @@ def make_function(id, args):
 
 def pack_fixed(value):
     '''Convert value to a signed, scaled 4 byte integer'''
-    return bytearray(pack("<i", int(value * 1000)))
+    return bytearray(pack("<i", int(value * SCALE_FACTOR)))
 
 def pack_color(col):
     return bytearray(pack("<BBB", col[0], col[1], col[2]))

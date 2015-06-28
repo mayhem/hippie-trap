@@ -67,7 +67,7 @@ class GenOp(GeneratorBase):
         elif self.operation == common.OP_MUL:
             return self.g1[t] * self.g2[t]
         elif self.operation == common.OP_SUB:
-            return self.g1[t] * SCALE_FACTOR / self.g2[t]
+            return self.g1[t] / self.g2[t]
         elif self.operation == common.OP_MOD:
             return self.g1[t] % self.g2[t]
 
