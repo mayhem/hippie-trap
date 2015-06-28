@@ -34,7 +34,6 @@ const int id_address = 0;
 const int calibration_address = 16;
 
 // ----- globals ------------
-
 uint8_t    g_error = ERR_OK;
 
 // time keeping
@@ -473,10 +472,10 @@ void update_pattern(void)
         g_target += g_delay;
         g_pixels.show();
 
-        evaluate(g_cur_pattern, g_target - g_pattern_start, &color);
-        for(i = 0; i < NUM_PIXELS; i++)
-            set_pixel_color(i, &color);
-        //print_col(&color); 
+        if (evaluate(g_cur_pattern, g_target - g_pattern_start, &color))
+            for(i = 0; i < NUM_PIXELS; i++)
+                set_pixel_color(i, &color);
+
     }
 }
 
@@ -596,10 +595,6 @@ void loop()
              int32_t theory = g_calibrate * ticks_per_sec;
              
              g_us_per_tick = US_PER_TICK + (US_PER_TICK * (theory - actual) * SCALE_FACTOR / theory / SCALE_FACTOR);
-             Serial.println("theory: " + String(theory));
-             Serial.println("actual: " + String(actual));
-             Serial.println("new us per tick: " + String(g_us_per_tick));
-             
              EEPROM.put(calibration_address, g_us_per_tick);
              
              Timer1.detachInterrupt();
