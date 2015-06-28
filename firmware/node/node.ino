@@ -275,9 +275,13 @@ void handle_packet(uint16_t len, uint8_t *packet)
             }
 
         case PACKET_NEXT:
-            next(*(uint16_t *)data);
-            break;
-
+            {
+                int32_t steps = *(uint16_t *)data;
+                steps = g_ticks_per_sec * steps / SCALE_FACTOR;
+                next((uint16_t)steps);
+                break;
+            }
+            
         case PACKET_CLEAR_NEXT:
             clear_next_pattern();
             break;
@@ -359,6 +363,7 @@ void handle_packet(uint16_t len, uint8_t *packet)
                 reset_ticks();
                 g_calibrate = data[0];
                 g_calibrate_start = 0;
+                break;
             }
         case PACKET_BRIGHTNESS:
             {
