@@ -263,6 +263,8 @@ class SourceOp(common.ChainLink):
         self.s1 = src1
         self.s2 = src2
         self.s3 = src3
+        if src3 and operation in (common.OP_MUL, common.OP_DIV, common.OP_MOD):
+            raise TypeError("SourceOp does not support a third source for MUL, DIV or MOD")
 
     def describe(self):
         if self.s3:
@@ -302,7 +304,7 @@ class SourceOp(common.ChainLink):
             res.color[0] = max(0, min(255, col1.color[0] * col2.color[0]))
             res.color[1] = max(0, min(255, col1.color[1] * col2.color[1]))
             res.color[2] = max(0, min(255, col1.color[2] * col2.color[2]))
-        elif self.operation == common.OP_SUB:
+        elif self.operation == common.OP_DIV:
             res.color[0] = max(0, min(255, col1.color[0] / col2.color[0]))
             res.color[1] = max(0, min(255, col1.color[1] / col2.color[1]))
             res.color[2] = max(0, min(255, col1.color[2] / col2.color[2]))

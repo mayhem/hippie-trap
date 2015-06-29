@@ -82,12 +82,14 @@ red = function.ConstantColor(Color(255,0,0))
 red.chain(filter.Brightness(generator.Square(1)))
 grn = function.ConstantColor(Color(0,255,0))
 grn.chain(filter.Brightness(generator.Square(1, -.5)))
-srcop = function.SourceOp(common.OP_ADD, red, grn)
+blu = function.ConstantColor(Color(0,0,255))
+blu.chain(filter.Brightness(generator.Square(.5)))
+srcop = function.SourceOp(common.OP_ADD, red, grn, blu)
 srcop.chain(filter.Brightness(generator.Constant(.75)))
 
 # this python crashes
 #hsv = function.HSV(generator.Sawtooth(.15), generator.Sin(generator.LocalRandomValue(.25, .99)), generator.Constant(generator.LocalRandomValue(.25, .99)))
-src = comp
+src = srcop
 
 pattern_set = [(wobble, 5), (green, 3), (rainbow, 4), (purple, 2), (imp, 2), (step, 2), (const_rand, 2), (rgb, 3), (color_shift, 2), (srcop, 4), (comp, 4)]
 
