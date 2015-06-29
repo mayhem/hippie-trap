@@ -29,7 +29,6 @@ class ConstantColor(ColorSource):
     def describe(self):
         desc = common.make_function(common.FUNC_CONSTANT_COLOR, (common.ARG_COLOR,))
         desc += common.pack_color(self.color)
-        #print "%s()" % (self.__class__.__name__)
         return desc + self.describe_next()
 
     def __getitem__(self, t):
@@ -61,7 +60,6 @@ class ConstantRandomColor(ColorSource):
             self.value_f = self.value
             self.value = self.value_f[0]
 
-
     def describe(self):
         args = []
         desc = bytearray()
@@ -86,8 +84,6 @@ class ConstantRandomColor(ColorSource):
         else:
             desc += common.pack_fixed(self.value)
             args.append(common.ARG_VALUE)
-
-        print args
 
         return common.make_function(common.FUNC_CONSTANT_RANDOM_COLOR, args) + desc + self.describe_next()
 
@@ -210,20 +206,16 @@ class Rainbow(ColorSource):
 
 class CompColorSource(common.ChainLink):
 
-    def __init__(self, color, dist = .1, index = 0):
+    def __init__(self, color, dist, index = 0):
         '''color - base color for the triad. const or gen
            index - which of the parts of the complement are we: 0 anchor, 1 secondary color 1, 2 secondary color 2
            dist - the distribution angle between secondary colors'''
         super(CompColorSource, self).__init__()
+        if not isinstance(color, ColorSource):
+            raise TypeError("CompColorSource needs to be passed a ColorSource objects")
         self.color = color
         self.dist = dist
         self.index = index
-
-        if type(self.dist) in (int, float):
-            self.dist_f = None
-        else:
-            self.dist_f = self.dist
-            self.dist = self.dist_f[0]
 
         if type(self.index) in (int, float):
             self.index_f = None
@@ -232,15 +224,10 @@ class CompColorSource(common.ChainLink):
             self.index = self.index_f[0]
 
     def describe(self):
-        args = [common.ARG_COLOR]
-        desc = common.pack_color(self.color)
-
-        if self.dist_f:
-            desc += self.dist_f.describe()
-            args.append(common.ARG_FUNC)
-        else:
-            desc += common.pack_fixed(self.dist)
-            args.append(common.ARG_VALUE)
+        args = [common.ARG_SRC, common.ARG_FUNC]
+        desc = common.pack_char(self.color.get_filter_count())
+        desc += self.color.describe()
+        desc += self.dist.describe()
 
         if self.index_f:
             desc += self.index_f.describe()
@@ -255,13 +242,15 @@ class CompColorSource(common.ChainLink):
         if self.index == 0:
             return self.call_next(t, self.color)
         elif self.index == 1:
-            h,s,v = colorsys.rgb_to_hsv(self.color.color[0] / 255.0, self.color.color[1] / 255.0, self.color.color[2] / 255.0)
-            h = (h - self.dist) % 1.0
+            color = self.color[t]
+            h,s,v = colorsys.rgb_to_hsv(color.color[0] / 255.0, color.color[1] / 255.0, color.color[2] / 255.0)
+            h = (h - self.dist[t]) % 1.0
             col = colorsys.hsv_to_rgb(h, s, v)
             return self.call_next(t, Color(int(col[0] * 255), int(col[1] * 255), int(col[2] * 255)))
         else:
-            h,s,v = colorsys.rgb_to_hsv(self.color.color[0] / 255.0, self.color.color[1] / 255.0, self.color.color[2] / 255.0)
-            h = (h + self.dist) % 1.0
+            color = self.color[t]
+            h,s,v = colorsys.rgb_to_hsv(color.color[0] / 255.0, color.color[1] / 255.0, color.color[2] / 255.0)
+            h = (h + self.dist[t]) % 1.0
             col = colorsys.hsv_to_rgb(h, s, v)
             return self.call_next(t, Color(int(col[0] * 255), int(col[1] * 255), int(col[2] * 255)))
 
@@ -277,14 +266,18 @@ class SourceOp(common.ChainLink):
 
     def describe(self):
         if self.s3:
-            desc = common.make_function(common.FUNC_SRCOP, (common.ARG_VALUE, common.ARG_FUNC,common.ARG_FUNC, common.ARG_FUNC))
+            desc = common.make_function(common.FUNC_SRCOP, (common.ARG_VALUE, common.ARG_SRC,common.ARG_SRC, common.ARG_SRC))
         else:
-            desc = common.make_function(common.FUNC_SRCOP, (common.ARG_VALUE, common.ARG_FUNC,common.ARG_FUNC))
+            desc = common.make_function(common.FUNC_SRCOP, (common.ARG_VALUE, common.ARG_SRC,common.ARG_SRC))
         desc += common.pack_fixed(self.operation)
+        desc += common.pack_char(self.s1.get_filter_count())
         desc += self.s1.describe()
+        desc += common.pack_char(self.s2.get_filter_count())
         desc += self.s2.describe()
         if self.s3:
+            desc += common.pack_char(self.s3.get_filter_count())
             desc += self.s3.describe()
+
         return desc + self.describe_next()
 
     def __getitem__(self, t):

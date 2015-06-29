@@ -16,7 +16,7 @@ from time import sleep, time
 BAUD_RATE = 38400
 NUM_PIXELS = 4
 NUM_NODES = 101
-MAX_CLASSES = 10
+MAX_CLASSES = 16
 MAX_PACKET_LEN = 230
 CALIBRATION_DURATION = 10
 
@@ -33,7 +33,7 @@ PACKET_ADDRR        = 9
 PACKET_SPEED        = 10
 PACKET_CLASSES      = 11
 PACKET_CALIBRATE    = 12
-PACKET_ADJ_COLOR    = 13
+PACKET_BRIGHTNESS   = 13
 BROADCAST = 0
 
 def crc16_update(crc, a):
@@ -108,7 +108,7 @@ class Chandelier(object):
         self._send_packet(dest, PACKET_COLOR_ARRAY, packet)
 
     def send_pattern(self, dest, pattern):
-        self._send_packet(dest, PACKET_PATTERN, bytearray(pattern.describe())) 
+        self._send_packet(dest, PACKET_PATTERN, bytearray(pattern.describe()))
 
         # Give the bottles a moment to parse the packet before we go on
         sleep(.05)
@@ -131,8 +131,8 @@ class Chandelier(object):
         z = int(z * common.SCALE_FACTOR)
         self._send_packet(dest, PACKET_POSITION, bytearray(struct.pack("<HHH", x, y, z))) 
 
-    def set_color_filter(self, dest, hue, sat, value):
-        self._send_packet(dest, PACKET_ADJ_COLOR, bytearray((hue, sat, value)))
+    def set_brightness(self, dest, brightness):
+        self._send_packet(dest, PACKET_BRIGHTNESS, bytearray((brightness,)))
 
     def clear_next_pattern(self, dest):
         self._send_packet(dest, PACKET_CLEAR_NEXT, bytearray()) 
