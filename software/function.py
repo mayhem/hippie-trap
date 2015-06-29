@@ -1,11 +1,35 @@
 #!/usr/bin/python
 import abc
-import math
+from math import sin, cos, pi
 import colorsys
 import generator
 import random
 from color import Color, hueToColor
 import common
+
+# Mappings for the XYZSource
+XYZ_RGB = 0
+XYZ_RBG = 1
+XYZ_BRG = 2
+XYZ_BGR = 3
+XYZ_GBR = 4
+XYZ_GRB = 5
+XYZ_HSV = 6
+XYZ_HVS = 7
+XYZ_VHS = 8
+XYZ_VSH = 9
+XYZ_SVH = 10
+XYZ_SHV = 11
+
+node_position = []
+
+def set_position(x, y, z):
+    global node_position
+    node_position = [x, y, z]
+
+def get_position():
+    global node_position
+    return node_position
 
 class ColorSource(common.ChainLink):
 
@@ -151,14 +175,12 @@ class HSV(ColorSource):
         else:
             desc = common.make_function(common.FUNC_HSV, (common.ARG_FUNC,))
 
-        #print "%s(" % (self.__class__.__name__),
         if self.g:
             desc += self.g.describe()
             if self.g2:
                 desc += self.g2.describe()
             if self.g3:
                 desc += self.g3.describe()
-        #print ")"
         return desc + self.describe_next()
 
     def __getitem__(self, t):
@@ -177,10 +199,8 @@ class Rainbow(ColorSource):
 
     def describe(self):
         desc = common.make_function(common.FUNC_RAINBOW, (common.ARG_FUNC,))
-        #print "%s(" % (self.__class__.__name__),
         if self.g:
             desc += self.g.describe()
-        #print ")"
         return desc + self.describe_next()
 
     def __getitem__(self, t):
@@ -263,6 +283,8 @@ class SourceOp(common.ChainLink):
         self.s1 = src1
         self.s2 = src2
         self.s3 = src3
+        if src3 and operation in (common.OP_MUL, common.OP_DIV, common.OP_MOD):
+            raise TypeError("SourceOp does not support a third source for MUL, DIV or MOD")
 
     def describe(self):
         if self.s3:
@@ -302,7 +324,7 @@ class SourceOp(common.ChainLink):
             res.color[0] = max(0, min(255, col1.color[0] * col2.color[0]))
             res.color[1] = max(0, min(255, col1.color[1] * col2.color[1]))
             res.color[2] = max(0, min(255, col1.color[2] * col2.color[2]))
-        elif self.operation == common.OP_SUB:
+        elif self.operation == common.OP_DIV:
             res.color[0] = max(0, min(255, col1.color[0] / col2.color[0]))
             res.color[1] = max(0, min(255, col1.color[1] / col2.color[1]))
             res.color[2] = max(0, min(255, col1.color[2] / col2.color[2]))
@@ -348,3 +370,107 @@ class RGBSource(common.ChainLink):
         else:
             green = 0
         return self.call_next(t, Color(int(red * 255), int(green * 255), int(blue * 255)))
+
+def rotate_scale(pos, scale, angle):
+    x_scaled = pos[0] * scale
+    y_scaled = pos[1] * scale
+    xp = x_scaled * cos(angle) - y_scaled * sin(angle)
+    yp = x_scaled * sin(angle) + y_scaled * cos(angle)
+    return xp, yp, pos[2]
+
+class XYZSource(common.ChainLink):
+    def __init__(self, scale, angle, mapping, x_func, y_func, z_func = None):
+        super(XYZSource, self).__init__()
+
+        for g in [scale, angle, x_func, y_func, z_func]:
+            if g and not isinstance(g, generator.GeneratorBase):
+                raise TypeError("XYZSource needs to be passed Generator objects")
+
+        self.scale = scale
+        self.angle = angle
+        self.mapping = mapping
+        self.x_func = x_func
+        self.y_func = y_func
+        self.z_func = z_func
+
+    def describe(self):
+        args = [common.ARG_FUNC, common.ARG_FUNC, common.ARG_VALUE, common.ARG_FUNC, common.ARG_FUNC]
+        desc = self.scale.describe()
+        desc += self.angle.describe()
+        desc += common.pack_fixed(self.mapping)
+        desc += self.x_func.describe()
+        desc += self.y_func.describe()
+        if self.z_func:
+            args.append(common.ARG_FUNC)
+            desc += self.z_func.describe()
+        return common.make_function(common.FUNC_XYZ_SRC, args) + desc + self.describe_next()
+
+    def __getitem__(self, t):
+        spos = get_position()
+        pos = rotate_scale(get_position(), self.scale[t], self.angle[t] * pi * 2.0)
+
+        x = self.x_func[pos[0]]
+        y = self.y_func[pos[1]]
+        if self.z_func:
+            z = self.z_func[pos[2]]
+        else:
+            z = 0.0
+
+        if self.mapping == XYZ_RGB:
+            red = x
+            green = y
+            blue = z
+        elif self.mapping == XYZ_RBG:
+            red = x
+            green = z
+            blue = y
+        elif self.mapping == XYZ_BRG:
+            red = y
+            green = z
+            blue = x
+        elif self.mapping == XYZ_BGR:
+            red = z
+            green = y
+            blue = x
+        elif self.mapping == XYZ_GBR:
+            red = z
+            green = x
+            blue = y
+        elif self.mapping == XYZ_GRB:
+            red = y
+            green = x
+            blue = z
+        elif self.mapping == XYZ_HSV:
+            hue = x
+            sat = y
+            value = z
+        elif self.mapping == XYZ_HVS:
+            hue = x
+            sat = z
+            value = y
+        elif self.mapping == XYZ_VHS:
+            hue = y
+            sat = z
+            value = x
+        elif self.mapping == XYZ_VSH:
+            hue = z
+            sat = y
+            value = x
+        elif self.mapping == XYZ_SVH:
+            hue = z
+            sat = x
+            value = y
+        elif self.mapping == XYZ_SHV:
+            hue = y
+            sat = x
+            value = z
+        else:
+            raise ValueError("Invalid mapping specified.")
+
+        if self.mapping in (XYZ_RGB,XYZ_RBG,XYZ_BRG,XYZ_BGR,XYZ_GBR,XYZ_GRB):
+            color = Color(int(red * 255), int(green * 255), int(blue * 255))
+        else:
+            col = colorsys.hsv_to_rgb(h, s, v)
+            color = Color(int(col[0] * 255), int(col[1] * 255), int(col[2] * 255))
+
+        return self.call_next(t, color)
