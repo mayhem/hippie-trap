@@ -117,30 +117,13 @@ uint8_t f_color_shift_get(void *_self, uint32_t t, color_t *src, color_t *dest)
         return 1; 
     }           
 
-    Serial.print("r: " + String(src->c[0]));
-    Serial.print(" g: " + String(src->c[1]));
-    Serial.print(" b: " + String(src->c[2]));
-
     if (!rgb_to_hsv(src, &h, &s, &v))
-    {
-        Serial.println("skip!\n");
+
         return 0;
-    }
-    
-    Serial.print(" - h " + String(h)); 
-    Serial.print(" s " + String(s)); 
-    Serial.print(" v " + String(v)); 
-     
+
     h = (h + self->h_shift) % SCALE_FACTOR;
     v = max(min(v + self->v_shift, SCALE_FACTOR - 1), 0);
     s = max(min(v + self->s_shift, SCALE_FACTOR - 1), 0);    
     
-    uint8_t ret = hsv_to_rgb(h, s, v, dest);
-    if (!ret)
-       Serial.println("skip 2!\n");
-    Serial.print("  -  r: " + String(dest->c[0]));
-    Serial.print(" g: " + String(dest->c[1]));
-    Serial.println(" b: " + String(dest->c[2]));
-    
-    return ret;
+    return hsv_to_rgb(h, s, v, dest);
 }

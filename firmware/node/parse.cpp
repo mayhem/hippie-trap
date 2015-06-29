@@ -14,7 +14,7 @@
 #define ARG_VALUE                0
 #define ARG_FUNC                 1
 #define ARG_COLOR                2
-#define ARG_LOCAL                3
+#define ARG_SRC                  3
 
 #define LOCAL_ID                 0
 #define LOCAL_POS_X              2
@@ -43,11 +43,10 @@
 #define GEN_IMPULSE                19
 #define FUNC_REPEAT_LOCAL_RANDOM   20
 #define SRC_CONSTANT_RANDOM_COLOR  21
-#define SRC_COLOR_SHIFT            22
+#define FUNC_COLOR_SHIFT           22
 #define SRC_RGB                    23
 
-// for the final output color shift filter
-f_color_shift_t color_shift;
+int32_t master_brightness = 1000;
 
 // variables to help manage the heap.
 uint8_t *cur_heap = NULL;
@@ -256,12 +255,12 @@ void *create_object(uint8_t   id, uint8_t *is_local,
 
         case FUNC_COMPLEMENTARY:
             {
-                if (color_count == 1 && value_count == 2)
+                if (color_count == 1 && value_count == 1 && gen_count == 1)
                 {
                     obj = heap_alloc(sizeof(s_comp_t));
                     if (!obj)
                         return NULL;
-                    s_comp_init((s_comp_t *)obj,  &colors[0], values[0], values[1]);
+                    s_comp_init((s_comp_t *)obj,  &colors[0], (generator_t *)gens[0], values[0]);
                 }
                 else
                 {
@@ -455,7 +454,25 @@ void *create_object(uint8_t   id, uint8_t *is_local,
                     return NULL;
                 }
             }
-            break;            
+            break;         
+         
+        case FUNC_COLOR_SHIFT:
+            {
+                if (value_count == 3)
+                {
+                    obj = heap_alloc(sizeof(f_color_shift_t));
+                    if (!obj)
+                        return NULL;
+
+                    f_color_shift_init((f_color_shift_t *)obj, values[0], values[1], values[2]);
+                }
+                else
+                {
+                    g_error = ERR_PARSE_FAILURE;
+                    return NULL;
+                }
+            }
+            break;   
     }
     
     return obj;
@@ -476,15 +493,17 @@ void *parse_func(uint8_t *code, uint16_t len, uint16_t *index, uint8_t *is_local
     color_t  colors[MAX_NUM_ARGS];
 
     id = code[*index] >> 3;
+    
     num_args = code[*index] & 0x7;
 
     args = (code[*index + 2] << 8) | code[*index + 1];
+    
     arg_index = *index + 3;
     for(i = 0; i < num_args; i++)
     {
         arg = (args >> (i * 2)) & 0x3;
         if (arg == ARG_VALUE)
-        {
+        {            
             values[value_count++] = *((uint32_t *)&code[arg_index]); 
             arg_index += VALUE_SIZE;
         }
@@ -505,37 +524,40 @@ void *parse_func(uint8_t *code, uint16_t len, uint16_t *index, uint8_t *is_local
             colors[color_count++].c[2] = code[arg_index++];
         }
         else
-        if (arg == ARG_LOCAL)
+        if (arg == ARG_SRC)
         {
-            switch(*((uint32_t *)&code[arg_index]))
+            uint8_t  local, i, filter_count = code[arg_index++];
+            void    *ptr, *filter;
+            
+            gens[gen_count] = parse_func(code, len, &arg_index, &local);
+            
+            for(i = 0; i < filter_count; i++)
             {
-                case LOCAL_ID:
-                    values[value_count++] = g_node_id;
-                    break;
-                case LOCAL_POS_X:
-                    values[value_count++] = g_pos[0];
-                    break;
-                case LOCAL_POS_Y:
-                    values[value_count++] = g_pos[1];
-                    break;
-                case LOCAL_POS_Z:
-                    values[value_count++] = g_pos[2];
-                    break;
-                default:
+                filter = parse_func(code, len, &arg_index, &local);
+                if (!filter)
+                {
                     g_error = ERR_PARSE_FAILURE;
                     return NULL;
+                }
+
+                ptr = (s_source_t *)gens[gen_count];
+                while (((f_filter_t *)ptr)->next)
+                    ptr = ((f_filter_t *)ptr)->next;
+
+                ((f_filter_t *)ptr)->next = filter;
             }
-            arg_index += VALUE_SIZE;
+            gen_count++;
         }
     }
     *index = arg_index;
 
-    return create_object(id, is_local, values, value_count, gens, gen_count, colors, color_count);
+    void *r = create_object(id, is_local, values, value_count, gens, gen_count, colors, color_count);
+    return r;
 }
 
 void *parse(uint8_t *code, uint16_t len, uint8_t *heap)
 {
-    void       *source, *ptr, *filter;
+    void       *source, *filter, *ptr;
     uint16_t    offset = 0;
     uint8_t     local;
 
@@ -544,14 +566,15 @@ void *parse(uint8_t *code, uint16_t len, uint8_t *heap)
     
     source = parse_func(code, len, &offset, &local);
     if (!source)
-        return NULL;   
-
+        return NULL;
+        
     for(; offset < len;)
     {
+        
         filter = parse_func(code, len, &offset, &local);
         if (!filter)
             return NULL;
-
+       
         ptr = (s_source_t *)source;
         while (((f_filter_t *)ptr)->next)
             ptr = ((f_filter_t *)ptr)->next;
@@ -571,13 +594,10 @@ uint8_t evaluate(s_source_t *src, uint32_t _t, color_t *color)
     if (!sub_evaluate(src, t, &dest))
         return 0;
 
-    // apply the final color shift filter
-//    if (!((f_color_shift_t *)&color_shift)->method(&color_shift, t, &dest, color))
-//        return 0;
-    color->c[0] = dest.c[0];
-    color->c[1] = dest.c[1];
-    color->c[2] = dest.c[2];
-
+    color->c[0] = dest.c[0] * master_brightness / SCALE_FACTOR;
+    color->c[1] = dest.c[1] * master_brightness / SCALE_FACTOR;
+    color->c[2] = dest.c[2] * master_brightness / SCALE_FACTOR;
+    
     return 1;
 }
 
@@ -607,14 +627,7 @@ uint8_t sub_evaluate(s_source_t *src, uint32_t t, color_t *color)
     return 1;
 }
 
-void init_color_filter(void)
+void set_brightness(int32_t brightness)
 {
-    f_color_shift_init(&color_shift, 0, 0, 0);
-}
-
-void set_color_filter(int32_t h_shift, int32_t s_shift, int32_t v_shift)
-{
-    color_shift.h_shift = h_shift;
-    color_shift.s_shift = s_shift;
-    color_shift.v_shift = v_shift;
+    master_brightness = brightness;
 }

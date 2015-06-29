@@ -10,7 +10,7 @@
 
 #include "sin_table.h"
 
-typedef int32_t (*g_method)(void *gen, uint32_t t);
+typedef int32_t (*g_method)(void *gen, int32_t t);
 
 typedef struct generator_t
 {
@@ -36,12 +36,12 @@ void g_square_init(void *self, g_method method, int32_t period, int32_t phase, i
 void g_sin_init(void *self, g_method method, int32_t period, int32_t phase, int32_t amplitude, int32_t offset);
 void g_sawtooth_init(void *self, g_method method, int32_t period, int32_t phase, int32_t amplitude, int32_t offset);
 
-int32_t g_sin(void *self, uint32_t t);
-int32_t g_square(void *self, uint32_t t);
-int32_t g_sawtooth(void *self, uint32_t t);
-int32_t g_step(void *self, uint32_t t);
-int32_t g_line(void *self, uint32_t t);
-int32_t g_impulse(void *self, uint32_t t);
+int32_t g_sin(void *self, int32_t t);
+int32_t g_square(void *self, int32_t t);
+int32_t g_sawtooth(void *self, int32_t t);
+int32_t g_step(void *self, int32_t t);
+int32_t g_line(void *self, int32_t t);
+int32_t g_impulse(void *self, int32_t t);
 
 const uint8_t OP_ADD = 0;
 const uint8_t OP_SUB = 1;
@@ -57,7 +57,7 @@ typedef struct generator_op_t
 } generator_op_t;
 
 void g_generator_op_init(void *self, uint8_t op, generator_t *g, generator_t *g2);
-int32_t g_generator_op_get(void *self, uint32_t t);
+int32_t g_generator_op_get(void *self, int32_t t);
 
 typedef struct g_abs_t
 {
@@ -67,7 +67,7 @@ typedef struct g_abs_t
 } g_abs_t;
 
 void g_abs_init(void *self, generator_t *g);
-int32_t g_abs_get(void *_self, uint32_t t);
+int32_t g_abs_get(void *_self, int32_t t);
 
 typedef struct g_constant_t
 {
@@ -77,6 +77,6 @@ typedef struct g_constant_t
 } g_constant_t;
 
 void g_constant_init(void *self, int32_t value);
-int32_t g_constant_get(void *_self, uint32_t t);
+int32_t g_constant_get(void *_self, int32_t t);
 
 #endif

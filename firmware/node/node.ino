@@ -9,7 +9,7 @@
 const uint8_t NUM_NODES = 101;
 const uint8_t NUM_PIXELS = 4;
 const uint8_t OUT_PIN = 2;
-const uint8_t US_PER_TICK = 32;
+const uint8_t US_PER_TICK = 25;
 
 
 const uint16_t MAX_PACKET_LEN     = 230;
@@ -27,19 +27,21 @@ const uint8_t PACKET_ADDR         = 9;
 const uint8_t PACKET_SPEED        = 10;
 const uint8_t PACKET_CLASSES      = 11;
 const uint8_t PACKET_CALIBRATE    = 12;
-const uint8_t PACKET_ADJ_COLOR    = 13;
+const uint8_t PACKET_BRIGHTNESS   = 13;
 
 // where in EEPROM our node id is stored
 const int id_address = 0;
-const int calibration_address = 16;
+const int calibration_address = 10;
 
 // ----- globals ------------
 uint8_t    g_error = ERR_OK;
 
 // time keeping
-uint32_t   g_target = 0, g_pattern_start = 0;
+uint32_t   g_target = 0;
 uint8_t    g_delay = 10;
 uint32_t   g_speed = SCALE_FACTOR;
+uint32_t   g_ticks_per_sec = (int32_t)1000000 / US_PER_TICK;
+uint32_t   g_ticks_per_frame; // setup later
 
 // random seed
 uint32_t    g_random_seed = 0;
@@ -69,7 +71,7 @@ color_t  g_begin_color, g_end_color;
 int16_t g_pos[3];
 
 // broadcast classes
-const uint8_t NUM_CLASSES = 10;
+const uint8_t NUM_CLASSES = 16;
 const uint8_t NO_CLASS = 255;
 uint8_t g_classes[NUM_CLASSES];
 
@@ -77,7 +79,6 @@ uint8_t g_classes[NUM_CLASSES];
 uint8_t  g_calibrate = 0; // stores the duration of the calibration in seconds
 uint32_t g_calibrate_start = 0;
 
-uint16_t g_us_per_tick = US_PER_TICK;
 
 // Gamma correction table in progmem
 const uint8_t PROGMEM gamma[] = {
@@ -111,11 +112,11 @@ void tick(void)
 void reset_ticks(void)
 {
     noInterrupts();
-    g_time = 2000;
+    g_time = 0;
     interrupts();
 }
 
-uint32_t cmillis(void)
+uint32_t ticks(void)
 {
     uint32_t temp;
 
@@ -123,7 +124,12 @@ uint32_t cmillis(void)
     temp = g_time;
     interrupts();
 
-    return temp >> 5; 
+    return temp; 
+}
+
+uint32_t ticks_to_ms(uint32_t ticks)
+{
+    return ticks * SCALE_FACTOR / g_ticks_per_sec;
 }
 
 void show_color(color_t *col)
@@ -269,9 +275,13 @@ void handle_packet(uint16_t len, uint8_t *packet)
             }
 
         case PACKET_NEXT:
-            next(*(uint16_t *)data);
-            break;
-
+            {
+                int32_t steps = *(uint16_t *)data;
+                steps = g_ticks_per_sec * steps / SCALE_FACTOR;
+                next((uint16_t)steps);
+                break;
+            }
+            
         case PACKET_CLEAR_NEXT:
             clear_next_pattern();
             break;
@@ -283,7 +293,7 @@ void handle_packet(uint16_t len, uint8_t *packet)
                 g_load_pattern = 0;
                 g_transition_end = 0;
                 g_target = 0;
-                init_color_filter();
+                set_brightness(1000);
                 show_color(NULL);
             }
             break;
@@ -353,15 +363,13 @@ void handle_packet(uint16_t len, uint8_t *packet)
                 reset_ticks();
                 g_calibrate = data[0];
                 g_calibrate_start = 0;
+                break;
             }
-        case PACKET_ADJ_COLOR:
+        case PACKET_BRIGHTNESS:
             {
-                int32_t h,s,v;
-
-                h = (int32_t)data[0] * 10;
-                s = (int32_t)data[1] * 10;
-                v = (int32_t)data[2] * 10;
-                set_color_filter(h, s, v);
+                int32_t b;
+                b = (int32_t)data[0] * 10;
+                set_brightness(b);
                 break;
             }
     }
@@ -380,7 +388,6 @@ void print_col(color_t *c)
 
 void next(uint16_t transition_steps)
 {
-
     if (!g_next_pattern)
     {
         g_error = ERR_NO_VALID_PATTERN;
@@ -392,12 +399,12 @@ void next(uint16_t transition_steps)
         g_transition_steps = transition_steps;
 
         // start the transition and get last color
-        evaluate(g_cur_pattern, cmillis() - g_pattern_start, &g_begin_color);
+        evaluate(g_cur_pattern, ticks_to_ms(ticks()), &g_begin_color);
 
         // get the first color of the new pattern
         evaluate(g_next_pattern, 0, &g_end_color);
 
-        g_transition_end = cmillis() + (uint32_t)transition_steps;
+        g_transition_end = ticks() + (uint32_t)transition_steps;
         return;
     }
     next_pattern();
@@ -412,9 +419,8 @@ void next_pattern(void)
     g_next_pattern = NULL;
     
     reset_ticks();
-        
-    g_pattern_start = cmillis();
-    g_target = g_pattern_start;
+
+    g_target = g_ticks_per_frame;
     g_error = ERR_OK;
     update_pattern();
 }    
@@ -431,7 +437,7 @@ void update_pattern(void)
     }
 
     // check to see if the transtion is finished
-    if (g_transition_end && cmillis() >= g_transition_end)
+    if (g_transition_end && ticks() >= g_transition_end)
     {
         g_transition_end = 0;
         g_transition_steps = 0;
@@ -442,12 +448,12 @@ void update_pattern(void)
     // check for a transition
     if (g_transition_end)
     {
-        if (cmillis() >= g_target)
+        if (ticks() >= g_target)
         {
             int32_t steps;
-            int32_t p = g_transition_steps - (g_transition_end - cmillis());
+            int32_t p = g_transition_steps - (g_transition_end - ticks());
             
-            g_target += g_delay;
+            g_target += g_ticks_per_frame;
             g_pixels.show();
 
             steps = (int32_t)(g_end_color.c[0] - g_begin_color.c[0]) * SCALE_FACTOR / g_transition_steps;
@@ -468,12 +474,12 @@ void update_pattern(void)
     if (!g_cur_pattern)
         return;
  
-    if (g_target && cmillis() >= g_target)
+    if (g_target && ticks() >= g_target)
     {
-        g_target += g_delay;
+        g_target += g_ticks_per_frame;
         g_pixels.show();
 
-        if (evaluate(g_cur_pattern, g_target - g_pattern_start, &color))
+        if (evaluate(g_cur_pattern, ticks_to_ms(g_target), &color))
             for(i = 0; i < NUM_PIXELS; i++)
                 set_pixel_color(i, &color);
 
@@ -492,7 +498,7 @@ void error_pattern(void)
     uint8_t  i;
     color_t  col;
 
-    t = cmillis() % (ERROR_DELAY * 2);
+    t = ticks_to_ms(ticks()) % (ERROR_DELAY * 2);
     if (t > ERROR_DELAY)
     {
         switch(g_error)
@@ -530,38 +536,28 @@ void error_pattern(void)
         show_color(NULL);
 }
 
+
 void setup()
 { 
-    uint16_t timer_cal;
+    uint32_t timer_cal;
 
     Serial.begin(38400);
     Serial.println("!!!");
 
     g_pixels.begin();
     startup_animation();
-    init_color_filter();
         
     g_node_id = EEPROM.read(id_address);
     Serial.println("node " + String(g_node_id) + " ready. ");
     EEPROM.get(calibration_address, timer_cal);
-    Serial.println(String(timer_cal) + "us per tick");
+    Serial.println(String(timer_cal) + " t/s");
     if (timer_cal > 1 && timer_cal < 200)
-        g_us_per_tick = timer_cal;
+        g_ticks_per_sec = timer_cal;
 
-    Timer1.initialize(g_us_per_tick);
+    g_ticks_per_frame = g_ticks_per_sec * g_delay / 1000;
+
+    Timer1.initialize(US_PER_TICK);
     Timer1.attachInterrupt(tick);
-    
-//    for(;;)
-//    {
-//        uint32_t temp;
-//        temp = cmillis();
-//        
-//        if (temp % 1000 == 0)
-//        {
-//             Serial.println(temp);
-//             delay(1);
-//        }
-//    }
 }
 
 void loop()
@@ -589,19 +585,11 @@ void loop()
              interrupts();
              
              show_color(NULL);
-             
-             // Calculate the number of ticks for the calibration period in theory and actual
-             ticks_per_sec = 1000000 / g_us_per_tick;
-             int32_t actual = done - g_calibrate_start;
-             int32_t theory = g_calibrate * ticks_per_sec;
-             
-             g_us_per_tick = US_PER_TICK + (US_PER_TICK * (theory - actual) * SCALE_FACTOR / theory / SCALE_FACTOR);
-             EEPROM.put(calibration_address, g_us_per_tick);
-             
-             Timer1.detachInterrupt();
-             Timer1.initialize(g_us_per_tick);
-             Timer1.attachInterrupt(tick);
 
+             g_ticks_per_sec = (done - g_calibrate_start) / g_calibrate;
+             g_ticks_per_frame = g_ticks_per_sec * g_delay / 1000;
+             EEPROM.put(calibration_address, g_ticks_per_sec);
+             
              Serial.read();
                        
              g_calibrate = 0;

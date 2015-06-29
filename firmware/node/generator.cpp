@@ -3,6 +3,12 @@
 #include <avr/pgmspace.h>
 #include "generator.h"
 
+int32_t pmod(int32_t val, int32_t mod)
+{
+    int32_t temp = val % mod;        
+    return (temp < 0) ? mod + temp : temp;
+}
+
 void g_generator_init(void *_self, g_method method, int32_t period, int32_t phase, int32_t amplitude, int32_t offset)
 {
     generator_t *self = (generator_t *)_self;
@@ -46,7 +52,7 @@ void g_sawtooth_init(void *_self, g_method method, int32_t period, int32_t phase
     self->offset = offset;
 }
 
-int32_t g_sin(void *_self, uint32_t t)
+int32_t g_sin(void *_self, int32_t t)
 {
     int16_t value;
     
@@ -60,17 +66,17 @@ int32_t g_sin(void *_self, uint32_t t)
     return (int32_t)value * self->amplitude / SCALE_FACTOR + self->offset;
 }
 
-int32_t g_square(void *_self, uint32_t t)
+int32_t g_square(void *_self, int32_t t)
 {
     square_t *self = (square_t *)_self;
     int32_t v = ((int32_t)t * SCALE_FACTOR / self->period) + self->phase;
-    if (v % SCALE_FACTOR < self->duty)
+    if (pmod(v, SCALE_FACTOR) < self->duty)
         return self->amplitude + self->offset;
     else
         return self->offset;
 }
 
-int32_t g_sawtooth(void *_self, uint32_t t)
+int32_t g_sawtooth(void *_self, int32_t t)
 {
     generator_t *self = (generator_t *)_self;  
     
@@ -78,7 +84,7 @@ int32_t g_sawtooth(void *_self, uint32_t t)
     return v * self->amplitude / SCALE_FACTOR + self->offset;
 }
 
-int32_t g_step(void *_self, uint32_t t)
+int32_t g_step(void *_self, int32_t t)
 {
     generator_t *self = (generator_t *)_self;
     int32_t v = ((int32_t)t * SCALE_FACTOR / self->period) + self->phase;
@@ -88,7 +94,7 @@ int32_t g_step(void *_self, uint32_t t)
         return self->offset;
 }
 
-int32_t g_impulse(void *_self, uint32_t t)
+int32_t g_impulse(void *_self, int32_t t)
 {
     generator_t *self = (generator_t *)_self;
     int32_t v = ((int32_t)t * SCALE_FACTOR / self->period) + self->phase;
@@ -98,7 +104,7 @@ int32_t g_impulse(void *_self, uint32_t t)
         return self->offset;
 }
 
-int32_t g_line(void *_self, uint32_t t)
+int32_t g_line(void *_self, int32_t t)
 {
     generator_t *self = (generator_t *)_self;
     return ((int32_t)t * self->amplitude / SCALE_FACTOR) + self->offset;
@@ -113,7 +119,7 @@ void g_generator_op_init(void *_self, uint8_t op, generator_t *g, generator_t *g
     self->op = op;
 }
 
-int32_t g_generator_op_get(void *_self, uint32_t t)
+int32_t g_generator_op_get(void *_self, int32_t t)
 {
     generator_op_t *self = (generator_op_t *)_self;
     int32_t         v1, v2;
@@ -132,7 +138,7 @@ int32_t g_generator_op_get(void *_self, uint32_t t)
         case OP_DIV:
             return v1 * SCALE_FACTOR / v2;
         case OP_MOD:
-            return v1 % v2;
+            return pmod(v1, v2);
     }
     return 0;
 }
@@ -144,7 +150,7 @@ void g_abs_init(void *_self, generator_t *g)
     self->g = g;
 }
 
-int32_t g_abs_get(void *_self, uint32_t t)
+int32_t g_abs_get(void *_self, int32_t t)
 {
     generator_op_t *self = (generator_op_t *)_self;
     return abs(self->g->method(self->g, t));
@@ -157,7 +163,7 @@ void g_constant_init(void *_self, int32_t value)
     self->value = value;
 }
 
-int32_t g_constant_get(void *_self, uint32_t t)
+int32_t g_constant_get(void *_self, int32_t t)
 {
     g_constant_t *self = (g_constant_t *)_self;
     return self->value;
