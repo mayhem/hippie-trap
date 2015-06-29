@@ -71,7 +71,7 @@ color_t  g_begin_color, g_end_color;
 int16_t g_pos[3];
 
 // broadcast classes
-const uint8_t NUM_CLASSES = 10;
+const uint8_t NUM_CLASSES = 16;
 const uint8_t NO_CLASS = 255;
 uint8_t g_classes[NUM_CLASSES];
 
@@ -498,7 +498,7 @@ void error_pattern(void)
     uint8_t  i;
     color_t  col;
 
-    t = ticks() % (ERROR_DELAY * 2);
+    t = ticks_to_ms(ticks()) % (ERROR_DELAY * 2);
     if (t > ERROR_DELAY)
     {
         switch(g_error)
@@ -535,6 +535,7 @@ void error_pattern(void)
     else
         show_color(NULL);
 }
+
 
 void setup()
 { 

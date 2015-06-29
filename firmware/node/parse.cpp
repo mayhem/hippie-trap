@@ -14,7 +14,7 @@
 #define ARG_VALUE                0
 #define ARG_FUNC                 1
 #define ARG_COLOR                2
-#define ARG_LOCAL                3
+#define ARG_SRC                  3
 
 #define LOCAL_ID                 0
 #define LOCAL_POS_X              2
@@ -493,15 +493,17 @@ void *parse_func(uint8_t *code, uint16_t len, uint16_t *index, uint8_t *is_local
     color_t  colors[MAX_NUM_ARGS];
 
     id = code[*index] >> 3;
+    
     num_args = code[*index] & 0x7;
 
     args = (code[*index + 2] << 8) | code[*index + 1];
+    
     arg_index = *index + 3;
     for(i = 0; i < num_args; i++)
     {
         arg = (args >> (i * 2)) & 0x3;
         if (arg == ARG_VALUE)
-        {
+        {            
             values[value_count++] = *((uint32_t *)&code[arg_index]); 
             arg_index += VALUE_SIZE;
         }
@@ -522,37 +524,40 @@ void *parse_func(uint8_t *code, uint16_t len, uint16_t *index, uint8_t *is_local
             colors[color_count++].c[2] = code[arg_index++];
         }
         else
-        if (arg == ARG_LOCAL)
+        if (arg == ARG_SRC)
         {
-            switch(*((uint32_t *)&code[arg_index]))
+            uint8_t  local, i, filter_count = code[arg_index++];
+            void    *ptr, *filter;
+            
+            gens[gen_count] = parse_func(code, len, &arg_index, &local);
+            
+            for(i = 0; i < filter_count; i++)
             {
-                case LOCAL_ID:
-                    values[value_count++] = g_node_id;
-                    break;
-                case LOCAL_POS_X:
-                    values[value_count++] = g_pos[0];
-                    break;
-                case LOCAL_POS_Y:
-                    values[value_count++] = g_pos[1];
-                    break;
-                case LOCAL_POS_Z:
-                    values[value_count++] = g_pos[2];
-                    break;
-                default:
+                filter = parse_func(code, len, &arg_index, &local);
+                if (!filter)
+                {
                     g_error = ERR_PARSE_FAILURE;
                     return NULL;
+                }
+
+                ptr = (s_source_t *)gens[gen_count];
+                while (((f_filter_t *)ptr)->next)
+                    ptr = ((f_filter_t *)ptr)->next;
+
+                ((f_filter_t *)ptr)->next = filter;
             }
-            arg_index += VALUE_SIZE;
+            gen_count++;
         }
     }
     *index = arg_index;
 
-    return create_object(id, is_local, values, value_count, gens, gen_count, colors, color_count);
+    void *r = create_object(id, is_local, values, value_count, gens, gen_count, colors, color_count);
+    return r;
 }
 
 void *parse(uint8_t *code, uint16_t len, uint8_t *heap)
 {
-    void       *source, *ptr, *filter;
+    void       *source, *filter, *ptr;
     uint16_t    offset = 0;
     uint8_t     local;
 
@@ -561,14 +566,15 @@ void *parse(uint8_t *code, uint16_t len, uint8_t *heap)
     
     source = parse_func(code, len, &offset, &local);
     if (!source)
-        return NULL;   
-
+        return NULL;
+        
     for(; offset < len;)
     {
+        
         filter = parse_func(code, len, &offset, &local);
         if (!filter)
             return NULL;
-
+       
         ptr = (s_source_t *)source;
         while (((f_filter_t *)ptr)->next)
             ptr = ((f_filter_t *)ptr)->next;
