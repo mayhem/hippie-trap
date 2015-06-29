@@ -45,6 +45,7 @@
 #define SRC_CONSTANT_RANDOM_COLOR  21
 #define FUNC_COLOR_SHIFT           22
 #define SRC_RGB                    23
+#define SRC_XYZ                    24
 
 int32_t master_brightness = 1000;
 
@@ -227,6 +228,25 @@ void *create_object(uint8_t   id, uint8_t *is_local,
                         s_rgb_init((s_rgb_t *)obj,  (generator_t*)gens[0],  (generator_t*)gens[1], NULL);
                     else
                         s_rgb_init((s_rgb_t *)obj,  (generator_t*)gens[0], NULL, NULL);  
+                }
+                else
+                {
+                    g_error = ERR_PARSE_FAILURE;
+                    return NULL;
+                }
+            }
+            break;
+
+        case SRC_XYZ:
+            {
+                if (gen_count == 5 && value_count == 1)
+                {
+                    obj = heap_alloc(sizeof(s_xyz_t));
+                    if (!obj)
+                        return NULL;
+                           
+                    s_xyz_init((s_xyz_t *)obj, (generator_t*)gens[0], (generator_t*)gens[1], values[0], 
+                               (generator_t*)gens[2], (generator_t*)gens[3], (generator_t*)gens[4]);
                 }
                 else
                 {

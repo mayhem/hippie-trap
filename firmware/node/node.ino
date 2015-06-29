@@ -11,7 +11,6 @@ const uint8_t NUM_PIXELS = 4;
 const uint8_t OUT_PIN = 2;
 const uint8_t US_PER_TICK = 25;
 
-
 const uint16_t MAX_PACKET_LEN     = 230;
 const uint8_t BROADCAST = 0;
 const uint8_t PACKET_SINGLE_COLOR = 0;
@@ -325,10 +324,6 @@ void handle_packet(uint16_t len, uint8_t *packet)
             g_pos[0] = *(uint16_t *)data;
             g_pos[1] = *(uint16_t *)(&data[2]);
             g_pos[2] = *(uint16_t *)(&data[4]);
-            
-            Serial.println("x pos: " + String(g_pos[0]));
-            Serial.println("y pos: " + String(g_pos[1]));
-            Serial.println("z pos: " + String(g_pos[2]));
             
             col.c[0] = col.c[1] = 0;
             col.c[2] = 180;
