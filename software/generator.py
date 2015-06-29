@@ -224,7 +224,6 @@ class Sin(Generator):
     def __getitem__(self, t):
         period = math.pi / (self.period/2.0)
         phase = (-math.pi / 2.0) + (math.pi * 2 * self.phase)
-#        print period, phase
         v = math.sin(t * period + phase) * self.amplitude + self.offset
         return v
 

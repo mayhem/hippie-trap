@@ -70,54 +70,26 @@ color_shift = function.ConstantColor(Color(255,0,0))
 color_shift.chain(filter.ColorShift(.6, 0, 0))
 
 # Comp color source
-cc = function.CompColorSource(Color(255, 255, 0), .05, 2)
+comp = function.CompColorSource(Color(255,0,0), generator.Sin(1, 0, .1), generator.LocalRandomValue(0, 3))
 
 # constant random color
 const_rand = function.ConstantRandomColor(generator.LocalRandomValue(0, 1.0), 
                                    generator.LocalRandomValue(.25, .5),
                                    generator.LocalRandomValue(.25, .5))
 
-# to test:
-# step, abs, constant
-
-src1 = function.ConstantColor(Color(255,0,0))
-src1.chain(filter.Brightness(generator.Sin((math.pi * 3) / period_s, 2, .5, .5)))
-
-src2 = function.ConstantColor(Color(0,0,255))
-src2.chain(filter.Brightness(generator.Sin((math.pi * 2) / period_s, 1, .5, .5)))
-
-src3 = function.ConstantColor(Color(0,255,0))
-src3.chain(filter.Brightness(generator.Sin(math.pi / period_s, 1, .5, .5)))
-
-op = function.SourceOp(common.OP_ADD, src1, src2, src3)
-
-#while True:
-#    triad = function.CompColorSource(base, dist, 0)
-#    print triad[0]
-#    ch.set_color(BROADCAST, triad[0])
-#    sleep(1)
-#
-#    triad = function.CompColorSource(base, dist, 1)
-#    print triad[0]
-#    ch.set_color(BROADCAST, triad[0])
-#    sleep(1)
-
-#    triad = function.CompColorSource(base, dist, 2)
-#    print triad[0]
-#    ch.set_color(BROADCAST, triad[0])
-#    sleep(1)
+# SrcOp
+red = function.ConstantColor(Color(255,0,0))
+red.chain(filter.Brightness(generator.Square(1)))
+grn = function.ConstantColor(Color(0,255,0))
+grn.chain(filter.Brightness(generator.Square(1, -.5)))
+srcop = function.SourceOp(common.OP_ADD, red, grn)
+srcop.chain(filter.Brightness(generator.Constant(.75)))
 
 # this python crashes
 #hsv = function.HSV(generator.Sawtooth(.15), generator.Sin(generator.LocalRandomValue(.25, .99)), generator.Constant(generator.LocalRandomValue(.25, .99)))
+src = srcop
 
-src = function.SourceOp(common.OP_ADD, step, imp)
-
-hsv = function.HSV(generator.Sawtooth(6), generator.Sin(generator.LocalRandomValue(.25, .99)), generator.LocalRandomValue(.25, .99))
-
-comp = function.CompColorSource(Color(255,0,0), generator.Sin(1, 0, .1), generator.LocalRandomValue(0, 3))
-src = comp
-
-pattern_set = [(wobble, 5), (green, 3), (rainbow, 4), (purple, 2), (imp, 2), (step, 2), (const_rand, 2), (rgb, 3), (color_shift, 2)]
+pattern_set = [(wobble, 5), (green, 3), (rainbow, 4), (purple, 2), (imp, 2), (step, 2), (const_rand, 2), (rgb, 3), (color_shift, 2), (srcop, 4)]
 
 red = function.ConstantColor(Color(255,0,0))
 blue = function.ConstantColor(Color(0,0,255))

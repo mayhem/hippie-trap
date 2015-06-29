@@ -29,7 +29,6 @@ class ConstantColor(ColorSource):
     def describe(self):
         desc = common.make_function(common.FUNC_CONSTANT_COLOR, (common.ARG_COLOR,))
         desc += common.pack_color(self.color)
-        #print "%s()" % (self.__class__.__name__)
         return desc + self.describe_next()
 
     def __getitem__(self, t):
@@ -207,7 +206,7 @@ class Rainbow(ColorSource):
 
 class CompColorSource(common.ChainLink):
 
-    def __init__(self, hue, dist, index = 0):
+    def __init__(self, color, dist, index = 0):
         '''color - base color for the triad. const or gen
            index - which of the parts of the complement are we: 0 anchor, 1 secondary color 1, 2 secondary color 2
            dist - the distribution angle between secondary colors'''
@@ -262,14 +261,18 @@ class SourceOp(common.ChainLink):
 
     def describe(self):
         if self.s3:
-            desc = common.make_function(common.FUNC_SRCOP, (common.ARG_VALUE, common.ARG_FUNC,common.ARG_FUNC, common.ARG_FUNC))
+            desc = common.make_function(common.FUNC_SRCOP, (common.ARG_VALUE, common.ARG_SRC,common.ARG_SRC, common.ARG_SRC))
         else:
-            desc = common.make_function(common.FUNC_SRCOP, (common.ARG_VALUE, common.ARG_FUNC,common.ARG_FUNC))
+            desc = common.make_function(common.FUNC_SRCOP, (common.ARG_VALUE, common.ARG_SRC,common.ARG_SRC))
         desc += common.pack_fixed(self.operation)
+        desc += common.pack_char(self.s1.get_filter_count())
         desc += self.s1.describe()
+        desc += common.pack_char(self.s2.get_filter_count())
         desc += self.s2.describe()
         if self.s3:
+            desc += common.pack_char(self.s3.get_filter_count())
             desc += self.s3.describe()
+
         return desc + self.describe_next()
 
     def __getitem__(self, t):

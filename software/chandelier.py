@@ -16,7 +16,7 @@ from time import sleep, time
 BAUD_RATE = 38400
 NUM_PIXELS = 4
 NUM_NODES = 101
-MAX_CLASSES = 10
+MAX_CLASSES = 16
 MAX_PACKET_LEN = 230
 CALIBRATION_DURATION = 10
 
@@ -108,7 +108,7 @@ class Chandelier(object):
         self._send_packet(dest, PACKET_COLOR_ARRAY, packet)
 
     def send_pattern(self, dest, pattern):
-        self._send_packet(dest, PACKET_PATTERN, bytearray(pattern.describe())) 
+        self._send_packet(dest, PACKET_PATTERN, bytearray(pattern.describe()))
 
         # Give the bottles a moment to parse the packet before we go on
         sleep(.05)

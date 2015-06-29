@@ -33,7 +33,7 @@ FUNC_MAX               = 31
 ARG_VALUE              = 0
 ARG_FUNC               = 1
 ARG_COLOR              = 2
-ARG_LOCAL              = 3
+ARG_SRC                = 3
 
 MAX_NUM_ARGS           = 8
 
@@ -44,6 +44,7 @@ OP_DIV = 3
 OP_MOD = 4
 
 SCALE_FACTOR = 1000
+
 
 def make_function(id, args):
     flags = 0
@@ -58,12 +59,21 @@ def make_function(id, args):
 
     return bytearray(pack("<BH", (id << 3) | len(args), flags))
 
+def pack_char(ch):
+    '''Pack a single character'''
+    return bytearray(pack("<B", ch))
+
 def pack_fixed(value):
     '''Convert value to a signed, scaled 4 byte integer'''
     return bytearray(pack("<i", int(value * SCALE_FACTOR)))
 
 def pack_color(col):
     return bytearray(pack("<BBB", col[0], col[1], col[2]))
+
+def dump(ba):
+    for b in ba:
+        print "%02X " % b,
+    print
 
 class ChainLink(object):
 
@@ -86,7 +96,15 @@ class ChainLink(object):
         return col 
 
     def describe_next(self):
-        #print "  ",
         if self.next:
             return self.next.describe()
         return bytearray([])
+
+    def get_filter_count(self):
+        count = 0
+        filter = self.next
+        while filter:
+            count += 1
+            filter = filter.next
+
+        return count
