@@ -175,14 +175,12 @@ class HSV(ColorSource):
         else:
             desc = common.make_function(common.FUNC_HSV, (common.ARG_FUNC,))
 
-        #print "%s(" % (self.__class__.__name__),
         if self.g:
             desc += self.g.describe()
             if self.g2:
                 desc += self.g2.describe()
             if self.g3:
                 desc += self.g3.describe()
-        #print ")"
         return desc + self.describe_next()
 
     def __getitem__(self, t):
@@ -201,10 +199,8 @@ class Rainbow(ColorSource):
 
     def describe(self):
         desc = common.make_function(common.FUNC_RAINBOW, (common.ARG_FUNC,))
-        #print "%s(" % (self.__class__.__name__),
         if self.g:
             desc += self.g.describe()
-        #print ")"
         return desc + self.describe_next()
 
     def __getitem__(self, t):
@@ -411,10 +407,7 @@ class XYZSource(common.ChainLink):
 
     def __getitem__(self, t):
         spos = get_position()
-        #print "start: (%.3f, %.3f, %.3f)" % (spos[0], spos[1], spos[2]),
-        print "scale: %.3f angle %.3f " % (self.scale[t], self.angle[t])
-        # pos = rotate_scale(get_position(), self.scale[t], self.angle[t] * pi * 2.0)
-        # print "  end: (%.3f, %.3f, %.3f)" % (pos[0], pos[1], pos[2])
+        pos = rotate_scale(get_position(), self.scale[t], self.angle[t] * pi * 2.0)
 
         x = self.x_func[pos[0]]
         y = self.y_func[pos[1]]

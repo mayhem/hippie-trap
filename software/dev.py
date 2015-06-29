@@ -90,8 +90,8 @@ srcop.chain(filter.Brightness(generator.Constant(.75)))
 # this python crashes
 hsv = function.HSV(generator.Sawtooth(.15), generator.Sin(generator.LocalRandomValue(.25, .99)), generator.Constant(generator.LocalRandomValue(.25, .99)))
 
-function.set_position(1, 1, 0)
-ch.set_position(1, 1, 1, 0)
+function.set_position(.5, .5, 0)
+ch.set_position(1, .5, .5, 0)
 xyz = function.XYZSource(generator.Constant(2), generator.Sawtooth(1), function.XYZ_RGB, generator.Step(1), generator.Step(1))
 src = xyz
 
