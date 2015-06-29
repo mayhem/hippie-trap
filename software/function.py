@@ -7,6 +7,19 @@ import random
 from color import Color, hueToColor
 import common
 
+# Mappings for the XYZSource
+XYZ_RGB = 0
+XYZ_RBG = 1
+XYZ_BRG = 2
+XYZ_BGR = 3
+XYZ_GBR = 4
+XYZ_GRB = 5
+XYZ_HSV = 6
+XYZ_HVS = 7
+XYZ_VHS = 8
+XYZ_VSH = 9
+XYZ_SVH = 10
+XYZ_SHV = 11
 node_position = []
 
 def set_position(x, y, z):
@@ -364,22 +377,38 @@ class RGBSource(common.ChainLink):
             green = 0
         return self.call_next(t, Color(int(red * 255), int(green * 255), int(blue * 255)))
 
+def rotate_scale(pos, scale, angle):
+    x_scaled = pos[0] * scale
+    y_scaled = pos[1] * scale
+    xp = x_scaled * cos(angle) - y_scaled * sin(angle)
+    yp = x_scaled * sin(angle) + y_scaled * cos(angle)
+    return xp, yp, pos[2]
+
 class XYZSource(common.ChainLink):
-    def __init__(self, scale, angle, x_func, y_func, z_func = None):
+    def __init__(self, scale, angle, operation, mapping, x_func, y_func, z_func = None):
         super(XYZSource, self).__init__()
+
         for g in [scale, angle, x_func, y_func, z_func]:
             if g and not isinstance(g, generator.GeneratorBase):
-            raise TypeError("XYZSource needs to be passed Generator objects")
+                raise TypeError("XYZSource needs to be passed Generator objects")
+
+        if operation not in (common.OP_ADD, common.OP_SUB, common.OP_MUL):
+            raise ValueError("XYZRGBSource only supports ADD, SUB and MUL operations")
+
         self.scale = scale
         self.angle = angle
+        self.operation = operation
+        self.mapping = mapping
         self.x_func = x_func
         self.y_func = y_func
         self.z_func = z_func
 
     def describe(self):
-        args = [common.ARG_FUNC, common.ARG_FUNC, common.ARG_FUNC, common.ARG_FUNC]
+        args = [common.ARG_FUNC, common.ARG_FUNC, common.ARG_VALUE, common.ARG_FUNC, common.ARG_FUNC]
         desc = self.scale.describe()
         desc += self.angle.describe()
+        desc += common.pack_fixed(self.operation)
+        desc += common.pack_fixed(self.mapping)
         desc += self.x_func.describe()
         desc += self.y_func.describe()
         if self.z_func:
@@ -388,10 +417,70 @@ class XYZSource(common.ChainLink):
         return common.make_function(common.FUNC_XYZ_SRC, args) + desc + self.describe_next()
 
     def __getitem__(self, t):
-        pos = get_node_position()
-
-        # TODO add scale and rotaton
-
+        pos = rotate_scale(get_node_position(), self.scale[t], self.angle[t] * math.pi * 2.0)
         x = self.x_func[pos[0]]
         y = self.y_func[pos[1]]
-        return self.call_next(t, Color(int(red * 255), int(green * 255), int(blue * 255)))
+        if self.z_func:
+            z = self.y_func[pos[2]]
+        else:
+            z = 0.0
+
+        if self.mapping == XYZ_RGB:
+            red = x
+            green = y
+            blue = z
+        elif self.mapping == XYZ_RBG:
+            red = x
+            green = z
+            blue = y
+        elif self.mapping == XYZ_BRG:
+            red = y
+            green = z
+            blue = x
+        elif self.mapping == XYZ_BGR:
+            red = z
+            green = y
+            blue = x
+        elif self.mapping == XYZ_GBR:
+            red = z
+            green = x
+            blue = y
+        elif self.mapping == XYZ_GRB:
+            red = y
+            green = x
+            blue = z
+        elif self.mapping == XYZ_HSV:
+            hue = x
+            sat = y
+            value = z
+        elif self.mapping == XYZ_HVS:
+            hue = x
+            sat = z
+            value = y
+        elif self.mapping == XYZ_VHS:
+            hue = y
+            sat = z
+            value = x
+        elif self.mapping == XYZ_VSH:
+            hue = z
+            sat = y
+            value = x
+        elif self.mapping == XYZ_SVH:
+            hue = z
+            sat = x
+            value = y
+        elif self.mapping == XYZ_SHV:
+            hue = y
+            sat = x
+            value = z
+        else:
+            raise ValueError("Invalid mapping specified.")
+
+        if self.mapping in (XYZ_RGB,XYZ_RBG,XYZ_BRG,XYZ_BGR,XYZ_GBR,XYZ_GRB):
+            color = Color(int(red * 255), int(green * 255), int(blue * 255))
+        else:
+            col = colorsys.hsv_to_rgb(hue, sat, value)
+            color = Color(int(col[0] * 255), int(col[1] * 255), int(col[2] * 255))
+
+        return self.call_next(t, color)
+
