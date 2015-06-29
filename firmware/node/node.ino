@@ -537,17 +537,19 @@ void setup()
     uint32_t timer_cal;
 
     Serial.begin(38400);
-    Serial.println("!!!");
+    Serial.println("hue-chandelier board!");
 
     g_pixels.begin();
     startup_animation();
         
     g_node_id = EEPROM.read(id_address);
-    Serial.println("node " + String(g_node_id) + " ready. ");
     EEPROM.get(calibration_address, timer_cal);
-    Serial.println(String(timer_cal) + " t/s");
-    if (timer_cal > 1 && timer_cal < 200)
+    if (timer_cal > 1 && timer_cal != 0xFFFF)
+    {
         g_ticks_per_sec = timer_cal;
+        Serial.print("calibrated ");
+    }
+    Serial.println("node " + String(g_node_id) + " ready. ");
 
     g_ticks_per_frame = g_ticks_per_sec * g_delay / 1000;
 

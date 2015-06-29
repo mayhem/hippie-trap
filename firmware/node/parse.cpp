@@ -239,14 +239,18 @@ void *create_object(uint8_t   id, uint8_t *is_local,
 
         case SRC_XYZ:
             {
-                if (gen_count == 5 && value_count == 1)
+                if (gen_count >= 4 && value_count == 1)
                 {
                     obj = heap_alloc(sizeof(s_xyz_t));
                     if (!obj)
                         return NULL;
                            
-                    s_xyz_init((s_xyz_t *)obj, (generator_t*)gens[0], (generator_t*)gens[1], values[0], 
+                    if (gen_count == 5)
+                        s_xyz_init((s_xyz_t *)obj, (generator_t*)gens[0], (generator_t*)gens[1], values[0], 
                                (generator_t*)gens[2], (generator_t*)gens[3], (generator_t*)gens[4]);
+                    else
+                        s_xyz_init((s_xyz_t *)obj, (generator_t*)gens[0], (generator_t*)gens[1], values[0], 
+                               (generator_t*)gens[2], (generator_t*)gens[3], NULL);
                 }
                 else
                 {
