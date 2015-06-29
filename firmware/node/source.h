@@ -66,22 +66,22 @@ typedef struct s_op_t
     s_method     method;
     void        *next; 
     uint8_t      op;
-    s_source_t  *s1, *s2;
+    s_source_t  *s1, *s2, *s3;
 } s_op_t;
 
-void s_op_init(s_op_t *self, uint8_t op, s_source_t *s1, s_source_t *s2);
+void s_op_init(s_op_t *self, uint8_t op, s_source_t *s1, s_source_t *s2, s_source_t *s3);
 uint8_t s_op_get(void *self, uint32_t t, color_t *dest);
 
 typedef struct s_comp_t 
 { 
     s_method     method;
     void        *next; 
-    color_t      col;
+    s_source_t  *col;
     generator_t *dist;
     int32_t      index;
 } s_comp_t;
 
-void s_comp_init(s_comp_t *self, color_t *col, generator_t *dist, int32_t index);
+void s_comp_init(s_comp_t *self, s_source_t *col, generator_t *dist, int32_t index);
 uint8_t s_comp_get(void *self, uint32_t t, color_t *dest);
 
 typedef struct s_rgb_t 

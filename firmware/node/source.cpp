@@ -280,34 +280,43 @@ uint8_t s_rainbow_get(void *_self, uint32_t t, color_t *dest)
 
 //--
 
-void s_op_init(s_op_t *self, uint8_t op, s_source_t *s1, s_source_t *s2)
+void s_op_init(s_op_t *self, uint8_t op, s_source_t *s1, s_source_t *s2, s_source_t *s3)
 {
     self->method = s_op_get;
     self->next = NULL; 
     self->s1 = s1;
     self->s2 = s2;
+    self->s3 = s3;
 }
 
 
 uint8_t s_op_get(void *_self, uint32_t t, color_t *dest)
 {
     s_op_t *self = (s_op_t *)_self;
-    color_t col1, col2;
+    color_t col1, col2, col3;
 
     sub_evaluate(self->s1, t, &col1);
     sub_evaluate(self->s2, t, &col2);
+    if (self->s3)
+        sub_evaluate(self->s3, t, &col3);
+    else
+    {
+        col3.c[0] = 0;
+        col3.c[1] = 0;
+        col3.c[2] = 0;
+    }
 
     switch(self->op)
     {
         case OP_ADD:
-            dest->c[0] = max(0, min(255, col1.c[0] + col2.c[0]));
-            dest->c[1] = max(0, min(255, col1.c[1] + col2.c[1]));
-            dest->c[2] = max(0, min(255, col1.c[2] + col2.c[2]));
+            dest->c[0] = max(0, min(255, col1.c[0] + col2.c[0] + col3.c[0]));
+            dest->c[1] = max(0, min(255, col1.c[1] + col2.c[1] + col3.c[1]));
+            dest->c[2] = max(0, min(255, col1.c[2] + col2.c[2] + col3.c[2]));
             break;
         case OP_SUB:
-            dest->c[0] = max(0, min(255, col1.c[0] - col2.c[0]));
-            dest->c[1] = max(0, min(255, col1.c[1] - col2.c[1]));
-            dest->c[2] = max(0, min(255, col1.c[2] - col2.c[2]));
+            dest->c[0] = max(0, min(255, col1.c[0] - col2.c[0] - col3.c[0]));
+            dest->c[1] = max(0, min(255, col1.c[1] - col2.c[1] - col3.c[1]));
+            dest->c[2] = max(0, min(255, col1.c[2] - col2.c[2] - col3.c[2]));
             break;
         case OP_MUL:
             dest->c[0] = max(0, min(255, col1.c[0] * col2.c[0]));
@@ -330,13 +339,11 @@ uint8_t s_op_get(void *_self, uint32_t t, color_t *dest)
 
 //--
 
-void s_comp_init(s_comp_t *self, color_t *col, generator_t *dist, int32_t index)
+void s_comp_init(s_comp_t *self, s_source_t *col, generator_t *dist, int32_t index)
 {
     self->method = s_comp_get;
     self->next = NULL; 
-    self->col.c[0] = col->c[0];
-    self->col.c[1] = col->c[1];
-    self->col.c[2] = col->c[2];
+    self->col = col;
     self->dist = dist;
     self->index = index / SCALE_FACTOR;
 }
@@ -345,19 +352,21 @@ uint8_t s_comp_get(void *_self, uint32_t t, color_t *dest)
 {
     s_comp_t *self = (s_comp_t *)_self;
     int32_t h, s, v, dist;
+    color_t col;
     
     dist = self->dist->method(self->dist, t);
+    self->col->method(self->col, t, &col);
 
     if (self->index == 0)
     {
-        dest->c[0] = self->col.c[0];
-        dest->c[1] = self->col.c[1];
-        dest->c[2] = self->col.c[2];
+        dest->c[0] = col.c[0];
+        dest->c[1] = col.c[1];
+        dest->c[2] = col.c[2];
     }
     else
     if (self->index == 1)
     {
-        rgb_to_hsv(&self->col, &h, &s, &v);
+        rgb_to_hsv(&col, &h, &s, &v);
         h = (h - dist) % SCALE_FACTOR;
         if (h < 0)
             h += SCALE_FACTOR;
@@ -365,7 +374,7 @@ uint8_t s_comp_get(void *_self, uint32_t t, color_t *dest)
     }
     else
     {
-        rgb_to_hsv(&self->col, &h, &s, &v);
+        rgb_to_hsv(&col, &h, &s, &v);
         h = (h + dist) % SCALE_FACTOR;
         hsv_to_rgb(h, s, v, dest);
     }
