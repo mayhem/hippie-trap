@@ -280,34 +280,43 @@ uint8_t s_rainbow_get(void *_self, uint32_t t, color_t *dest)
 
 //--
 
-void s_op_init(s_op_t *self, uint8_t op, s_source_t *s1, s_source_t *s2)
+void s_op_init(s_op_t *self, uint8_t op, s_source_t *s1, s_source_t *s2, s_source_t *s3)
 {
     self->method = s_op_get;
     self->next = NULL; 
     self->s1 = s1;
     self->s2 = s2;
+    self->s3 = s3;
 }
 
 
 uint8_t s_op_get(void *_self, uint32_t t, color_t *dest)
 {
     s_op_t *self = (s_op_t *)_self;
-    color_t col1, col2;
+    color_t col1, col2, col3;
 
     sub_evaluate(self->s1, t, &col1);
     sub_evaluate(self->s2, t, &col2);
+    if (self->s3)
+        sub_evaluate(self->s3, t, &col3);
+    else
+    {
+        col3.c[0] = 0;
+        col3.c[1] = 0;
+        col3.c[2] = 0;
+    }
 
     switch(self->op)
     {
         case OP_ADD:
-            dest->c[0] = max(0, min(255, col1.c[0] + col2.c[0]));
-            dest->c[1] = max(0, min(255, col1.c[1] + col2.c[1]));
-            dest->c[2] = max(0, min(255, col1.c[2] + col2.c[2]));
+            dest->c[0] = max(0, min(255, col1.c[0] + col2.c[0] + col3.c[0]));
+            dest->c[1] = max(0, min(255, col1.c[1] + col2.c[1] + col3.c[1]));
+            dest->c[2] = max(0, min(255, col1.c[2] + col2.c[2] + col3.c[2]));
             break;
         case OP_SUB:
-            dest->c[0] = max(0, min(255, col1.c[0] - col2.c[0]));
-            dest->c[1] = max(0, min(255, col1.c[1] - col2.c[1]));
-            dest->c[2] = max(0, min(255, col1.c[2] - col2.c[2]));
+            dest->c[0] = max(0, min(255, col1.c[0] - col2.c[0] - col3.c[0]));
+            dest->c[1] = max(0, min(255, col1.c[1] - col2.c[1] - col3.c[1]));
+            dest->c[2] = max(0, min(255, col1.c[2] - col2.c[2] - col3.c[2]));
             break;
         case OP_MUL:
             dest->c[0] = max(0, min(255, col1.c[0] * col2.c[0]));

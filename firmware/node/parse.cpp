@@ -373,12 +373,15 @@ void *create_object(uint8_t   id, uint8_t *is_local,
 
         case FUNC_SRCOP:
             {
-                if (value_count == 1 && gen_count == 2)
+                if (value_count == 1 && gen_count >= 2)
                 {
                     obj = heap_alloc(sizeof(s_op_t));
                     if (!obj)
                         return NULL;
-                    s_op_init((s_op_t *)obj, (uint8_t)values[0], (s_source_t*)gens[0], (s_source_t*)gens[1]);
+                    if (gen_count == 3)
+                        s_op_init((s_op_t *)obj, (uint8_t)values[0], (s_source_t*)gens[0], (s_source_t*)gens[1], (s_source_t*)gens[2]);
+                    else
+                        s_op_init((s_op_t *)obj, (uint8_t)values[0], (s_source_t*)gens[0], (s_source_t*)gens[1], NULL);
                 }
                 else
                 {
