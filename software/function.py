@@ -383,19 +383,15 @@ def rotate_scale(pos, scale, angle):
     return xp, yp, pos[2]
 
 class XYZSource(common.ChainLink):
-    def __init__(self, scale, angle, operation, mapping, x_func, y_func, z_func = None):
+    def __init__(self, scale, angle, mapping, x_func, y_func, z_func = None):
         super(XYZSource, self).__init__()
 
         for g in [scale, angle, x_func, y_func, z_func]:
             if g and not isinstance(g, generator.GeneratorBase):
                 raise TypeError("XYZSource needs to be passed Generator objects")
 
-        if operation not in (common.OP_ADD, common.OP_SUB, common.OP_MUL):
-            raise ValueError("XYZRGBSource only supports ADD, SUB and MUL operations")
-
         self.scale = scale
         self.angle = angle
-        self.operation = operation
         self.mapping = mapping
         self.x_func = x_func
         self.y_func = y_func
@@ -405,7 +401,6 @@ class XYZSource(common.ChainLink):
         args = [common.ARG_FUNC, common.ARG_FUNC, common.ARG_VALUE, common.ARG_FUNC, common.ARG_FUNC]
         desc = self.scale.describe()
         desc += self.angle.describe()
-        desc += common.pack_fixed(self.operation)
         desc += common.pack_fixed(self.mapping)
         desc += self.x_func.describe()
         desc += self.y_func.describe()
@@ -416,10 +411,10 @@ class XYZSource(common.ChainLink):
 
     def __getitem__(self, t):
         spos = get_position()
-        print "start: (%.3f, %.3f, %.3f)" % (spos[0], spos[1], spos[2]),
+        #print "start: (%.3f, %.3f, %.3f)" % (spos[0], spos[1], spos[2]),
         print "scale: %.3f angle %.3f " % (self.scale[t], self.angle[t])
-        pos = rotate_scale(get_position(), self.scale[t], self.angle[t] * pi * 2.0)
-        print "  end: (%.3f, %.3f, %.3f)" % (pos[0], pos[1], pos[2])
+        # pos = rotate_scale(get_position(), self.scale[t], self.angle[t] * pi * 2.0)
+        # print "  end: (%.3f, %.3f, %.3f)" % (pos[0], pos[1], pos[2])
 
         x = self.x_func[pos[0]]
         y = self.y_func[pos[1]]

@@ -27,7 +27,7 @@ FUNC_REPEAT_LOCAL_RANDOM   = 20
 FUNC_CONSTANT_RANDOM_COLOR = 21
 FUNC_COLOR_SHIFT           = 22
 FUNC_RGB_SRC               = 23
-FUNC_RGB_XYZ               = 24
+FUNC_XYZ_SRC               = 24
 
 FUNC_MAX               = 31
 
