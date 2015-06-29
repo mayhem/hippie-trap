@@ -70,7 +70,7 @@ color_shift = function.ConstantColor(Color(255,0,0))
 color_shift.chain(filter.ColorShift(.6, 0, 0))
 
 # Comp color source
-comp = function.CompColorSource(Color(255,0,0), generator.Sin(1, 0, .1), generator.LocalRandomValue(0, 3))
+comp = function.CompColorSource(function.HSV(generator.Sawtooth(2)), generator.Sin(1, 0, .1), 1)
 
 # constant random color
 const_rand = function.ConstantRandomColor(generator.LocalRandomValue(0, 1.0), 
@@ -87,9 +87,9 @@ srcop.chain(filter.Brightness(generator.Constant(.75)))
 
 # this python crashes
 #hsv = function.HSV(generator.Sawtooth(.15), generator.Sin(generator.LocalRandomValue(.25, .99)), generator.Constant(generator.LocalRandomValue(.25, .99)))
-src = srcop
+src = comp
 
-pattern_set = [(wobble, 5), (green, 3), (rainbow, 4), (purple, 2), (imp, 2), (step, 2), (const_rand, 2), (rgb, 3), (color_shift, 2), (srcop, 4)]
+pattern_set = [(wobble, 5), (green, 3), (rainbow, 4), (purple, 2), (imp, 2), (step, 2), (const_rand, 2), (rgb, 3), (color_shift, 2), (srcop, 4), (comp, 4)]
 
 red = function.ConstantColor(Color(255,0,0))
 blue = function.ConstantColor(Color(0,0,255))

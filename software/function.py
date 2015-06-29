@@ -211,6 +211,8 @@ class CompColorSource(common.ChainLink):
            index - which of the parts of the complement are we: 0 anchor, 1 secondary color 1, 2 secondary color 2
            dist - the distribution angle between secondary colors'''
         super(CompColorSource, self).__init__()
+        if not isinstance(color, ColorSource):
+            raise TypeError("CompColorSource needs to be passed a ColorSource objects")
         self.color = color
         self.dist = dist
         self.index = index
@@ -222,8 +224,9 @@ class CompColorSource(common.ChainLink):
             self.index = self.index_f[0]
 
     def describe(self):
-        args = [common.ARG_COLOR, common.ARG_FUNC]
-        desc = common.pack_color(self.color)
+        args = [common.ARG_SRC, common.ARG_FUNC]
+        desc = common.pack_char(self.color.get_filter_count())
+        desc += self.color.describe()
         desc += self.dist.describe()
 
         if self.index_f:
@@ -239,13 +242,15 @@ class CompColorSource(common.ChainLink):
         if self.index == 0:
             return self.call_next(t, self.color)
         elif self.index == 1:
-            h,s,v = colorsys.rgb_to_hsv(self.color.color[0] / 255.0, self.color.color[1] / 255.0, self.color.color[2] / 255.0)
-            h = (h - self.dist) % 1.0
+            color = self.color[t]
+            h,s,v = colorsys.rgb_to_hsv(color.color[0] / 255.0, color.color[1] / 255.0, color.color[2] / 255.0)
+            h = (h - self.dist[t]) % 1.0
             col = colorsys.hsv_to_rgb(h, s, v)
             return self.call_next(t, Color(int(col[0] * 255), int(col[1] * 255), int(col[2] * 255)))
         else:
-            h,s,v = colorsys.rgb_to_hsv(self.color.color[0] / 255.0, self.color.color[1] / 255.0, self.color.color[2] / 255.0)
-            h = (h + self.dist) % 1.0
+            color = self.color[t]
+            h,s,v = colorsys.rgb_to_hsv(color.color[0] / 255.0, color.color[1] / 255.0, color.color[2] / 255.0)
+            h = (h + self.dist[t]) % 1.0
             col = colorsys.hsv_to_rgb(h, s, v)
             return self.call_next(t, Color(int(col[0] * 255), int(col[1] * 255), int(col[2] * 255)))
 
