@@ -1,6 +1,6 @@
 #!/usr/bin/python
 import abc
-import math
+from math import sin, cos, pi
 import colorsys
 import generator
 import random
@@ -20,11 +20,12 @@ XYZ_VHS = 8
 XYZ_VSH = 9
 XYZ_SVH = 10
 XYZ_SHV = 11
+
 node_position = []
 
 def set_position(x, y, z):
     global node_position
-    node_postion = [x, y, z]
+    node_position = [x, y, z]
 
 def get_position():
     global node_position
@@ -414,11 +415,16 @@ class XYZSource(common.ChainLink):
         return common.make_function(common.FUNC_XYZ_SRC, args) + desc + self.describe_next()
 
     def __getitem__(self, t):
-        pos = rotate_scale(get_node_position(), self.scale[t], self.angle[t] * math.pi * 2.0)
+        spos = get_position()
+        print "start: (%.3f, %.3f, %.3f)" % (spos[0], spos[1], spos[2]),
+        print "scale: %.3f angle %.3f " % (self.scale[t], self.angle[t])
+        pos = rotate_scale(get_position(), self.scale[t], self.angle[t] * pi * 2.0)
+        print "  end: (%.3f, %.3f, %.3f)" % (pos[0], pos[1], pos[2])
+
         x = self.x_func[pos[0]]
         y = self.y_func[pos[1]]
         if self.z_func:
-            z = self.y_func[pos[2]]
+            z = self.z_func[pos[2]]
         else:
             z = 0.0
 
@@ -476,8 +482,7 @@ class XYZSource(common.ChainLink):
         if self.mapping in (XYZ_RGB,XYZ_RBG,XYZ_BRG,XYZ_BGR,XYZ_GBR,XYZ_GRB):
             color = Color(int(red * 255), int(green * 255), int(blue * 255))
         else:
-            col = colorsys.hsv_to_rgb(hue, sat, value)
+            col = colorsys.hsv_to_rgb(h, s, v)
             color = Color(int(col[0] * 255), int(col[1] * 255), int(col[2] * 255))
 
         return self.call_next(t, color)
-

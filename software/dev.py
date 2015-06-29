@@ -88,8 +88,12 @@ srcop = function.SourceOp(common.OP_ADD, red, grn, blu)
 srcop.chain(filter.Brightness(generator.Constant(.75)))
 
 # this python crashes
-#hsv = function.HSV(generator.Sawtooth(.15), generator.Sin(generator.LocalRandomValue(.25, .99)), generator.Constant(generator.LocalRandomValue(.25, .99)))
-src = srcop
+hsv = function.HSV(generator.Sawtooth(.15), generator.Sin(generator.LocalRandomValue(.25, .99)), generator.Constant(generator.LocalRandomValue(.25, .99)))
+
+function.set_position(1, 1, 0)
+ch.set_position(1, 1, 1, 0)
+xyz = function.XYZSource(generator.Constant(2), generator.Sawtooth(1), common.OP_ADD, function.XYZ_RGB, generator.Step(1), generator.Step(1))
+src = xyz
 
 pattern_set = [(wobble, 5), (green, 3), (rainbow, 4), (purple, 2), (imp, 2), (step, 2), (const_rand, 2), (rgb, 3), (color_shift, 2), (srcop, 4), (comp, 4)]
 
