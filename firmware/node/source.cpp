@@ -425,7 +425,7 @@ uint8_t s_xyz_get(void *_self, uint32_t t, color_t *dest)
     x = self->x_func->method(self->x_func, x);
     y = self->y_func->method(self->y_func, y);
     if (self->z_func)
-        z = self->x_func->method(self->z_func, g_pos[2]);
+        z = self->z_func->method(self->z_func, g_pos[2]);
     else
         z = 0;
         

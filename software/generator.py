@@ -6,7 +6,7 @@ import common
 
 def plot(g):
     import matplotlib.pyplot as plt
-    t = 0.0
+    t = -2.0
     end = 2.0
     step = .01
 
