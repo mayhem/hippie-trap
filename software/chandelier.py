@@ -129,7 +129,7 @@ class Chandelier(object):
         x = int(x * common.SCALE_FACTOR)
         y = int(y * common.SCALE_FACTOR)
         z = int(z * common.SCALE_FACTOR)
-        self._send_packet(dest, PACKET_POSITION, bytearray(struct.pack("<HHH", x, y, z))) 
+        self._send_packet(dest, PACKET_POSITION, bytearray(struct.pack("<hhh", x, y, z))) 
 
     def set_brightness(self, dest, brightness):
         self._send_packet(dest, PACKET_BRIGHTNESS, bytearray((brightness,)))
