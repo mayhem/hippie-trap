@@ -6,7 +6,7 @@
 #include <avr/pgmspace.h>
 #include "parse.h"
 
-const uint8_t NUM_NODES = 101;
+const uint8_t NAX_NODES = 120;
 const uint8_t NUM_PIXELS = 4;
 const uint8_t OUT_PIN = 2;
 const uint8_t US_PER_TICK = 25;
@@ -203,9 +203,9 @@ void handle_packet(uint16_t len, uint8_t *packet)
     uint8_t   *data;
 
     target = packet[0];
-    if (target > NUM_NODES + 1)
+    if (target > NAX_NODES + 1)
     {
-        uint8_t cls = target - (NUM_NODES + 1), i;
+        uint8_t cls = target - (NAX_NODES + 1), i;
 
         for(i = 0; i < NUM_CLASSES; i++)
             if (g_classes[i] == cls)

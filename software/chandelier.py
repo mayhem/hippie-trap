@@ -16,6 +16,7 @@ from time import sleep, time
 BAUD_RATE = 38400
 NUM_PIXELS = 4
 NUM_NODES = 101
+NAX_NODES = 120 
 MAX_CLASSES = 16
 MAX_PACKET_LEN = 230
 CALIBRATION_DURATION = 10
@@ -48,7 +49,7 @@ def crc16_update(crc, a):
 def mkcls(cls):
     if cls >= MAX_CLASSES:
         raise ValueError("Invalid class id %d. Max class id is %d." % (cls, MAX_CLASSES))
-    return cls + NUM_NODES + 1
+    return cls + MAX_NODES + 1
 
 class Chandelier(object):
 
