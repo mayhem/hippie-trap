@@ -3,7 +3,9 @@
 #include "generator.h"
 #include "source.h"
 #include "parse.h"
+#include "defs.h"
 
+#if 0
 void print_col(color_t *c)
 {
     Serial.print(c->c[0], DEC);
@@ -12,7 +14,7 @@ void print_col(color_t *c)
     Serial.print(", ");
     Serial.print(c->c[2], DEC);
 }
-
+#endif
 
 uint8_t hsv_to_rgb(int32_t h, int32_t s, int32_t v, color_t *color)
 {
@@ -106,10 +108,7 @@ uint8_t rgb_to_hsv(color_t *col, int32_t *_h, int32_t *_s, int32_t *_v)
 
     if (mx == 0)
         return 0;
-    
-    //Serial.print("r " + String(col->c[0]));
-    //Serial.print(" g " + String(col->c[1]));
-    //Serial.println(" b " + String(col->c[2]));
+
     
     if (mx == mn) 
     { 
@@ -127,10 +126,6 @@ uint8_t rgb_to_hsv(color_t *col, int32_t *_h, int32_t *_s, int32_t *_v)
             h = (rd - gd) * SCALE_FACTOR / d + 4000;
         h = h / 6;
     }
-
-    //Serial.print("h " + String(h));
-    //Serial.print(" s " + String(s));
-    //Serial.println(" v " + String(v));
     
     *_h = h;
     *_s = s;
@@ -379,4 +374,132 @@ uint8_t s_comp_get(void *_self, uint32_t t, color_t *dest)
         hsv_to_rgb(h, s, v, dest);
     }
     return 1;
+}
+
+//--
+
+void s_xyz_init(s_xyz_t *self, generator_t *scale, generator_t *angle, int32_t mapping, generator_t *x_func, generator_t *y_func, generator_t *z_func)
+{
+    self->method = s_xyz_get;
+    self->next = NULL; 
+    self->angle = angle;
+    self->scale = scale;
+    self->mapping = mapping / SCALE_FACTOR;
+    self->x_func = x_func;
+    self->y_func = y_func;
+    self->z_func = z_func;
+}
+
+int32_t fsin(int32_t theta)
+{
+    int32_t index = (theta % S_PIM2) * NUM_SIN_TABLE_ENTRIES / S_PIM2;
+    if (index < 0)
+        index += NUM_SIN_TABLE_ENTRIES;
+
+    // first explicitly cast to int16_t, to make sure negative numbers are handled correctly
+    int32_t value = (int16_t)pgm_read_word_near(sin_table + index);
+    return (int32_t)value;
+}
+
+uint8_t s_xyz_get(void *_self, uint32_t t, color_t *dest)
+{
+    s_xyz_t *self = (s_xyz_t *)_self;
+    int32_t scale, angle, x, y, z, arg1, arg2, arg3, x_scaled, y_scaled;
+
+    scale = self->scale->method(self->scale, t);
+    angle = self->angle->method(self->angle, t);
+    angle = S_PIM2 * angle / SCALE_FACTOR;
+
+    // scale the point
+    x_scaled = (int32_t)g_pos[0] * scale / SCALE_FACTOR;
+    y_scaled = (int32_t)g_pos[1] * scale / SCALE_FACTOR;
+
+    int32_t cos_temp = fsin(S_PID2 - angle);
+    int32_t sin_temp = fsin(angle);
+    
+    // now rotate it
+    x = (x_scaled * cos_temp / SCALE_FACTOR) - (y_scaled * sin_temp / SCALE_FACTOR);
+    y = (x_scaled * sin_temp / SCALE_FACTOR) + (y_scaled * cos_temp / SCALE_FACTOR);
+   
+    // pass through the generators
+    x = self->x_func->method(self->x_func, x);
+    y = self->y_func->method(self->y_func, y);
+    if (self->z_func)
+        z = self->z_func->method(self->z_func, g_pos[2]);
+    else
+        z = 0;
+        
+    switch(self->mapping)
+    {
+        case XYZ_RGB:
+            arg1 = x;
+            arg2 = y;
+            arg3 = z;
+            break;
+        case XYZ_RBG:
+            arg1 = x;
+            arg2 = z;
+            arg3 = y;
+            break;
+        case XYZ_BRG:
+            arg1 = y;
+            arg2 = z;
+            arg3 = x;
+            break;
+        case XYZ_BGR:
+            arg1 = z;
+            arg2 = y;
+            arg3 = x;
+            break;
+        case XYZ_GBR:
+            arg1 = z;
+            arg2 = x;
+            arg3 = y;
+            break;
+        case XYZ_GRB:
+            arg1 = y;
+            arg2 = x;
+            arg3 = z;
+            break;
+        case XYZ_HSV:
+            arg1 = x;
+            arg2 = y;
+            arg3 = z;
+            break;
+        case XYZ_HVS:
+            arg1 = x;
+            arg2 = z;
+            arg3 = y;
+            break;
+        case XYZ_VHS:
+            arg1 = y;
+            arg2 = z;
+            arg3 = x;
+            break;
+        case XYZ_VSH:
+            arg1 = z;
+            arg2 = y;
+            arg3 = x;
+            break;
+        case XYZ_SVH:
+            arg1 = z;
+            arg2 = x;
+            arg3 = y;
+            break;
+        case XYZ_SHV:
+            arg1 = y;
+            arg2 = x;
+            arg3 = z;
+            break;
+    }
+
+    if (self->mapping < XYZ_GRB)
+    {
+        dest->c[0] = arg1 * 255 / SCALE_FACTOR;
+        dest->c[1] = arg2 * 255 / SCALE_FACTOR;
+        dest->c[2] = arg3 * 255 / SCALE_FACTOR;
+        return 1;
+    }
+    else
+        return hsv_to_rgb(arg1, arg2, arg3, dest);     
 }

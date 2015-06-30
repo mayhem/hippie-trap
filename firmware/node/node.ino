@@ -11,7 +11,6 @@ const uint8_t NUM_PIXELS = 4;
 const uint8_t OUT_PIN = 2;
 const uint8_t US_PER_TICK = 25;
 
-
 const uint16_t MAX_PACKET_LEN     = 230;
 const uint8_t BROADCAST = 0;
 const uint8_t PACKET_SINGLE_COLOR = 0;
@@ -326,10 +325,6 @@ void handle_packet(uint16_t len, uint8_t *packet)
             g_pos[1] = *(uint16_t *)(&data[2]);
             g_pos[2] = *(uint16_t *)(&data[4]);
             
-            Serial.println("x pos: " + String(g_pos[0]));
-            Serial.println("y pos: " + String(g_pos[1]));
-            Serial.println("z pos: " + String(g_pos[2]));
-            
             col.c[0] = col.c[1] = 0;
             col.c[2] = 180;
             show_color(&col);
@@ -542,17 +537,19 @@ void setup()
     uint32_t timer_cal;
 
     Serial.begin(38400);
-    Serial.println("!!!");
+    Serial.println("hue-chandelier board!");
 
     g_pixels.begin();
     startup_animation();
         
     g_node_id = EEPROM.read(id_address);
-    Serial.println("node " + String(g_node_id) + " ready. ");
     EEPROM.get(calibration_address, timer_cal);
-    Serial.println(String(timer_cal) + " t/s");
-    if (timer_cal > 1 && timer_cal < 200)
+    if (timer_cal > 1 && timer_cal != 0xFFFF)
+    {
         g_ticks_per_sec = timer_cal;
+        Serial.print("calibrated ");
+    }
+    Serial.println("node " + String(g_node_id) + " ready. ");
 
     g_ticks_per_frame = g_ticks_per_sec * g_delay / 1000;
 

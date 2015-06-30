@@ -96,4 +96,31 @@ typedef struct s_rgb_t
 void s_rgb_init(s_rgb_t *self, generator_t * red, generator_t *green, generator_t *blue);
 uint8_t s_rgb_get(void *self, uint32_t t, color_t *dest);
 
+// Mappings for the XYZSource
+const uint8_t XYZ_RGB = 0;
+const uint8_t XYZ_RBG = 1;
+const uint8_t XYZ_BRG = 2;
+const uint8_t XYZ_BGR = 3;
+const uint8_t XYZ_GBR = 4;
+const uint8_t XYZ_GRB = 5;
+const uint8_t XYZ_HSV = 6;
+const uint8_t XYZ_HVS = 7;
+const uint8_t XYZ_VHS = 8;
+const uint8_t XYZ_VSH = 9;
+const uint8_t XYZ_SVH = 10;
+const uint8_t XYZ_SHV = 11;
+
+typedef struct s_xyz_t 
+{ 
+    s_method     method;
+    void        *next; 
+    generator_t *angle;
+    generator_t *scale;
+    int32_t      mapping;
+    generator_t *x_func, *y_func, *z_func;
+} s_xyz_t;
+
+void s_xyz_init(s_xyz_t *self, generator_t *angle, generator_t *scale, int32_t mapping, generator_t *x_func, generator_t *y_func, generator_t *z_func);
+uint8_t s_xyz_get(void *self, uint32_t t, color_t *dest);
+
 #endif
