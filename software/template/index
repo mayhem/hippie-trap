@@ -19,6 +19,16 @@
   </div>
   <div class="col-md-1"></div>
 </div>
+<div class="row">
+  <div class="col-md-1"></div>
+  <div class="col-md-10">
+  <br/>
+  <pre id="error">
+  :) <3
+  </pre>
+  </div>
+  <div class="col-md-1"></div>
+</div>
 
 <script type="text/javascript" src="/static/js/jquery-2.1.4.min.js"></script>
 <script>
@@ -36,11 +46,13 @@ function submit()
         type: "POST",
         data : $("#content").val(),
         contentType: "text/plain; charset=utf-8",
-        success: function(json)
+        success: function(data)
         {
+            $("#error").text(data);
         },
         error: function(xhr, txtStatus, errorThrown)
         {
+            $("#error").text("error! " + errorThrown);
         }
      });
 }

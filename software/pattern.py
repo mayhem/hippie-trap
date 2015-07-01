@@ -15,8 +15,8 @@ wrainbow = src.HSV(g.Sawtooth(6), g.Sin(g.LocalRandomValue(.25, .99)), g.LocalRa
 rgb = src.RGBSource(g.Sawtooth(1), g.Constant(1), g.Sin(1))
 
 pattern_set = [
-    (wobble, 10), 
-    (rainbow, 10),
-    (rgb, 10),
-    (wrainbow, 10)
+    (wobble, 30), 
+    (rainbow, 30),
+    (rgb, 15),
+    (wrainbow, 20)
 ]

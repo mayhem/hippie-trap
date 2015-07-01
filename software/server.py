@@ -2,11 +2,12 @@
 
 import sys
 from flask import Flask, request, render_template
+from werkzeug.exceptions import InternalServerError, BadRequest
 from chandelier import Chandelier, BROADCAST
-import function
-import generator
-import filter
-import random
+import function as src
+import generator as g
+import filter as f
+import random as r
 import common
 from time import sleep, time
 from color import Color
@@ -44,8 +45,15 @@ class PatternMaster(Thread):
         self.exit = False
         self.time_left = 0
         self.lock = Lock()
+        self.pause = False
 
-    def exit(self):
+    def set_pause(self, p):
+        self.pause = p
+
+    def is_paused(self):
+        return self.pause
+
+    def gtfo(self):
         self.exit = True
 
     def hold(self):
@@ -81,6 +89,10 @@ class PatternMaster(Thread):
                     self.lock.release()
                     if tl <= 0:
                         break
+
+                    if self.pause:
+                        while self.pause:
+                            sleep(1)
 
                     if self.exit:
                         break
@@ -157,11 +169,29 @@ def sdown():
     dec_speed()
     return "ok"
 
-@app.route('/run', methods=["POST"])
-def run():
-    print request.data
+@app.route('/resume')
+def resume():
+    global pm, ch
+    pm.set_pause(False)
     return ""
 
+@app.route('/run', methods=["POST"])
+def run():
+    global pm, ch
+    prog = request.data
+    try:
+        data = eval(prog)
+    except Exception as e:
+        print e
+        return e
+
+    if pm and not pm.is_paused():
+        pm.set_pause(True)
+        sleep(1)
+
+    ch.send_pattern(BROADCAST, data)
+    ch.next_pattern(BROADCAST, TRANSITION_STEPS)
+    return ":-)"
 
 # global variables that need to be moved to a UWSI block
 speed = NORMAL_SPEED
@@ -170,7 +200,7 @@ DELAY = .02
 
 device = "/dev/ttyAMA0"
 
-random.seed()
+r.seed()
 
 #try:
 #    import uwsgi
