@@ -266,7 +266,7 @@ void handle_packet(uint16_t len, uint8_t *packet)
                     g_next_pattern = NULL;
                     return;
                 }
-
+                
                 // we parsed a valid pattern, increase the index
                 g_load_pattern= (g_load_pattern + 1) % 2;
 
@@ -331,7 +331,6 @@ void handle_packet(uint16_t len, uint8_t *packet)
 
                 for(i = 0; i < len - 2; i++)
                     g_classes[i] = data[i];
-
 
                 break;
             }
@@ -460,7 +459,7 @@ void update_pattern(void)
 
     if (!g_cur_pattern)
         return;
- 
+
     if (g_target && ticks() >= g_target)
     {
         g_target += g_ticks_per_frame;
@@ -540,7 +539,7 @@ void setup()
     if (timer_cal > 1 && timer_cal != 0xFFFF)
     {
         g_ticks_per_sec = timer_cal;
-        Serial.print("calibrated ");
+        Serial.print("calibrated " + String(timer_cal) + " ");
         col.c[0] = 0;
         col.c[1] = 128;
         col.c[2] = 0;
