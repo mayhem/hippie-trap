@@ -6,7 +6,7 @@
 #include <avr/pgmspace.h>
 #include "parse.h"
 
-const uint8_t NAX_NODES = 120;
+const uint8_t MAX_NODES = 120;
 const uint8_t NUM_PIXELS = 4;
 const uint8_t OUT_PIN = 2;
 const uint8_t US_PER_TICK = 25;
@@ -203,9 +203,9 @@ void handle_packet(uint16_t len, uint8_t *packet)
     uint8_t   *data;
 
     target = packet[0];
-    if (target > NAX_NODES + 1)
+    if (target > MAX_NODES + 1)
     {
-        uint8_t cls = target - (NAX_NODES + 1), i;
+        uint8_t cls = target - (MAX_NODES + 1), i;
 
         for(i = 0; i < NUM_CLASSES; i++)
             if (g_classes[i] == cls)
@@ -301,12 +301,9 @@ void handle_packet(uint16_t len, uint8_t *packet)
             {
                 color_t col;
 
-                g_random_seed = data[0];
+                g_random_seed = *(int32_t *)data;
                 randomSeed(g_random_seed);
-
-                col.c[0] = col.c[2] = 0;
-                col.c[1] = 180;
-                show_color(&col);
+                show_color(NULL);
             }
             break;  
 
@@ -320,14 +317,9 @@ void handle_packet(uint16_t len, uint8_t *packet)
             
         case PACKET_POSITION:
         { 
-            color_t col;
             g_pos[0] = *(uint16_t *)data;
             g_pos[1] = *(uint16_t *)(&data[2]);
             g_pos[2] = *(uint16_t *)(&data[4]);
-            
-            col.c[0] = col.c[1] = 0;
-            col.c[2] = 180;
-            show_color(&col);
             break;       
         }
         case PACKET_CLASSES:
@@ -535,6 +527,7 @@ void error_pattern(void)
 void setup()
 { 
     uint32_t timer_cal;
+    color_t col;
 
     Serial.begin(38400);
     Serial.println("hue-chandelier board!");
@@ -548,7 +541,24 @@ void setup()
     {
         g_ticks_per_sec = timer_cal;
         Serial.print("calibrated ");
+        col.c[0] = 0;
+        col.c[1] = 128;
+        col.c[2] = 0;
     }
+    else
+    {
+        col.c[0] = 0;
+        col.c[1] = 0;
+        col.c[2] = 128;
+    }
+    if (g_node_id == 0 || g_node_id >= MAX_NODES)
+    {
+        col.c[0] = 128;
+        col.c[1] = 0;
+        col.c[2] = 0;
+    }
+    show_color(&col);
+
     Serial.println("node " + String(g_node_id) + " ready. ");
 
     g_ticks_per_frame = g_ticks_per_sec * g_delay / 1000;
