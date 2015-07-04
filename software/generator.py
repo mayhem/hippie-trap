@@ -59,6 +59,9 @@ class GenOp(GeneratorBase):
         desc += self.g2.describe()
         return desc + self.describe_next()
 
+    def describe_next(self):
+        return None
+
     def __getitem__(self, t):
         if self.operation == common.OP_ADD:
             return self.g1[t] + self.g2[t]

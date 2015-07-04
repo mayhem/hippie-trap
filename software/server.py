@@ -21,11 +21,11 @@ TEMPLATE_FOLDER = "template"
 NORMAL_SPEED = 1000
 MAX_SPEED = 3000
 MIN_SPEED = 100
-SPEED_STEPS = 100
+SPEED_STEPS = 400
 
 MAX_BRIGHTNESS = 100
 MIN_BRIGHTNESS = 10
-BRIGHTNESS_STEPS = 5
+BRIGHTNESS_STEPS =20 
 
 TRANSITION_STEPS = 500
 
@@ -72,11 +72,13 @@ class PatternMaster(Thread):
         prev_delay = 0 
         print "pattern master starting"
         while not self.exit:
-            for pat, delay in pattern_set:
+            for pat, delay, name in pattern_set:
+                print name, delay
                 if self.exit:
                     break
 
                 self.ch.send_pattern(BROADCAST, pat)
+                self.ch.next_pattern(BROADCAST, TRANSITION_STEPS)
    
                 self.lock.acquire()
                 self.time_left = prev_delay
@@ -97,7 +99,6 @@ class PatternMaster(Thread):
                     if self.exit:
                         break
 
-                self.ch.next_pattern(BROADCAST, TRANSITION_STEPS)
                 prev_delay = delay
 
         print "pattern master exiting"
@@ -213,6 +214,10 @@ ch.open(device)
 ch.off(BROADCAST)
 ch.send_entropy()
 ch.set_brightness(BROADCAST, 100)
+
+for p in range(1, 105):
+    ch.set_position(p, r.random(), r.random(), 0)
+
 ch.send_pattern(BROADCAST, pattern_set[0][0])
 ch.next_pattern(BROADCAST, 0)
 
