@@ -1,0 +1,6 @@
+0 Skip
+1 Brightness down
+2 Speed down
+3 Brightness up
+4 Hold
+5 Speed up
