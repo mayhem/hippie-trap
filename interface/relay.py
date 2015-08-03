@@ -3,11 +3,10 @@
 import os
 import sys
 import serial
-import urllib2
+import socket
 from time import sleep, time
 
 BAUD_RATE = 9600
-#IP = "127.0.0.1"
 IP = "10.0.0.1"
 PORT = 8080
 
@@ -33,25 +32,13 @@ class Relay(object):
             if ch < "0" or ch > "5":
                 continue
 
-            arg =""
-            if ch == "0":
-                arg = "skip"
-            elif ch == "1":
-                arg = "bdown"
-            elif ch == "2":
-                arg = "sdown"
-            elif ch == "3":
-                arg = "bup"
-            elif ch == "4":
-                arg = "hold"
-            elif ch == "5":
-                arg = "sup"
-
             if arg:
-                print arg
-                url = "http://%s:%d/ctrl/%s" % (IP, PORT, arg)
                 try:
-                    urllib2.urlopen(url)
+                    socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM))
+                    socket.connect((IP, PORT))
+                    socket.send(ch);
+                    socket.shutdown(socket.SD_RDWR)
+                    socket.close()
                 except urllib2.URLError:
                     pass
                 except urllib2.HTTPError:

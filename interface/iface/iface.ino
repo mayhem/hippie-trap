@@ -41,7 +41,8 @@ void check_sensor(uint8_t id, CapacitiveSensor *s)
     long total;
         
     total = s->capacitiveSensor(30);
-    //Serial.println(total);
+    //if (total > 1000)
+    //  Serial.println(total);
         
     if (total > threshold && states[id] == 0)
     {
