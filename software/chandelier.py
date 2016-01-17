@@ -15,8 +15,8 @@ from time import sleep, time
 
 BAUD_RATE = 38400
 NUM_PIXELS = 4
-NUM_NODES = 101
-NAX_NODES = 120 
+NUM_NODES = 24
+MAX_NODES = 120 
 MAX_CLASSES = 16
 MAX_PACKET_LEN = 230
 CALIBRATION_DURATION = 10
@@ -155,6 +155,8 @@ class Chandelier(object):
     def set_classes(self, dest, classes):
         if dest == BROADCAST:
             raise ValueError("Cannot broadcast class definitions.")
+        if not isinstance(classes, list):
+            raise TypeError("Second argument to set_classes must be a list")
         if len(classes) > MAX_CLASSES:
             raise ValueError("Too many classes defined. Max %d allowed." % MAX_CLASSES)
         self._send_packet(dest, PACKET_CLASSES, bytearray(classes))

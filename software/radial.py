@@ -3,7 +3,7 @@
 import os
 import sys
 import math
-from chandelier import Chandelier, BROADCAST
+from chandelier import Chandelier, BROADCAST, mkcls
 import function
 import generator
 import filter
@@ -22,14 +22,22 @@ ch.off(BROADCAST)
 ch.send_entropy()
 ch.set_brightness(BROADCAST, 100)
 
+ch.set_classes(1, range(1,11))
+ch.set_classes(2, [11, 12])
+
 random.seed()
 
-ch.set_angle(1, 0)
-ch.set_angle(2, 45)
+# outer ring
+for i in range(1, 12):
+    angle = i / 11.0
+    ch.set_angle(i, angle)
 
-blue = function.ConstantColor(Color(0, 255, 0))
+white = function.ConstantColor(Color(255, 255, 255))
+
+blue = function.ConstantColor(Color(0, 0, 255))
 blue.chain(filter.Brightness(generator.Sin(1, generator.LocalAngle())))
 
-ch.send_pattern(BROADCAST, blue) 
+ch.send_pattern(mkcls(1), blue) 
+ch.send_pattern(mkcls(2), white) 
 ch.next_pattern(BROADCAST, 0)
 ch.debug_serial(0)
