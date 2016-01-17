@@ -208,13 +208,15 @@ void handle_packet(uint16_t len, uint8_t *packet)
     uint8_t   *data;
 
     target = packet[0];
-    if (target > MAX_NODES + 1)
+    if (target >= MAX_NODES + 1)
     {
         uint8_t cls = target - (MAX_NODES + 1), i;
 
+        //Serial.println("packet to class: " + String(cls));
         for(i = 0; i < NUM_CLASSES; i++)
             if (g_classes[i] == cls)
             {
+                //Serial.println("I am class " + String(cls));
                 target = g_node_id;
                 break;
             }
@@ -359,8 +361,10 @@ void handle_packet(uint16_t len, uint8_t *packet)
                     g_classes[i] = NO_CLASS;
 
                 for(i = 0; i < len - 2; i++)
+                {
+                    //Serial.println("set class node: " + String((int)g_node_id) + " is in class " + String((int)data[i]));
                     g_classes[i] = data[i];
-
+                }
                 break;
             }
         case PACKET_CALIBRATE:
@@ -556,6 +560,7 @@ void setup()
 { 
     uint32_t timer_cal;
     color_t col;
+    uint8_t i;
 
     Serial.begin(38400);
     Serial.println("hue-chandelier board!");
@@ -594,6 +599,9 @@ void setup()
 
     Timer1.initialize(US_PER_TICK);
     Timer1.attachInterrupt(tick);
+    
+    for(i = 0; i < NUM_CLASSES; i++)
+        g_classes[i] = NO_CLASS;
 }
 
 void loop()
