@@ -20,21 +20,24 @@ NAX_NODES = 120
 MAX_CLASSES = 16
 MAX_PACKET_LEN = 230
 CALIBRATION_DURATION = 10
+NODE_ID_UNKNOWN = 255
 
-PACKET_SINGLE_COLOR = 0
-PACKET_COLOR_ARRAY  = 1
-PACKET_PATTERN      = 2
-PACKET_ENTROPY      = 3
-PACKET_NEXT         = 4
-PACKET_OFF          = 5
-PACKET_CLEAR_NEXT   = 6
-PACKET_POSITION     = 7
-PACKET_DELAY        = 8
-PACKET_ADDRR        = 9
-PACKET_SPEED        = 10
-PACKET_CLASSES      = 11
-PACKET_CALIBRATE    = 12
-PACKET_BRIGHTNESS   = 13
+PACKET_SET_ID       = 0 
+PACKET_CLEAR_ID     = 1  
+PACKET_SINGLE_COLOR = 2  
+PACKET_COLOR_ARRAY  = 3  
+PACKET_PATTERN      = 4  
+PACKET_ENTROPY      = 5  
+PACKET_NEXT         = 6  
+PACKET_OFF          = 7  
+PACKET_CLEAR_NEXT   = 8  
+PACKET_POSITION     = 9  
+PACKET_DELAY        = 10 
+PACKET_ADDRR        = 11 
+PACKET_SPEED        = 12 
+PACKET_CLASSES      = 13 
+PACKET_CALIBRATE    = 14
+PACKET_BRIGHTNESS   = 15
 BROADCAST = 0
 
 def crc16_update(crc, a):
@@ -113,6 +116,12 @@ class Chandelier(object):
 
         # Give the bottles a moment to parse the packet before we go on
         sleep(.05)
+
+    def set_id(self, id):
+        self._send_packet(BROADCAST, PACKET_SET_ID, bytearray(struct.pack("<b", id))) 
+
+    def clear_ids(self):
+        self._send_packet(BROADCAST, PACKET_CLEAR_ID, bytearray()) 
 
     def next_pattern(self, dest, transition_steps):
         self._send_packet(dest, PACKET_NEXT, bytearray(struct.pack("<H", transition_steps))) 
