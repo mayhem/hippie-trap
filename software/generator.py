@@ -46,21 +46,21 @@ class GeneratorBase(object):
 
 class GenOp(GeneratorBase):
     def __init__(self, operation, gen1, gen2):
-        if not isinstance(gen1, Generator) or not isinstance(gen2, Generator):
+        if not isinstance(gen1, GeneratorBase) or not isinstance(gen2, GeneratorBase):
             raise TypeError("GenOp needs to be passed two Generator objects")
         self.operation = operation
         self.g1 = gen1
         self.g2 = gen2
 
     def describe(self):
-        desc = common.make_function(common.FUNC_GENOP, (common.ARG_FUNC,common.ARG_FUNC))
+        desc = common.make_function(common.FUNC_GENOP, (common.ARG_VALUE, common.ARG_FUNC,common.ARG_FUNC))
         desc += common.pack_fixed(self.operation)
         desc += self.g1.describe()
         desc += self.g2.describe()
         return desc + self.describe_next()
 
     def describe_next(self):
-        return None
+        return bytearray([])
 
     def __getitem__(self, t):
         if self.operation == common.OP_ADD:
@@ -75,9 +75,6 @@ class GenOp(GeneratorBase):
             return self.g1[t] % self.g2[t]
 
         return 0.0
-
-#    def describe_next(self):
-#        return bytearray([])
 
 class Abs(GeneratorBase):
 
