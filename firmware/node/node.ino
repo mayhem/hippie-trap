@@ -6,6 +6,7 @@
 #include <avr/pgmspace.h>
 #include "parse.h"
 
+const uint8_t NODE_ID_UNKNOWN = 255;
 const uint8_t MAX_NODES = 120;
 const uint8_t NUM_PIXELS = 4;
 const uint8_t OUT_PIN = 2;
@@ -13,20 +14,23 @@ const uint8_t US_PER_TICK = 25;
 
 const uint16_t MAX_PACKET_LEN     = 230;
 const uint8_t BROADCAST = 0;
-const uint8_t PACKET_SINGLE_COLOR = 0;
-const uint8_t PACKET_COLOR_ARRAY  = 1;
-const uint8_t PACKET_PATTERN      = 2;
-const uint8_t PACKET_ENTROPY      = 3;
-const uint8_t PACKET_NEXT         = 4;
-const uint8_t PACKET_OFF          = 5;
-const uint8_t PACKET_CLEAR_NEXT   = 6;
-const uint8_t PACKET_POSITION     = 7;
-const uint8_t PACKET_DELAY        = 8;
-const uint8_t PACKET_ADDR         = 9;
-const uint8_t PACKET_SPEED        = 10;
-const uint8_t PACKET_CLASSES      = 11;
-const uint8_t PACKET_CALIBRATE    = 12;
-const uint8_t PACKET_BRIGHTNESS   = 13;
+const uint8_t PACKET_SET_ID       = 0;
+const uint8_t PACKET_CLEAR_ID     = 1; 
+const uint8_t PACKET_SINGLE_COLOR = 2; 
+const uint8_t PACKET_COLOR_ARRAY  = 3; 
+const uint8_t PACKET_PATTERN      = 4; 
+const uint8_t PACKET_ENTROPY      = 5; 
+const uint8_t PACKET_NEXT         = 6; 
+const uint8_t PACKET_OFF          = 7; 
+const uint8_t PACKET_CLEAR_NEXT   = 8; 
+const uint8_t PACKET_POSITION     = 9; 
+const uint8_t PACKET_DELAY        = 10;
+const uint8_t PACKET_ADDR         = 11;
+const uint8_t PACKET_SPEED        = 12;
+const uint8_t PACKET_CLASSES      = 13;
+const uint8_t PACKET_CALIBRATE    = 14;
+const uint8_t PACKET_BRIGHTNESS   = 15;
+const uint8_t PACKET_ANGLE        = 16;
 
 // where in EEPROM our node id is stored
 const int id_address = 0;
@@ -68,6 +72,7 @@ color_t  g_begin_color, g_end_color;
 
 // location in space
 int16_t g_pos[3];
+int32_t g_angle;
 
 // broadcast classes
 const uint8_t NUM_CLASSES = 16;
@@ -222,6 +227,23 @@ void handle_packet(uint16_t len, uint8_t *packet)
     data = &packet[2];
     switch(type)
     {
+        case PACKET_SET_ID:
+            {
+                if (g_node_id == NODE_ID_UNKNOWN)
+                {
+                    g_node_id = data[0];
+                    EEPROM.write(id_address, g_node_id);
+                }
+                break;
+            }
+
+        case PACKET_CLEAR_ID:
+            {
+                g_node_id = NODE_ID_UNKNOWN;
+                EEPROM.write(id_address, g_node_id);
+                break;
+            }
+            
         case PACKET_SINGLE_COLOR:
             {
                 color_t col;
@@ -322,6 +344,13 @@ void handle_packet(uint16_t len, uint8_t *packet)
             g_pos[2] = *(uint16_t *)(&data[4]);
             break;       
         }
+
+        case PACKET_ANGLE:
+        { 
+            g_angle = *(uint32_t *)data;
+            break;       
+        }
+
         case PACKET_CLASSES:
             {
                 uint8_t i;
@@ -535,6 +564,7 @@ void setup()
     startup_animation();
         
     g_node_id = EEPROM.read(id_address);
+
     EEPROM.get(calibration_address, timer_cal);
     if (timer_cal > 1 && timer_cal != 0xFFFF)
     {

@@ -16,11 +16,6 @@
 #define ARG_COLOR                2
 #define ARG_SRC                  3
 
-#define LOCAL_ID                 0
-#define LOCAL_POS_X              2
-#define LOCAL_POS_Y              3
-#define LOCAL_POS_Z              4
-
 #define FILTER_FADE_IN              0
 #define FILTER_FADE_OUT             1
 #define FILTER_BRIGHTNESS           2
@@ -46,6 +41,7 @@
 #define FUNC_COLOR_SHIFT           22
 #define SRC_RGB                    23
 #define SRC_XYZ                    24
+#define FUNC_LOCAL_ANGLE           25
 
 int32_t master_brightness = 1000;
 
@@ -500,6 +496,23 @@ void *create_object(uint8_t   id, uint8_t *is_local,
                 }
             }
             break;   
+
+        case FUNC_LOCAL_ANGLE:
+            {
+                *is_local = 1;
+                if (value_count == 0)
+                {
+                    int32_t ret = g_angle;
+                    return (void *)ret;
+                }
+                else
+                {
+                    g_error = ERR_PARSE_FAILURE;
+                    return NULL;
+                }
+            }
+            break;
+            
     }
     
     return obj;

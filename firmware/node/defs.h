@@ -18,6 +18,7 @@ typedef struct
 extern uint8_t g_error;
 extern uint8_t g_node_id;
 extern int16_t g_pos[3];
+extern int32_t g_angle;
 extern uint32_t g_random_seed;
 
 void print_col(color_t *col);
