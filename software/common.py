@@ -28,6 +28,7 @@ FUNC_CONSTANT_RANDOM_COLOR = 21
 FUNC_COLOR_SHIFT           = 22
 FUNC_RGB_SRC               = 23
 FUNC_XYZ_SRC               = 24
+FUNC_LOCAL_ANGLE           = 25
 
 FUNC_MAX               = 31
 

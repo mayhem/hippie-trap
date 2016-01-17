@@ -105,6 +105,14 @@ class Constant(GeneratorBase):
     def __getitem__(self, t):
         return self.value
 
+class LocalAngle(GeneratorBase):
+
+    def describe(self):
+        return common.make_function(common.FUNC_LOCAL_ANGLE, ())
+
+    def __getitem__(self, t):
+        return 0
+
 class LocalRandomValue(GeneratorBase):
 
     def __init__(self, lower, upper):

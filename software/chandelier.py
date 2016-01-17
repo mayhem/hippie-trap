@@ -38,6 +38,7 @@ PACKET_SPEED        = 12
 PACKET_CLASSES      = 13 
 PACKET_CALIBRATE    = 14
 PACKET_BRIGHTNESS   = 15
+PACKET_ANGLE        = 16
 BROADCAST = 0
 
 def crc16_update(crc, a):
@@ -140,6 +141,10 @@ class Chandelier(object):
         y = int(y * common.SCALE_FACTOR)
         z = int(z * common.SCALE_FACTOR)
         self._send_packet(dest, PACKET_POSITION, bytearray(struct.pack("<hhh", x, y, z))) 
+
+    def set_angle(self, dest, a):
+        a = int(a * common.SCALE_FACTOR)
+        self._send_packet(dest, PACKET_ANGLE, bytearray(struct.pack("<I", a))) 
 
     def set_brightness(self, dest, brightness):
         self._send_packet(dest, PACKET_BRIGHTNESS, bytearray((brightness,)))
