@@ -112,6 +112,12 @@ class Chandelier(object):
             packet += bytearray(col[0], col[1], col[2])
         self._send_packet(dest, PACKET_COLOR_ARRAY, packet)
 
+    def send_pattern_to_class(self, cls, pattern):
+        self._send_packet(mkcls(cls), PACKET_PATTERN, bytearray(pattern.describe()))
+
+        # Give the bottles a moment to parse the packet before we go on
+        sleep(.05)
+
     def send_pattern(self, dest, pattern):
         self._send_packet(dest, PACKET_PATTERN, bytearray(pattern.describe()))
 
@@ -152,14 +158,20 @@ class Chandelier(object):
     def clear_next_pattern(self, dest):
         self._send_packet(dest, PACKET_CLEAR_NEXT, bytearray()) 
 
-    def set_classes(self, dest, classes):
-        if dest == BROADCAST:
-            raise ValueError("Cannot broadcast class definitions.")
+    def set_classes(self, classes):
         if not isinstance(classes, list):
-            raise TypeError("Second argument to set_classes must be a list")
+            raise TypeError("Second argument to set_classes must be a list of lists")
         if len(classes) > MAX_CLASSES:
             raise ValueError("Too many classes defined. Max %d allowed." % MAX_CLASSES)
-        self._send_packet(dest, PACKET_CLASSES, bytearray(classes))
+
+        nodes = [ [] for i in xrange(NUM_NODES) ]
+        for i, cls in enumerate(classes):
+            for node in cls:
+                nodes[node].append(i) 
+
+        for i, classes_per_node in enumerate(nodes):
+            if classes_per_node:
+                self._send_packet(i, PACKET_CLASSES, bytearray(classes_per_node))
 
     def calibrate_timers(self, dest):
         self._send_packet(dest, PACKET_CALIBRATE, bytearray((CALIBRATION_DURATION,))) 

@@ -21,8 +21,7 @@ ch.open(device)
 ch.off(BROADCAST)
 ch.send_entropy()
 
-ch.set_classes(1, [1, 3])
-ch.set_classes(2, [2, 4])
+ch.set_classes([[1], [2, 3]])
 
 random.seed()
 
@@ -32,7 +31,11 @@ green.chain(filter.Brightness(generator.Sawtooth(2)))
 blue = function.ConstantColor(Color(0,0,255))
 blue.chain(filter.Brightness(generator.Sawtooth(2)))
 
-ch.send_pattern(mkcls(1), blue) 
-ch.send_pattern(mkcls(2), green) 
+red = function.ConstantColor(Color(255,0,0))
+red.chain(filter.Brightness(generator.Sawtooth(2)))
+
+ch.send_pattern_to_class(0, blue) 
+ch.send_pattern_to_class(1, green) 
+ch.send_pattern_to_class(2, red) 
 ch.next_pattern(BROADCAST, 0)
 ch.debug_serial(0)
