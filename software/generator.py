@@ -31,8 +31,8 @@ def clear_local_random_values():
 
 def set_local_random_value(value):
     global local_random_values
-    if len(local_random_values) >= MAX_LOCAL_RANDOM_VALUES:
-        print "Warning: attempting to store more than %d random values -- it won't be repeatable." % MAX_LOCAL_RANDOM_VALUES
+#    if len(local_random_values) >= MAX_LOCAL_RANDOM_VALUES:
+#        print "Warning: attempting to store more than %d random values -- it won't be repeatable." % MAX_LOCAL_RANDOM_VALUES
     local_random_values.append(value)
 
 def get_local_random_value(index):
