@@ -25,18 +25,48 @@ for p in range(1, NUM_NODES + 1):
     ch.set_position(p, r.random(), r.random(), 0)
 
 ch.set_classes([range(1,12), [12]])
+#ch.set_classes([range(1,12), range(12, 19), range(19, 24), [24]])
 
 # outer ring
 for i in range(1, 12):
     angle = i / 11.0
     ch.set_angle(i, angle)
 
+# middle ring
+for i in range(12, 19):
+    angle = i / 7.0
+    ch.set_angle(i, angle)
+
+# inner ring
+for i in range(19, 24):
+    angle = i / 5.0
+    ch.set_angle(i, angle)
+
+def rainbow_chase(ch):
+    outer = s.RGBSource(g.Sin(2, g.LocalAngle(1)), 
+                        g.Constant(0),
+                        g.Sin(3, g.LocalAngle()))
+    middle = s.RGBSource(g.Sin(2, g.LocalAngle(1)), 
+                         g.Sin(3, g.LocalAngle()),
+                         g.Constant(0))
+    inner = s.RGBSource(g.Constant(0),
+                        g.Sin(2, g.LocalAngle(1)), 
+                        g.Sin(3, g.LocalAngle()))
+    tip = s.HSV(g.Sawtooth(4))
+
+    ch.send_pattern_to_class(0, outer) 
+    ch.send_pattern_to_class(1, tip) 
+#    ch.send_pattern_to_class(1, middle) 
+#    ch.send_pattern_to_class(2, inner) 
+#    ch.send_pattern_to_class(3, tip) 
+    ch.next_pattern(BROADCAST, 200)
+
 def reverse_circular_random_colors(ch):
     white = s.ConstantColor(Color(255, 255, 255))
     white.chain(f.Brightness(g.Sin(2, 0, .2, .6)))
 
     radial = s.RandomColorSequence(g.LocalRandomValue(1.0, 1.50), g.LocalRandomValue(0.0, 1.00))
-    radial.chain(f.Brightness(g.Sin(5, g.LocalAngle(1))))
+    radial.chain(f.Brightness(g.Sin(1, g.LocalAngle(1))))
 
     ch.send_pattern_to_class(0, radial) 
     ch.send_pattern_to_class(1, white) 
@@ -47,7 +77,7 @@ def circular_random_colors(ch):
     white.chain(f.Brightness(g.Sin(2, 0, .2, .6)))
 
     radial = s.RandomColorSequence(g.LocalRandomValue(1.0, 1.50), g.LocalRandomValue(0.0, 1.00))
-    radial.chain(f.Brightness(g.Sin(5, g.LocalAngle())))
+    radial.chain(f.Brightness(g.Sin(1, g.LocalAngle())))
 
     ch.send_pattern_to_class(0, radial) 
     ch.send_pattern_to_class(1, white) 
@@ -85,8 +115,9 @@ def xyz(ch):
     ch.send_pattern(BROADCAST, xyz) 
     ch.next_pattern(BROADCAST, 200)
 
-def cool(ch):
+def white_sparkle(ch):
     pat = s.HSV(g.Sawtooth(6), g.Sin(g.LocalRandomValue(.25, .99)), g.LocalRandomValue(.25, .99))
+    pat.chain(f.FadeIn(1))
     ch.send_pattern(BROADCAST, pat) 
     ch.next_pattern(BROADCAST, 200)
 
@@ -95,13 +126,24 @@ def test(ch):
     ch.send_pattern(BROADCAST, pat) 
     ch.next_pattern(BROADCAST, 200)
 
-while True:
+def cycle(ch):
+    while True:
+        rainbow_chase(ch);
+        sleep(5)
+        white_sparkle(ch);
+        sleep(5)
+        wobble(ch)
+        sleep(5)
+
+cycle(ch)
+rainbow_chase(ch);
+#while True:
 #    cool(ch);
 #    sleep(1)
-    reverse_circular_random_colors(ch)
-    sleep(5)
-    circular_random_colors(ch)
-    sleep(5)
+#    reverse_circular_random_colors(ch)
+#    sleep(5)
+#    circular_random_colors(ch)
+#    sleep(5)
 
 
 #    cool(ch);
