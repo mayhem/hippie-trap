@@ -31,12 +31,23 @@ for i in range(1, 12):
     angle = i / 11.0
     ch.set_angle(i, angle)
 
+def reverse_circular_random_colors(ch):
+    white = s.ConstantColor(Color(255, 255, 255))
+    white.chain(f.Brightness(g.Sin(2, 0, .2, .6)))
+
+    radial = s.RandomColorSequence(g.LocalRandomValue(1.0, 1.50), g.LocalRandomValue(0.0, 1.00))
+    radial.chain(f.Brightness(g.Sin(5, g.LocalAngle(1))))
+
+    ch.send_pattern_to_class(0, radial) 
+    ch.send_pattern_to_class(1, white) 
+    ch.next_pattern(BROADCAST, 200)
+
 def circular_random_colors(ch):
     white = s.ConstantColor(Color(255, 255, 255))
     white.chain(f.Brightness(g.Sin(2, 0, .2, .6)))
 
     radial = s.RandomColorSequence(g.LocalRandomValue(1.0, 1.50), g.LocalRandomValue(0.0, 1.00))
-    radial.chain(f.Brightness(g.Sin(1, g.LocalAngle())))
+    radial.chain(f.Brightness(g.Sin(5, g.LocalAngle())))
 
     ch.send_pattern_to_class(0, radial) 
     ch.send_pattern_to_class(1, white) 
@@ -85,15 +96,23 @@ def test(ch):
     ch.next_pattern(BROADCAST, 200)
 
 while True:
-    cool(ch);
-    sleep(15)
-    xyz(ch)
-    sleep(5)
-    rainbow(ch)
+#    cool(ch);
+#    sleep(1)
+    reverse_circular_random_colors(ch)
     sleep(5)
     circular_random_colors(ch)
     sleep(5)
-    wobble(ch)
-    sleep(5)
-    circular_rainbow(ch)
-    sleep(5)
+
+
+#    cool(ch);
+#    sleep(15)
+#    xyz(ch)
+#    sleep(5)
+#    rainbow(ch)
+#    sleep(5)
+#    circular_random_colors(ch)
+#    sleep(5)
+#    wobble(ch)
+#    sleep(5)
+#    circular_rainbow(ch)
+#    sleep(5)

@@ -57,10 +57,7 @@ class GenOp(GeneratorBase):
         desc += common.pack_fixed(self.operation)
         desc += self.g1.describe()
         desc += self.g2.describe()
-        return desc + self.describe_next()
-
-    def describe_next(self):
-        return bytearray([])
+        return desc
 
     def __getitem__(self, t):
         if self.operation == common.OP_ADD:
@@ -104,11 +101,16 @@ class Constant(GeneratorBase):
 
 class LocalAngle(GeneratorBase):
 
+    def __init__(self, rev = False):
+        self.rev = rev
+
     def describe(self):
-        return common.make_function(common.FUNC_LOCAL_ANGLE, ())
+        desc =  common.make_function(common.FUNC_LOCAL_ANGLE, (common.ARG_VALUE,))
+        desc += common.pack_fixed(self.rev)
+        return desc
 
     def __getitem__(self, t):
-        return 0
+        return self.rev
 
 class LocalRandomValue(GeneratorBase):
 
