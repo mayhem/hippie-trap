@@ -30,11 +30,11 @@ xyz = src.XYZSource(g.Sawtooth(3, 0, 1, 1),
                      g.Constant(.8))
 
 pattern_set = [
-    (wobble, 30, "wobble"),
-    (xyz, 30, "xyz"),
+#    (wobble, 30, "wobble"),
+#    (xyz, 30, "xyz"),
     (const_rand, 15, "const rand"),
-    (rainbow, 15, "rainbow"),
-    (rgb, 30, "rgb"),
+#    (rainbow, 15, "rainbow"),
+#    (rgb, 30, "rgb"),
     (wrainbow, 3, "wrainbow"), 
     (comp, 30, "comp"),
 ]

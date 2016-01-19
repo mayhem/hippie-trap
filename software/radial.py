@@ -31,12 +31,27 @@ for i in range(1, 12):
     angle = i / 11.0
     ch.set_angle(i, angle)
 
-white = function.ConstantColor(Color(255, 255, 255))
+def circular_random_colors(ch):
+    white = function.ConstantColor(Color(255, 255, 255))
+    white.chain(filter.Brightness(generator.Sin(2, 0, .2, .6)))
 
-blue = function.ConstantColor(Color(0, 0, 255))
-blue.chain(filter.Brightness(generator.Sin(1, generator.LocalAngle())))
+    radial = function.RandomColorSequence(generator.LocalRandomValue(1.0, 1.50), generator.LocalRandomValue(0.0, 1.00))
+    radial.chain(filter.Brightness(generator.Sin(1, generator.LocalAngle())))
 
-ch.send_pattern_to_class(0, blue) 
-ch.send_pattern_to_class(1, white) 
-ch.next_pattern(BROADCAST, 0)
-ch.debug_serial(0)
+    ch.send_pattern_to_class(0, radial) 
+    ch.send_pattern_to_class(1, white) 
+    ch.next_pattern(BROADCAST, 0)
+
+def circular_rainbow(ch):
+    white = function.ConstantColor(Color(255, 255, 255))
+    white.chain(filter.Brightness(generator.Sin(2, 0, .2, .6)))
+
+    radial = function.HSV(generator.Sawtooth(5))
+#    radial.chain(filter.Brightness(generator.Sin(1, generator.GenOp(common.OP_MUL, generator.LocalAngle(), generator.Constant(1)))))
+    radial.chain(filter.Brightness(generator.Sin(1, generator.LocalAngle())))
+
+    ch.send_pattern_to_class(0, radial) 
+    ch.send_pattern_to_class(1, white) 
+    ch.next_pattern(BROADCAST, 0)
+
+circular_rainbow(ch)
