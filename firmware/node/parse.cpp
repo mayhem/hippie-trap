@@ -378,7 +378,7 @@ void *create_object(uint8_t   id, uint8_t *is_local,
             {
                 if (value_count == 1 && gen_count == 2)
                 {
-                    obj = heap_alloc(sizeof(s_op_t));
+                    obj = heap_alloc(sizeof(generator_op_t));
                     if (!obj)
                         return NULL;
                     g_generator_op_init(obj, (uint8_t)values[0], (generator_t*)gens[0], (generator_t*)gens[1]);
@@ -500,9 +500,15 @@ void *create_object(uint8_t   id, uint8_t *is_local,
         case FUNC_LOCAL_ANGLE:
             {
                 *is_local = 1;
-                if (value_count == 0)
+                if (value_count == 1)
                 {
-                    int32_t ret = g_angle;
+                    int32_t ret;
+
+                    if (values[0])
+                        ret = SCALE_FACTOR - g_angle;
+                    else
+                        ret = g_angle;
+
                     return (void *)ret;
                 }
                 else
@@ -607,10 +613,9 @@ void *parse(uint8_t *code, uint16_t len, uint8_t *heap)
     source = parse_func(code, len, &offset, &local);
     if (!source)
         return NULL;
-        
+
     for(; offset < len;)
     {
-        
         filter = parse_func(code, len, &offset, &local);
         if (!filter)
             return NULL;
@@ -655,11 +660,13 @@ uint8_t sub_evaluate(s_source_t *src, uint32_t t, color_t *color)
         temp.c[0] = dest.c[0];
         temp.c[1] = dest.c[1];
         temp.c[2] = dest.c[2];
+
         if (!((f_filter_t *)filter)->method(filter, t, &temp, &dest))
             return 0;
 
         filter = ((f_filter_t *)filter)->next;
     }
+
     color->c[0] = dest.c[0];
     color->c[1] = dest.c[1];
     color->c[2] = dest.c[2];

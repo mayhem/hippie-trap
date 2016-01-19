@@ -82,7 +82,6 @@ uint8_t f_brightness_get(void *_self, uint32_t t, color_t *src, color_t *dest)
     f_brightness_t *self = (f_brightness_t *)_self;
 
     int32_t percent = self->gen->method(self->gen, t);
-
     dest->c[0] = src->c[0] * percent / SCALE_FACTOR;
     dest->c[1] = src->c[1] * percent / SCALE_FACTOR;
     dest->c[2] = src->c[2] * percent / SCALE_FACTOR;
