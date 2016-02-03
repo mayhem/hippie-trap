@@ -18,9 +18,12 @@ ch = Chandelier()
 ch.open(device)
 ch.off(BROADCAST)
 
-for id in range(1,NUM_NODES):
+start = int(sys.argv[1])
+
+for id in range(start,NUM_NODES+1):
     ch.set_color(id, Color(0,0,0))
 
-for id in range(1,NUM_NODES):
+for id in range(start,NUM_NODES+1):
+    print id
     ch.set_color(id, Color(0,0,255))
     sleep(.25)

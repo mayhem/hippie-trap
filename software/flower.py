@@ -24,8 +24,8 @@ ch.set_brightness(BROADCAST, 100)
 for p in range(1, NUM_NODES + 1):
     ch.set_position(p, r.random(), r.random(), 0)
 
-ch.set_classes([range(1,12), [12]])
-#ch.set_classes([range(1,12), range(12, 19), range(19, 24), [24]])
+#ch.set_classes([range(1,12), [12]])
+ch.set_classes([range(1,12), range(12, 19), range(19, 24), [24]])
 
 # outer ring
 for i in range(1, 12):
@@ -55,10 +55,9 @@ def rainbow_chase(ch):
     tip = s.HSV(g.Sawtooth(4))
 
     ch.send_pattern_to_class(0, outer) 
-    ch.send_pattern_to_class(1, tip) 
-#    ch.send_pattern_to_class(1, middle) 
-#    ch.send_pattern_to_class(2, inner) 
-#    ch.send_pattern_to_class(3, tip) 
+    ch.send_pattern_to_class(1, middle) 
+    ch.send_pattern_to_class(2, inner) 
+    ch.send_pattern_to_class(3, tip) 
     ch.next_pattern(BROADCAST, 200)
 
 def reverse_circular_random_colors(ch):
@@ -136,7 +135,6 @@ def cycle(ch):
         sleep(5)
 
 cycle(ch)
-rainbow_chase(ch);
 #while True:
 #    cool(ch);
 #    sleep(1)
@@ -144,8 +142,6 @@ rainbow_chase(ch);
 #    sleep(5)
 #    circular_random_colors(ch)
 #    sleep(5)
-
-
 #    cool(ch);
 #    sleep(15)
 #    xyz(ch)

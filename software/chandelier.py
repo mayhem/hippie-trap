@@ -164,7 +164,7 @@ class Chandelier(object):
         if len(classes) > MAX_CLASSES:
             raise ValueError("Too many classes defined. Max %d allowed." % MAX_CLASSES)
 
-        nodes = [ [] for i in xrange(NUM_NODES) ]
+        nodes = [ [] for i in xrange(NUM_NODES+1) ]
         for i, cls in enumerate(classes):
             for node in cls:
                 nodes[node].append(i) 

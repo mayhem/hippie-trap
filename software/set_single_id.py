@@ -25,4 +25,5 @@ print "Programming id %d" % id
 ch = Chandelier()
 ch.open(device)
 ch.off(BROADCAST)
+ch.clear_ids()
 ch.set_id(id)
