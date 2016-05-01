@@ -24,8 +24,6 @@ ch.set_brightness(BROADCAST, 100)
 for p in range(1, NUM_NODES + 1):
     ch.set_position(p, r.random(), r.random(), 0)
 
-#ch.set_classes([range(1,12), [12]])
-ch.set_classes([range(1,12), range(12, 19), range(19, 24), [24]])
 
 # outer ring
 for i in range(1, 12):
@@ -34,24 +32,25 @@ for i in range(1, 12):
 
 # middle ring
 for i in range(12, 19):
-    angle = i / 7.0
+    angle = (i - 12) / 7.0
     ch.set_angle(i, angle)
 
 # inner ring
 for i in range(19, 24):
-    angle = i / 5.0
+    angle = (i - 19) / 5.0
     ch.set_angle(i, angle)
 
 def rainbow_chase(ch):
-    outer = s.RGBSource(g.Sin(2, g.LocalAngle(1)), 
+    ch.set_classes([range(1,12), range(12, 19), range(19, 24), [24]])
+    outer = s.RGBSource(g.Sin(.8, g.LocalAngle()), 
                         g.Constant(0),
-                        g.Sin(3, g.LocalAngle()))
-    middle = s.RGBSource(g.Sin(2, g.LocalAngle(1)), 
-                         g.Sin(3, g.LocalAngle()),
-                         g.Constant(0))
-    inner = s.RGBSource(g.Constant(0),
-                        g.Sin(2, g.LocalAngle(1)), 
-                        g.Sin(3, g.LocalAngle()))
+                        g.Sin(4, g.LocalAngle()))
+    middle = s.RGBSource(g.Sin(.8, g.LocalAngle()), 
+                        g.Constant(64),
+                        g.Sin(4, g.LocalAngle()))
+    inner = s.RGBSource(g.Sin(.8, g.LocalAngle()), 
+                        g.Constant(128),
+                        g.Sin(4, g.LocalAngle()))
     tip = s.HSV(g.Sawtooth(4))
 
     ch.send_pattern_to_class(0, outer) 
@@ -125,32 +124,33 @@ def test(ch):
     ch.send_pattern(BROADCAST, pat) 
     ch.next_pattern(BROADCAST, 200)
 
-def cycle(ch):
-    while True:
-        rainbow_chase(ch);
-        sleep(5)
-        white_sparkle(ch);
-        sleep(5)
-        wobble(ch)
-        sleep(5)
 
-cycle(ch)
-#while True:
-#    cool(ch);
-#    sleep(1)
-#    reverse_circular_random_colors(ch)
-#    sleep(5)
-#    circular_random_colors(ch)
-#    sleep(5)
-#    cool(ch);
-#    sleep(15)
-#    xyz(ch)
-#    sleep(5)
-#    rainbow(ch)
-#    sleep(5)
-#    circular_random_colors(ch)
-#    sleep(5)
-#    wobble(ch)
-#    sleep(5)
-#    circular_rainbow(ch)
-#    sleep(5)
+def police(ch):
+    ch.set_classes([range(1,24), [24]])
+    outer = s.RGBSource(g.Sin(2, g.LocalAngle(1)), 
+                        g.Constant(0),
+                        g.Sin(3, g.LocalAngle()))
+    middle = s.RGBSource(g.Sin(2, g.LocalAngle(1)), 
+                         g.Sin(3, g.LocalAngle()),
+                         g.Constant(0))
+    inner = s.RGBSource(g.Constant(0),
+                        g.Sin(2, g.LocalAngle(1)), 
+                        g.Sin(3, g.LocalAngle()))
+    tip = s.ConstantColor(Color(255, 255, 255))
+    tip.chain(f.Brightness(g.Sin(2, 0, .2, .6)))
+
+    ch.off(BROADCAST)
+    ch.send_pattern_to_class(0, outer) 
+    ch.send_pattern_to_class(1, tip) 
+    ch.next_pattern(BROADCAST, 200)
+
+#ch.set_classes([range(1,12), range(12, 19), range(19, 24), [24]])
+while True:
+    police(ch)
+    sleep(15)
+    rainbow_chase(ch);
+    sleep(15)
+    white_sparkle(ch);
+    sleep(15)
+    wobble(ch)
+    sleep(15)
