@@ -6,3 +6,6 @@ ve
 .DS_Store
 *.swp
 last_node_id.txt
+*.lib
+*.bak
+gerbers
