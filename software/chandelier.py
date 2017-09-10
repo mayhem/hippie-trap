@@ -28,9 +28,8 @@ PACKET_SINGLE_COLOR = 2
 PACKET_COLOR_ARRAY  = 3  
 PACKET_PATTERN      = 4  
 PACKET_ENTROPY      = 5  
-PACKET_NEXT         = 6  
+PACKET_START        = 6  
 PACKET_OFF          = 7  
-PACKET_CLEAR_NEXT   = 8  
 PACKET_POSITION     = 9  
 PACKET_DELAY        = 10 
 PACKET_ADDRR        = 11 
@@ -130,7 +129,7 @@ class Chandelier(object):
     def clear_ids(self):
         self._send_packet(BROADCAST, PACKET_CLEAR_ID, bytearray()) 
 
-    def next_pattern(self, dest, transition_steps):
+    def start_pattern(self, dest, transition_steps):
         self._send_packet(dest, PACKET_NEXT, bytearray(struct.pack("<H", transition_steps))) 
 
     def off(self, dest):
@@ -154,9 +153,6 @@ class Chandelier(object):
 
     def set_brightness(self, dest, brightness):
         self._send_packet(dest, PACKET_BRIGHTNESS, bytearray((brightness,)))
-
-    def clear_next_pattern(self, dest):
-        self._send_packet(dest, PACKET_CLEAR_NEXT, bytearray()) 
 
     def set_classes(self, classes):
         if not isinstance(classes, list):
