@@ -8,7 +8,6 @@
 
 const uint8_t NODE_ID_UNKNOWN = 255;
 const uint8_t MAX_NODES = 120;
-const uint8_t NUM_PIXELS = 4;
 const uint8_t OUT_PIN = 2;
 const uint8_t US_PER_TICK = 25;
 
@@ -20,7 +19,7 @@ const uint8_t PACKET_SINGLE_COLOR = 2;
 const uint8_t PACKET_COLOR_ARRAY  = 3; 
 const uint8_t PACKET_PATTERN      = 4; 
 const uint8_t PACKET_ENTROPY      = 5; 
-const uint8_t PACKET_NEXT         = 6; 
+const uint8_t PACKET_START        = 6; 
 const uint8_t PACKET_OFF          = 7; 
 const uint8_t PACKET_CLEAR_NEXT   = 8; 
 const uint8_t PACKET_POSITION     = 9; 
@@ -49,15 +48,11 @@ uint32_t   g_ticks_per_frame; // setup later
 // random seed
 uint32_t    g_random_seed = 0;
 
-// The current packet
+// pattern, packet, heap
+uint8_t     g_pattern_active = 0;
+pattern_t   g_pattern;
 uint8_t     g_packet[MAX_PACKET_LEN];
-s_source_t *g_cur_pattern = NULL;
-s_source_t *g_next_pattern = NULL;
-
-// this is where the parsed patterns live
-uint8_t g_pattern_space[HEAP_SIZE * 2];
-// this keeps track of where the next pattern should be written to 
-int8_t g_load_pattern = 0;
+uint8_t     g_heap[HEAP_SIZE];
 
 // The LED control object
 Adafruit_NeoPixel g_pixels = Adafruit_NeoPixel(NUM_PIXELS, OUT_PIN, NEO_GRB + NEO_KHZ800);
@@ -66,9 +61,8 @@ Adafruit_NeoPixel g_pixels = Adafruit_NeoPixel(NUM_PIXELS, OUT_PIN, NEO_GRB + NE
 uint8_t g_node_id = 0;
 
 // color/step information for transitions
-uint32_t g_transition_end = 0;
-uint16_t g_transition_steps = 0;
-color_t  g_begin_color, g_end_color;
+color_t  g_color[NUM_PIXELS];
+int32_t  g_brightness;
 
 // location in space
 int16_t g_pos[3];
@@ -141,28 +135,36 @@ void show_color(color_t *col)
     uint8_t j;
    
     for(j = 0; j < NUM_PIXELS; j++)
-        if (col)
-            g_pixels.setPixelColor(j, 
-                pgm_read_byte(&gamma[col->c[0]]),
-                pgm_read_byte(&gamma[col->c[1]]),
-                pgm_read_byte(&gamma[col->c[2]]));
-        else
-            g_pixels.setPixelColor(j, 0, 0, 0); 
-           
+        set_pixel_color(j, col);
+
     g_pixels.show();
 }
 
 void set_pixel_color(uint8_t index, color_t *col)
 {
-    if (col)
+    color_t temp;
+
+    if (!col)
     {
-        g_pixels.setPixelColor(index,
-            pgm_read_byte(&gamma[col->c[0]]),
-            pgm_read_byte(&gamma[col->c[1]]),
-            pgm_read_byte(&gamma[col->c[2]]));
+        temp.c[0] = 0;
+        temp.c[1] = 0;
+        temp.c[2] = 0;
     }
     else
-        g_pixels.setPixelColor(index, 0, 0, 0);
+    {
+        // Color correct
+        temp.c[0] = pgm_read_byte(&gamma[col->c[0]]);
+        temp.c[1] = pgm_read_byte(&gamma[col->c[1]]);
+        temp.c[2] = pgm_read_byte(&gamma[col->c[2]]);
+
+        // Adjust brightness
+        temp.c[0] = temp.c[0] * g_brightness / SCALE_FACTOR;
+        temp.c[1] = temp.c[1] * g_brightness / SCALE_FACTOR;
+        temp.c[2] = temp.c[2] * g_brightness / SCALE_FACTOR;
+    }
+
+    g_pixels.setPixelColor(index, temp.c[0], temp.c[1], temp.c[2]);
+    g_color[index] = temp;
 }
 
 void startup_animation(void)
@@ -273,46 +275,25 @@ void handle_packet(uint16_t len, uint8_t *packet)
             
         case PACKET_PATTERN:
             {
-                uint8_t *heap, err;
+                g_pattern_active = 0;
 
+                // reset the heap, thereby destroying the previous patten object
+                heap_setup(g_heap);
 
-                // If I already have a pattern and a new pattern is sent, ignore it. It is a 
-                // redundant transmission in case we have communication problems.
-                if (g_next_pattern)
-                    return;
-
-                heap = &g_pattern_space[g_load_pattern * HEAP_SIZE];
-                g_next_pattern = (s_source_t *)parse(data, len - 2, heap);
-                if (!g_next_pattern)
-                {
-                    g_next_pattern = NULL;
-                    return;
-                }
-                
-                // we parsed a valid pattern, increase the index
-                g_load_pattern= (g_load_pattern + 1) % 2;
-
+                parse_packet(data, len - 2, &g_pattern);
                 break;  
             }
 
-        case PACKET_NEXT:
+        case PACKET_START:
             {
-                int32_t steps = *(uint16_t *)data;
-                steps = g_ticks_per_sec * steps / SCALE_FACTOR;
-                next((uint16_t)steps);
+                start_pattern();
                 break;
             }
             
-        case PACKET_CLEAR_NEXT:
-            clear_next_pattern();
-            break;
-
         case PACKET_OFF:
             {
-                g_cur_pattern = g_next_pattern = NULL;
+                g_pattern_active = 0;
                 g_error = ERR_OK;
-                g_load_pattern = 0;
-                g_transition_end = 0;
                 g_target = 0;
                 set_brightness(1000);
                 show_color(NULL);
@@ -401,42 +382,21 @@ void print_col(color_t *c)
 }
 #endif
 
-void next(uint16_t transition_steps)
+void set_brightness(int32_t brightness)
 {
-    if (!g_next_pattern)
-    {
-        g_error = ERR_NO_VALID_PATTERN;
-        return;
-    }
-
-    if (transition_steps && g_cur_pattern)
-    {
-        g_transition_steps = transition_steps;
-
-        // start the transition and get last color
-        evaluate(g_cur_pattern, ticks_to_ms(ticks()), &g_begin_color);
-
-        // get the first color of the new pattern
-        evaluate(g_next_pattern, 0, &g_end_color);
-
-        g_transition_end = ticks() + (uint32_t)transition_steps;
-        return;
-    }
-    next_pattern();
+    g_brightness = brightness;
 }
 
-void next_pattern(void)
+void start_pattern(void)
 {
     uint8_t  i;
     color_t     color;
       
-    g_cur_pattern = g_next_pattern;
-    g_next_pattern = NULL;
-    
     reset_ticks();
-
     g_target = g_ticks_per_frame;
     g_error = ERR_OK;
+    g_pattern_active = 1;
+
     update_pattern();
 }    
 
@@ -451,42 +411,7 @@ void update_pattern(void)
         return;
     }
 
-    // check to see if the transtion is finished
-    if (g_transition_end && ticks() >= g_transition_end)
-    {
-        g_transition_end = 0;
-        g_transition_steps = 0;
-        next_pattern();
-        return;
-    }
-
-    // check for a transition
-    if (g_transition_end)
-    {
-        if (ticks() >= g_target)
-        {
-            int32_t steps;
-            int32_t p = g_transition_steps - (g_transition_end - ticks());
-            
-            g_target += g_ticks_per_frame;
-            g_pixels.show();
-
-            steps = (int32_t)(g_end_color.c[0] - g_begin_color.c[0]) * SCALE_FACTOR / g_transition_steps;
-            color.c[0] = g_begin_color.c[0] + (steps * p / SCALE_FACTOR); 
-
-            steps = (int32_t)(g_end_color.c[1] - g_begin_color.c[1]) * SCALE_FACTOR / g_transition_steps;
-            color.c[1] = g_begin_color.c[1] + (steps * p / SCALE_FACTOR); 
-
-            steps = (int32_t)(g_end_color.c[2] - g_begin_color.c[2]) * SCALE_FACTOR / g_transition_steps;
-            color.c[2] = g_begin_color.c[2] + (steps * p / SCALE_FACTOR); 
-
-            for(i = 0; i < NUM_PIXELS; i++)
-                set_pixel_color(i, &color); 
-        }
-        return;
-    }
-
-    if (!g_cur_pattern)
+    if (!g_pattern_active)
         return;
 
     if (g_target && ticks() >= g_target)
@@ -494,17 +419,13 @@ void update_pattern(void)
         g_target += g_ticks_per_frame;
         g_pixels.show();
 
-        if (evaluate(g_cur_pattern, ticks_to_ms(g_target), &color))
-            for(i = 0; i < NUM_PIXELS; i++)
-                set_pixel_color(i, &color);
-
+        for(i = 0; i < NUM_PIXELS; i++)
+        {
+            color = g_color[i];
+            evaluate(&g_pattern, ticks_to_ms(g_target), i, &color);
+            set_pixel_color(i, &color);
+        }
     }
-}
-
-void clear_next_pattern(void)
-{
-    g_next_pattern = NULL;
-    g_load_pattern= (g_load_pattern + 1) % 2;
 }
 
 void error_pattern(void)
@@ -593,11 +514,15 @@ void setup()
 
     g_ticks_per_frame = g_ticks_per_sec * g_delay / 1000;
 
+    memset(&g_pattern, 0, sizeof(pattern_t));
+    memset(&g_color, 0, sizeof(g_color));
+
     Timer1.initialize(US_PER_TICK);
     Timer1.attachInterrupt(tick);
     
     for(i = 0; i < NUM_CLASSES; i++)
         g_classes[i] = NO_CLASS;
+
 }
 
 void loop()
