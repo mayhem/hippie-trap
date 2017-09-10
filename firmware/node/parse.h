@@ -1,17 +1,12 @@
 #ifndef __PARSE_H__
 #define __PARSE_H__
 
-#include "source.h"
-#include "filter.h"
+#include "function.h"
 
 extern uint32_t g_speed;
-    
-void heap_setup(uint8_t *heap);
-void *heap_alloc(uint8_t *heap, uint8_t bytes);
-void *parse(uint8_t *code, uint16_t len, uint8_t *heap);
-uint8_t evaluate(s_source_t *src, uint32_t t, color_t *color);
-uint8_t sub_evaluate(s_source_t *src, uint32_t t, color_t *color);
 
-void set_brightness(int32_t brightness);
+void heap_setup(uint8_t *heap);
+uint8_t parse_packet(uint8_t *code, uint16_t len, pattern_t *pattern);
+uint8_t evaluate(pattern_t *pattern, uint32_t _t, uint8_t led, color_t *color);
 
 #endif

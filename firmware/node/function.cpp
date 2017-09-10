@@ -1,31 +1,108 @@
-#include <Arduino.h>
 #include <stdlib.h>
-#include "generator.h"
+#include <Arduino.h>
+#include <avr/pgmspace.h>
 #include "function.h"
 
-const uint8_t MAX_LOCAL_RANDOM_VALUES = 6;
-int32_t g_random_values[MAX_LOCAL_RANDOM_VALUES];
-uint8_t g_num_random_values = 0;
-
-void clear_local_random_values(void)
+int32_t pmod(int32_t val, int32_t mod)
 {
-    g_num_random_values = 0;
+    int32_t temp = val % mod;        
+    return (temp < 0) ? mod + temp : temp;
 }
 
-int32_t fu_local_random(int32_t lower, int32_t upper)
+void f_generator_init(void *_self, int32_t period, int32_t phase, int32_t amplitude, int32_t offset)
 {
-    int32_t r = random(lower, upper);
+    generator_t *self = (generator_t *)_self;
+    self->period = period;
+    self->phase = phase;
+    self->amplitude = amplitude;
+    self->offset = offset;
+}
+
+void f_sin_init(void *_self, int32_t period, int32_t phase, int32_t amplitude, int32_t offset)
+{
+    generator_t *self = (generator_t *)_self;
     
-    if (g_num_random_values < MAX_LOCAL_RANDOM_VALUES)
-        g_random_values[g_num_random_values++] = r;
-        
-    return r;
+    self->period = (int32_t)S_PIM2 * (int32_t)SCALE_FACTOR / period;    
+    self->phase = -S_PID2 + (S_PIM2 * phase / SCALE_FACTOR);
+    self->amplitude = amplitude;
+    self->offset = offset;
 }
 
-int32_t fu_repeat_local_random(int32_t index)
+void f_square_init(void *_self, int32_t period, int32_t phase, int32_t amplitude, int32_t offset, int32_t duty)
 {
-    if (g_num_random_values > index && g_num_random_values < MAX_LOCAL_RANDOM_VALUES)
-        return g_random_values[index];
-
-    return 0;
+    square_t *self = (square_t *)_self;
+    self->period = period;
+    self->phase = phase;    
+    self->amplitude = amplitude;
+    self->offset = offset;
+    self->duty = duty;
 }
+
+void f_sawtooth_init(void *_self, int32_t period, int32_t phase, int32_t amplitude, int32_t offset)
+{
+    generator_t *self = (generator_t *)_self;
+    
+    self->period = (int32_t)SCALE_FACTOR * (int32_t)SCALE_FACTOR/ period;    
+    self->phase = phase;
+    self->amplitude = amplitude;
+    self->offset = offset;
+}
+
+int32_t f_sin(void *_self, int32_t t)
+{
+    int16_t value;
+    
+    generator_t *self = (generator_t *)_self;
+    int32_t index = (((int32_t)t * self->period / SCALE_FACTOR + self->phase) % S_PIM2) * NUM_SIN_TABLE_ENTRIES / S_PIM2;
+    if (index < 0)
+        index += NUM_SIN_TABLE_ENTRIES;
+
+    // first explicitly cast to int16_t, to make sure negative numbers are handled correctly
+    value = (int16_t)pgm_read_word_near(sin_table + index);
+    return (int32_t)value * self->amplitude / SCALE_FACTOR + self->offset;
+}
+
+int32_t f_square(void *_self, int32_t t)
+{
+    square_t *self = (square_t *)_self;
+    int32_t v = ((int32_t)t * SCALE_FACTOR / self->period) + self->phase;
+    if (pmod(v, SCALE_FACTOR) < self->duty)
+        return self->amplitude + self->offset;
+    else
+        return self->offset;
+}
+
+int32_t f_sawtooth(void *_self, int32_t t)
+{
+    generator_t *self = (generator_t *)_self;  
+    
+    int32_t v = (((int32_t)t * self->period / SCALE_FACTOR) + self->phase) % SCALE_FACTOR;
+    return v * self->amplitude / SCALE_FACTOR + self->offset;
+}
+
+int32_t f_step(void *_self, int32_t t)
+{
+    generator_t *self = (generator_t *)_self;
+    int32_t v = ((int32_t)t * SCALE_FACTOR / self->period) + self->phase;
+    if (v >= 0)
+        return self->amplitude + self->offset;
+    else
+        return self->offset;
+}
+
+int32_t f_impulse(void *_self, int32_t t)
+{
+    generator_t *self = (generator_t *)_self;
+    int32_t v = ((int32_t)t * SCALE_FACTOR / self->period) + self->phase;
+    if (v >= 0 && v < SCALE_FACTOR)
+        return self->amplitude + self->offset;
+    else
+        return self->offset;
+}
+
+int32_t f_line(void *_self, int32_t t)
+{
+    generator_t *self = (generator_t *)_self;
+    return ((int32_t)t * self->amplitude / SCALE_FACTOR) + self->offset;
+}
+
