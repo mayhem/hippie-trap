@@ -33,4 +33,6 @@ const uint8_t ERR_STACK_CLASH      = 2;
 const uint8_t ERR_OUT_OF_HEAP      = 3;
 const uint8_t ERR_PARSE_FAILURE    = 4;
 
+void  dprintf(const char *fmt, ...);
+
 #endif

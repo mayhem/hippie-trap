@@ -84,6 +84,7 @@ void *create_object(uint8_t type, uint8_t dest, uint8_t arg_count, uint32_t *arg
                     return NULL;
 
                 f_square_init(obj, args[0], args[1], args[2], args[3], args[4]);
+                dprintf("Parsed square function\n");
 
                 return obj;
             }
@@ -105,66 +106,66 @@ uint8_t parse_packet(uint8_t *code, uint16_t len, pattern_t *pattern)
     index = &code[5];
     for(i = 0; i < pattern->num_funcs; i++)
     {
-        function_t temp;
-        uint8_t      type, arg_count, dest;
-        uint32_t args[MAX_ARGS];
-        void     *obj;
+        function_t   temp;
+        uint32_t     args[MAX_ARGS];
 
-        type = *index;
+        temp.type = *index;
         index++;
 
-        arg_count = *index & 0xF;
-        dest = *index >> 4;
+        temp.arg_count = *index & 0xF;
+        temp.dest = *index >> 4;
         index++;
 
-        for(j = 0; j < arg_count; j++)
+        dprintf("type %d args %d dest: %d\n", temp.type, temp.arg_count, temp.dest);
+        for(j = 0; j < temp.arg_count; j++)
         {
             args[j] = *(uint32_t *)index;
             index += sizeof(int32_t);
         }
 
         // create function object here
-        obj = create_object(type, dest, arg_count, args); 
-        if (!obj)
-            continue;
+        temp.object = create_object(temp.type, temp.dest, temp.arg_count, args); 
+        if (!temp.object)
+            return 0;
 
-        if (pattern->functions[i].dest <= DEST_LED_11)
-            pattern->functions[pattern->functions[i].dest].object = obj;
+        if (temp.dest <= DEST_LED_11)
+            pattern->functions[temp.dest] = temp;
         else
-            switch(pattern->functions[i].dest)
+            switch(temp.dest)
             {
                 case DEST_ALL:
                 {
                     for(j = 0; j < 12; j++)
-                        pattern->functions[j].object = obj;
+                        pattern->functions[j] = temp;
                     break;
                 }
                 case DEST_ALL_RED:
                 {
-                    pattern->functions[0].object = obj;
-                    pattern->functions[3].object = obj;
-                    pattern->functions[6].object = obj;
-                    pattern->functions[9].object = obj;
+                    pattern->functions[0] = temp;
+                    pattern->functions[3] = temp;
+                    pattern->functions[6] = temp;
+                    pattern->functions[9] = temp;
                     break;
                 }
                 case DEST_ALL_GREEN:
                 {
-                    pattern->functions[1].object = obj;
-                    pattern->functions[4].object = obj;
-                    pattern->functions[7].object = obj;
-                    pattern->functions[10].object = obj;
+                    pattern->functions[1] = temp;
+                    pattern->functions[4] = temp;
+                    pattern->functions[7] = temp;
+                    pattern->functions[10] = temp;
                     break;
                 }
                 case DEST_ALL_BLUE:
                 {
-                    pattern->functions[2].object = obj;
-                    pattern->functions[5].object = obj;
-                    pattern->functions[8].object = obj;
-                    pattern->functions[11].object = obj;
+                    pattern->functions[2] = temp;
+                    pattern->functions[5] = temp;
+                    pattern->functions[8] = temp;
+                    pattern->functions[11] = temp;
                     break;
                 }
             }
     }
+    return 1;
 }
 
 uint8_t evaluate_function(function_t *function, uint32_t t, uint8_t *color)
@@ -177,6 +178,8 @@ uint8_t evaluate_function(function_t *function, uint32_t t, uint8_t *color)
         case FUNCTION_SQUARE:
             *color = f_square(function->object, t);
             return 1;
+        default:
+            return 0;
     }
 }
 

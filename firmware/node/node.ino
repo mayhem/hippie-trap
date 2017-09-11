@@ -4,6 +4,7 @@
 #include <EEPROM.h>
 #include <Adafruit_NeoPixel.h>
 #include <avr/pgmspace.h>
+#include <stdarg.h>
 #include "parse.h"
 
 const uint8_t NODE_ID_UNKNOWN = 255;
@@ -50,6 +51,7 @@ uint32_t    g_random_seed = 0;
 
 // pattern, packet, heap
 uint8_t     g_pattern_active = 0;
+uint8_t     g_have_valid_pattern = 0;
 pattern_t   g_pattern;
 uint8_t     g_packet[MAX_PACKET_LEN];
 uint8_t     g_heap[HEAP_SIZE];
@@ -280,12 +282,17 @@ void handle_packet(uint16_t len, uint8_t *packet)
                 // reset the heap, thereby destroying the previous patten object
                 heap_setup(g_heap);
 
-                parse_packet(data, len - 2, &g_pattern);
+                if (parse_packet(data, len - 2, &g_pattern))
+                {
+                    dprintf("parse ok\n");
+                    g_have_valid_pattern = 1;
+                }                    
                 break;  
             }
 
         case PACKET_START:
             {
+                dprintf("Received start\n");
                 start_pattern();
                 break;
             }
@@ -368,6 +375,8 @@ void handle_packet(uint16_t len, uint8_t *packet)
                 set_brightness(b);
                 break;
             }
+        default:
+            dprintf("Invalid packet received\n");
     }
 }
 
@@ -391,13 +400,17 @@ void start_pattern(void)
 {
     uint8_t  i;
     color_t     color;
-      
+
+    if (!g_have_valid_pattern)
+        return;
+
     reset_ticks();
     g_target = g_ticks_per_frame;
     g_error = ERR_OK;
     g_pattern_active = 1;
+    g_have_valid_pattern = 0;
 
-    update_pattern();
+    update_pattern();  
 }    
 
 void update_pattern(void)
@@ -472,6 +485,24 @@ void error_pattern(void)
         show_color(NULL);
 }
 
+#define MAX 80 
+void dprintf(const char *fmt, ...)
+{
+    va_list va;
+    va_start (va, fmt);
+
+    char buffer[MAX];
+    char *ptr = buffer;
+    vsnprintf(buffer, MAX, fmt, va);
+    va_end (va);
+
+    for(ptr = buffer; *ptr; ptr++)
+    {
+       if (*ptr == '\n') 
+           Serial.write('\r');
+       Serial.write(*ptr);
+    }
+}
 
 void setup()
 { 
@@ -480,7 +511,7 @@ void setup()
     uint8_t i;
 
     Serial.begin(38400);
-    Serial.println("hue-chandelier board!");
+    Serial.println("hue-chandelier board!\n");
 
     g_pixels.begin();
     startup_animation();
