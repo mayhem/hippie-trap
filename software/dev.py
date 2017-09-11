@@ -4,10 +4,7 @@ import os
 import sys
 import math
 from chandelier import Chandelier, BROADCAST
-import function
-import generator
-import filter
-import random
+from function import Pattern, Function
 import common
 from random import randint
 from time import sleep, time
@@ -23,15 +20,10 @@ ch.off(BROADCAST)
 ch.send_entropy()
 ch.set_brightness(BROADCAST, 100)
 
-random.seed()
-period_s = 1
-
-col = [ randint(60, 255), 0, randint(60, 255) ]
-ch.set_color(3, col) 
-
-while True:
-    for brightness in xrange(0, 100):
-        print brightness
-        ch.set_brightness(BROADCAST, brightness)
-        ch.set_color(3, col) 
-        ch.debug_serial(.1)
+p = Pattern(10,
+        Function(common.FUNC_SQUARE, 13, 1.0, 0.0, 1.0, 0.0, .6),
+        Function(common.FUNC_SQUARE, 14, .8, 0.0, 1.0, 0.0, .5),
+        Function(common.FUNC_SQUARE, 15, .6, 0.0, 1.0, 0.0, .4)
+)
+ch.send_pattern(2, p)
+ch.start_pattern(2)

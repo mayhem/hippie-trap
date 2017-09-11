@@ -4,9 +4,6 @@ import os
 import sys
 import math
 from chandelier import Chandelier, BROADCAST
-import function
-import generator
-import filter
 import random
 import common
 from time import sleep, time

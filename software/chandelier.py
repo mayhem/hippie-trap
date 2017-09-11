@@ -6,8 +6,6 @@ import math
 import serial
 import struct
 import function
-import generator
-import filter
 import random
 import common
 from color import Color
@@ -129,8 +127,8 @@ class Chandelier(object):
     def clear_ids(self):
         self._send_packet(BROADCAST, PACKET_CLEAR_ID, bytearray()) 
 
-    def start_pattern(self, dest, transition_steps):
-        self._send_packet(dest, PACKET_NEXT, bytearray(struct.pack("<H", transition_steps))) 
+    def start_pattern(self, dest):
+        self._send_packet(dest, PACKET_START, bytearray()) 
 
     def off(self, dest):
         self._send_packet(dest, PACKET_OFF, bytearray()) 
@@ -199,6 +197,3 @@ class Chandelier(object):
 
             if duration > 0 and t > duration:
                 break
-
-        # clean up local variables
-        generator.clear_local_random_values()
