@@ -33,3 +33,21 @@ class Pattern(object):
             desc += func.describe()
 
         return desc
+
+# process the 4 standard arguments for the generator functions
+def arg_convert(type, args):
+
+    if len(args) > 4:
+        print "Too many arguments specified for function %d" % type
+        return []
+
+    return args
+
+
+def square(dest, duty, *args):
+    args = [args]
+    args.append(duty)
+    return Function(common.FUNC_SQUARE, *arg_convert(common.FUNC_SQUARE, args))
+
+def sine(dest, *args):
+    return Function(common.FUNC_SINE, dest, duty, *arg_convert(common.FUNC_SINE, args))
