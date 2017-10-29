@@ -3,6 +3,8 @@
 #include <stdio.h>
 #include <stdarg.h>
 #include <avr/interrupt.h>
+#include <avr/eeprom.h>
+#include "ws2812.h"
 
 #define BAUD 38400
 #define UBBR (F_CPU / 16 / BAUD - 1)
@@ -73,19 +75,35 @@ void dprintf(const char *fmt, ...)
 #define set_input(portdir,pin) portdir &= ~(1<<pin)
 #define set_output(portdir,pin) portdir |= (1<<pin)
 
+void set_color(uint8_t r, uint8_t g, uint8_t b)
+{
+    uint8_t col[3];
+
+    col[0] = g;
+    col[1] = r;
+    col[2] = b;
+    ws2812_sendarray(col, 3);
+}
+
 #define LED PD2
+
+#define ee_have_valid_program_offset  1
 
 int main() 
 {
-    uint8_t i;
-
     set_output(DDRD, LED);
 
     serial_init();
-    dprintf("main program\n");
-    _delay_ms(500);
-    _delay_ms(500);
-    dprintf("exit program\n");
+    dprintf("\ntest program running\n");
+    eeprom_write_byte((uint8_t *)ee_have_valid_program_offset, 1);
+
+    for(;;)
+    {
+        set_color(255, 0, 255);
+        _delay_ms(500);
+        set_color(255, 128, 0);
+        _delay_ms(500);
+    }
 
     return 0;
 }
