@@ -5,8 +5,10 @@
 #include <stdarg.h>
 #include <avr/interrupt.h>
 #include <util/delay.h>
+#include <string.h>
 #include "parse.h"
 #include "ws2812.h"
+#include "serial.h"
 
 const uint8_t NODE_ID_UNKNOWN = 255;
 const uint8_t MAX_NODES = 120;
@@ -111,6 +113,10 @@ const uint8_t PROGMEM gamma[] = {
 
 // ---- prototypes -----
 void next_pattern(void);  
+void set_brightness(int32_t brightness);
+void start_pattern(void);
+void update_pattern(void);
+void error_pattern(void);
 
 volatile uint32_t g_time = 0;
 void tick(void)
@@ -141,16 +147,6 @@ uint32_t ticks_to_ms(uint32_t ticks)
     return ticks * SCALE_FACTOR / g_ticks_per_sec;
 }
 
-void set_color(color_t *col)
-{
-    uint8_t j;
-   
-    for(j = 0; j < NUM_PIXELS; j++)
-        set_pixel_color(j, col);
-
-    ws2812_sendarray(g_led_buffer, 3 * NUM_LEDS);
-}
-
 void set_pixel_color(uint8_t index, color_t *col)
 {
     color_t temp;
@@ -174,10 +170,25 @@ void set_pixel_color(uint8_t index, color_t *col)
         temp.c[2] = temp.c[2] * g_brightness / SCALE_FACTOR;
     }
 
-    g_led_buffer[(index * 3)] temp.c[1];
-    g_led_buffer[(index * 3) + 1] temp.c[0];
-    g_led_buffer[(index * 3) + 2] temp.c[2];
+    g_led_buffer[(index * 3)] = temp.c[1];
+    g_led_buffer[(index * 3) + 1] = temp.c[0];
+    g_led_buffer[(index * 3) + 2] = temp.c[2];
     g_color[index] = temp;
+}
+
+void update_leds(void)
+{
+    ws2812_sendarray(g_led_buffer, 3 * NUM_LEDS);
+}
+
+void set_color(color_t *col)
+{
+    uint8_t j;
+   
+    for(j = 0; j < NUM_PIXELS; j++)
+        set_pixel_color(j, col);
+
+    update_leds();
 }
 
 void startup_animation(void)
@@ -211,15 +222,15 @@ void startup_animation(void)
                     set_pixel_color(j, NULL);  
             }
         }   
-        g_pixels.show();
-        delay(100);
+        update_leds();
+        _delay_ms(100);
     }
     set_color(NULL);
 }
 
 void handle_packet(uint16_t len, uint8_t *packet)
 {
-    uint8_t    j, type, target;
+    uint8_t    type, target;
     uint8_t   *data;
 
     target = packet[0];
@@ -247,7 +258,7 @@ void handle_packet(uint16_t len, uint8_t *packet)
                 if (g_node_id == NODE_ID_UNKNOWN)
                 {
                     g_node_id = data[0];
-                    eeprom_write_byte((uint32_t *)ee_id_offset, g_node_id);
+                    eeprom_write_byte((uint8_t *)ee_id_offset, g_node_id);
                 }
                 break;
             }
@@ -255,7 +266,7 @@ void handle_packet(uint16_t len, uint8_t *packet)
         case PACKET_CLEAR_ID:
             {
                 g_node_id = NODE_ID_UNKNOWN;
-                eeprom_write_byte((uint32_t *)ee_id_offset, g_node_id);
+                eeprom_write_byte((uint8_t *)ee_id_offset, g_node_id);
                 break;
             }
             
@@ -282,7 +293,7 @@ void handle_packet(uint16_t len, uint8_t *packet)
                     col.c[2] = data[2];
                     set_pixel_color(j, &col);
                 }
-                g_pixels.show();
+                update_leds();
                 break;  
             }
             
@@ -320,10 +331,8 @@ void handle_packet(uint16_t len, uint8_t *packet)
             
         case PACKET_ENTROPY:
             {
-                color_t col;
-
                 g_random_seed = *(int32_t *)data;
-                randomSeed(g_random_seed);
+                srand(g_random_seed);
                 set_color(NULL);
             }
             break;  
@@ -388,8 +397,8 @@ void handle_packet(uint16_t len, uint8_t *packet)
             }
         case PACKET_BOOTLOADER:
             {
-                eeprom_write_byte((uint32_t *)ee_start_program_offset, 0);
-                wdtreset();
+                eeprom_write_byte((uint8_t *)ee_start_program_offset, 0);
+                wdt_reset();
             }
         default:
             dprintf("Invalid packet received\n");
@@ -403,9 +412,6 @@ void set_brightness(int32_t brightness)
 
 void start_pattern(void)
 {
-    uint8_t  i;
-    color_t     color;
-
     if (!g_have_valid_pattern)
         return;
 
@@ -435,7 +441,7 @@ void update_pattern(void)
     if (g_target && ticks() >= g_target)
     {
         g_target += g_ticks_per_frame;
-        g_pixels.show();
+        update_leds();
 
         for(i = 0; i < NUM_PIXELS; i++)
         {
@@ -449,7 +455,6 @@ void update_pattern(void)
 void error_pattern(void)
 {
     uint8_t  t;
-    uint8_t  i;
     color_t  col;
 
     t = ticks_to_ms(ticks()) % (ERROR_DELAY * 2);
@@ -502,16 +507,16 @@ void setup()
     uint8_t i;
 
     // Tell the bootloader that we ran, if we haven't before.
-    if (!eeprom_read_byte(ee_have_valid_program_offset, valid_program))
-        eeprom_write_byte((uint32_t *)ee_have_valid_program_offset, 1);
+    if (!eeprom_read_byte((uint8_t *)ee_have_valid_program_offset))
+        eeprom_write_byte((uint8_t *)ee_have_valid_program_offset, 1);
 
-    set_output(DDRD, LED);
+    set_output(DDRD, LED_PIN);
     serial_init();
     dprintf("hippie-trap led board!\n");
 
     startup_animation();
         
-    timer_cal = eeprom_read_dword((uint32_t *)ee_calibration_offset, timer_cal);
+    timer_cal = eeprom_read_dword((uint32_t *)ee_calibration_offset);
     if (timer_cal > 1 && timer_cal != 0xFFFF)
     {
         g_ticks_per_sec = timer_cal;
@@ -550,7 +555,7 @@ void setup()
 
 void loop()
 {
-    uint8_t            i, ch, data[3];
+    uint8_t            ch;
     static uint8_t     found_header = 0;
     static uint16_t    crc = 0, len = 0, recd = 0;
     
@@ -567,7 +572,7 @@ void loop()
         }
         if (serial_char_ready() > 0 && g_calibrate_start > 0)
         {
-             int32_t done, ticks_per_sec;
+             int32_t done;
              cli();
              done = (int32_t)g_time;
              sei();
@@ -576,7 +581,7 @@ void loop()
 
              g_ticks_per_sec = (done - g_calibrate_start) / g_calibrate;
              g_ticks_per_frame = g_ticks_per_sec * g_delay / 1000;
-             eeprom_write_dword((const uint32_t *)ee_calibration_offset, g_ticks_per_sec);
+             eeprom_write_dword((uint32_t *)ee_calibration_offset, g_ticks_per_sec);
              
              serial_rx();
                        
