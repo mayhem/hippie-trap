@@ -3,11 +3,15 @@
 #include <avr/wdt.h>
 #include <avr/eeprom.h>
 #include <stdarg.h>
+#include <avr/interrupt.h>
+#include <util/delay.h>
 #include "parse.h"
+#include "ws2812.h"
 
 const uint8_t NODE_ID_UNKNOWN = 255;
 const uint8_t MAX_NODES = 120;
-const uint8_t OUT_PIN = 2;
+const uint8_t LED_PIN = 2;
+const uint8_t NUM_LEDS = 4;
 const uint8_t US_PER_TICK = 25;
 
 const uint16_t MAX_PACKET_LEN     = 230;
@@ -51,6 +55,9 @@ uint32_t   g_speed = SCALE_FACTOR;
 uint32_t   g_ticks_per_sec = (int32_t)1000000 / US_PER_TICK;
 uint32_t   g_ticks_per_frame; // setup later
 
+// led buffer
+uint8_t    g_led_buffer[3 * NUM_LEDS];
+
 // random seed
 uint32_t    g_random_seed = 0;
 
@@ -60,9 +67,6 @@ uint8_t     g_have_valid_pattern = 0;
 pattern_t   g_pattern;
 uint8_t     g_packet[MAX_PACKET_LEN];
 uint8_t     g_heap[HEAP_SIZE];
-
-// The LED control object
-Adafruit_NeoPixel g_pixels = Adafruit_NeoPixel(NUM_PIXELS, OUT_PIN, NEO_GRB + NEO_KHZ800);
 
 // our node id
 uint8_t g_node_id = 0;
@@ -137,14 +141,14 @@ uint32_t ticks_to_ms(uint32_t ticks)
     return ticks * SCALE_FACTOR / g_ticks_per_sec;
 }
 
-void show_color(color_t *col)
+void set_color(color_t *col)
 {
     uint8_t j;
    
     for(j = 0; j < NUM_PIXELS; j++)
         set_pixel_color(j, col);
 
-    g_pixels.show();
+    ws2812_sendarray(g_led_buffer, 3 * NUM_LEDS);
 }
 
 void set_pixel_color(uint8_t index, color_t *col)
@@ -170,7 +174,9 @@ void set_pixel_color(uint8_t index, color_t *col)
         temp.c[2] = temp.c[2] * g_brightness / SCALE_FACTOR;
     }
 
-    g_pixels.setPixelColor(index, temp.c[0], temp.c[1], temp.c[2]);
+    g_led_buffer[(index * 3)] temp.c[1];
+    g_led_buffer[(index * 3) + 1] temp.c[0];
+    g_led_buffer[(index * 3) + 2] temp.c[2];
     g_color[index] = temp;
 }
 
@@ -208,7 +214,7 @@ void startup_animation(void)
         g_pixels.show();
         delay(100);
     }
-    show_color(NULL);
+    set_color(NULL);
 }
 
 void handle_packet(uint16_t len, uint8_t *packet)
@@ -261,7 +267,7 @@ void handle_packet(uint16_t len, uint8_t *packet)
                 col.c[2] = data[2];
 
                 for(int j=0; j < NUM_PIXELS; j++)
-                    show_color(&col);
+                    set_color(&col);
 
                 break;
             } 
@@ -308,7 +314,7 @@ void handle_packet(uint16_t len, uint8_t *packet)
                 g_error = ERR_OK;
                 g_target = 0;
                 set_brightness(1000);
-                show_color(NULL);
+                set_color(NULL);
             }
             break;
             
@@ -318,7 +324,7 @@ void handle_packet(uint16_t len, uint8_t *packet)
 
                 g_random_seed = *(int32_t *)data;
                 randomSeed(g_random_seed);
-                show_color(NULL);
+                set_color(NULL);
             }
             break;  
 
@@ -367,7 +373,7 @@ void handle_packet(uint16_t len, uint8_t *packet)
                 while(serial_char_ready()) 
                     serial_rx();
 
-                show_color(&col);
+                set_color(&col);
                 reset_ticks();
                 g_calibrate = data[0];
                 g_calibrate_start = 0;
@@ -478,11 +484,16 @@ void error_pattern(void)
                  col.c[2] = 128;
                  break;
         }
-        show_color(&col);
+        set_color(&col);
     }
     else
-        show_color(NULL);
+        set_color(NULL);
 }
+
+#define output_low(port,pin) port &= ~(1<<pin)
+#define output_high(port,pin) port |= (1<<pin)
+#define set_input(portdir,pin) portdir &= ~(1<<pin)
+#define set_output(portdir,pin) portdir |= (1<<pin)
 
 void setup()
 { 
@@ -494,10 +505,10 @@ void setup()
     if (!eeprom_read_byte(ee_have_valid_program_offset, valid_program))
         eeprom_write_byte((uint32_t *)ee_have_valid_program_offset, 1);
 
+    set_output(DDRD, LED);
     serial_init();
     dprintf("hippie-trap led board!\n");
 
-    g_pixels.begin();
     startup_animation();
         
     timer_cal = eeprom_read_dword((uint32_t *)ee_calibration_offset, timer_cal);
@@ -521,7 +532,7 @@ void setup()
         col.c[1] = 0;
         col.c[2] = 0;
     }
-    show_color(&col);
+    set_color(&col);
 
     dprintf("node %d ready.", g_node_id);
 
@@ -535,16 +546,6 @@ void setup()
     
     for(i = 0; i < NUM_CLASSES; i++)
         g_classes[i] = NO_CLASS;
-}
-
-void set_color(uint8_t r, uint8_t g, uint8_t b)
-{
-    uint8_t col[3];
-
-    col[0] = g;
-    col[1] = r;
-    col[2] = b;
-    ws2812_sendarray(col, 3);
 }
 
 void loop()
@@ -571,7 +572,7 @@ void loop()
              done = (int32_t)g_time;
              sei();
              
-             show_color(NULL);
+             set_color(NULL);
 
              g_ticks_per_sec = (done - g_calibrate_start) / g_calibrate;
              g_ticks_per_frame = g_ticks_per_sec * g_delay / 1000;

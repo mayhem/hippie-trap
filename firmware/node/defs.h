@@ -26,7 +26,7 @@ extern uint32_t g_random_seed;
 
 void print_col(color_t *col);
 
-const uint8_t ERROR_DELAY          = 500;
+const uint8_t ERROR_DELAY          = 255;
 const uint8_t ERR_OK               = 0;
 const uint8_t ERR_NO_VALID_PATTERN = 1;
 const uint8_t ERR_STACK_CLASH      = 2;
