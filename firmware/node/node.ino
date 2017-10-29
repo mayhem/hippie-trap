@@ -4,6 +4,7 @@
 #include <EEPROM.h>
 #include <Adafruit_NeoPixel.h>
 #include <avr/pgmspace.h>
+#include <avr/wdt.h>
 #include <stdarg.h>
 #include "parse.h"
 
@@ -31,10 +32,17 @@ const uint8_t PACKET_CLASSES      = 13;
 const uint8_t PACKET_CALIBRATE    = 14;
 const uint8_t PACKET_BRIGHTNESS   = 15;
 const uint8_t PACKET_ANGLE        = 16;
+const uint8_t PACKET_BOOTLOADER   = 17;
 
-// where in EEPROM our node id is stored
-const int id_address = 0;
-const int calibration_address = 10;
+// where in EEPROM our node id is stored. The first 16 are reserved for the bootloader
+// Bootloader items
+const uint8_t ee_start_program_offset       = 0;
+const uint8_t ee_have_valid_program_offset  = 1;
+const uint8_t ee_program_version_offset     = 2;
+
+// Node items
+const uint8_t ee_id_offset                  = 16;
+const uint8_t ee_calibration_offset         = 17;
 
 // ----- globals ------------
 uint8_t    g_error = ERR_OK;
@@ -236,7 +244,7 @@ void handle_packet(uint16_t len, uint8_t *packet)
                 if (g_node_id == NODE_ID_UNKNOWN)
                 {
                     g_node_id = data[0];
-                    EEPROM.write(id_address, g_node_id);
+                    EEPROM.write(ee_id_offset, g_node_id);
                 }
                 break;
             }
@@ -244,7 +252,7 @@ void handle_packet(uint16_t len, uint8_t *packet)
         case PACKET_CLEAR_ID:
             {
                 g_node_id = NODE_ID_UNKNOWN;
-                EEPROM.write(id_address, g_node_id);
+                EEPROM.write(ee_id_offset, g_node_id);
                 break;
             }
             
@@ -374,6 +382,11 @@ void handle_packet(uint16_t len, uint8_t *packet)
                 b = (int32_t)data[0] * 10;
                 set_brightness(b);
                 break;
+            }
+        case PACKET_BOOTLOADER:
+            {
+                EEPROM.write(ee_start_program_offset, 0);
+                wdtreset();
             }
         default:
             dprintf("Invalid packet received\n");
@@ -508,17 +521,22 @@ void setup()
 { 
     uint32_t timer_cal;
     color_t col;
-    uint8_t i;
+    uint8_t i, valid_program;
+
+    // Tell the bootloader that we ran, if we haven't before.
+    EEPROM.get(ee_have_valid_program_offset, valid_program);
+    if (!valid_program)
+        EEPROM.write(ee_have_valid_program_offset, 1);
 
     Serial.begin(38400);
-    Serial.println("hue-chandelier board!\n");
+    Serial.println("hippie-trap led board!\n");
 
     g_pixels.begin();
     startup_animation();
         
-    g_node_id = EEPROM.read(id_address);
+    g_node_id = EEPROM.read(ee_id_offset);
 
-    EEPROM.get(calibration_address, timer_cal);
+    EEPROM.get(ee_calibration_offset, timer_cal);
     if (timer_cal > 1 && timer_cal != 0xFFFF)
     {
         g_ticks_per_sec = timer_cal;
@@ -584,7 +602,7 @@ void loop()
 
              g_ticks_per_sec = (done - g_calibrate_start) / g_calibrate;
              g_ticks_per_frame = g_ticks_per_sec * g_delay / 1000;
-             EEPROM.put(calibration_address, g_ticks_per_sec);
+             EEPROM.put(ee_calibration_offset, g_ticks_per_sec);
              
              Serial.read();
                        
