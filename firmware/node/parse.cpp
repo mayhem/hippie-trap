@@ -1,7 +1,8 @@
 #include <stdio.h>
+#include <string.h>
 #include <stdlib.h>
 #include <stdint.h>
-#include <Arduino.h>
+#include <avr/pgmspace.h>
 
 #include "function.h"
 #include "parse.h"
@@ -183,7 +184,7 @@ uint8_t evaluate_function(function_t *function, uint32_t t, uint8_t *color)
     }
 }
 
-uint8_t evaluate(pattern_t *pattern, uint32_t _t, uint8_t led, color_t *color)
+void evaluate(pattern_t *pattern, uint32_t _t, uint8_t led, color_t *color)
 {
     uint8_t  i, value;
     uint32_t t;
@@ -196,5 +197,3 @@ uint8_t evaluate(pattern_t *pattern, uint32_t _t, uint8_t led, color_t *color)
             color->c[i] = value;
     }
 }
-
-

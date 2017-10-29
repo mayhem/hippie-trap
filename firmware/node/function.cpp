@@ -1,5 +1,4 @@
 #include <stdlib.h>
-#include <Arduino.h>
 #include <avr/pgmspace.h>
 #include "function.h"
 

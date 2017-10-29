@@ -500,59 +500,6 @@ void error_pattern(void)
 #define set_input(portdir,pin) portdir &= ~(1<<pin)
 #define set_output(portdir,pin) portdir |= (1<<pin)
 
-void setup()
-{ 
-    uint32_t timer_cal;
-    color_t col;
-    uint8_t i;
-
-    // Tell the bootloader that we ran, if we haven't before.
-    if (!eeprom_read_byte((uint8_t *)ee_have_valid_program_offset))
-        eeprom_write_byte((uint8_t *)ee_have_valid_program_offset, 1);
-
-    set_output(DDRD, LED_PIN);
-    serial_init();
-    dprintf("hippie-trap led board!\n");
-
-    startup_animation();
-        
-    timer_cal = eeprom_read_dword((uint32_t *)ee_calibration_offset);
-    if (timer_cal > 1 && timer_cal != 0xFFFF)
-    {
-        g_ticks_per_sec = timer_cal;
-        dprintf("calibration %d ", timer_cal);
-        col.c[0] = 0;
-        col.c[1] = 128;
-        col.c[2] = 0;
-    }
-    else
-    {
-        col.c[0] = 0;
-        col.c[1] = 0;
-        col.c[2] = 128;
-    }
-    if (g_node_id == 0 || g_node_id >= MAX_NODES)
-    {
-        col.c[0] = 128;
-        col.c[1] = 0;
-        col.c[2] = 0;
-    }
-    set_color(&col);
-
-    dprintf("node %d ready.", g_node_id);
-
-    g_ticks_per_frame = g_ticks_per_sec * g_delay / 1000;
-
-    memset(&g_pattern, 0, sizeof(pattern_t));
-    memset(&g_color, 0, sizeof(g_color));
-
-//    Timer1.initialize(US_PER_TICK);
-//    Timer1.attachInterrupt(tick);
-    
-    for(i = 0; i < NUM_CLASSES; i++)
-        g_classes[i] = NO_CLASS;
-}
-
 void loop()
 {
     uint8_t            ch;
@@ -647,5 +594,62 @@ void loop()
             }
         }
     }
+}
 
+int main(void)
+{ 
+    uint32_t timer_cal;
+    color_t col;
+    uint8_t i;
+
+    // Tell the bootloader that we ran, if we haven't before.
+    if (!eeprom_read_byte((uint8_t *)ee_have_valid_program_offset))
+        eeprom_write_byte((uint8_t *)ee_have_valid_program_offset, 1);
+
+    set_output(DDRD, LED_PIN);
+    serial_init();
+    dprintf("hippie-trap led board!\n");
+
+    startup_animation();
+        
+    timer_cal = eeprom_read_dword((uint32_t *)ee_calibration_offset);
+    if (timer_cal > 1 && timer_cal != 0xFFFF)
+    {
+        g_ticks_per_sec = timer_cal;
+        dprintf("calibration %d ", timer_cal);
+        col.c[0] = 0;
+        col.c[1] = 128;
+        col.c[2] = 0;
+    }
+    else
+    {
+        col.c[0] = 0;
+        col.c[1] = 0;
+        col.c[2] = 128;
+    }
+    if (g_node_id == 0 || g_node_id >= MAX_NODES)
+    {
+        col.c[0] = 128;
+        col.c[1] = 0;
+        col.c[2] = 0;
+    }
+    set_color(&col);
+
+    dprintf("node %d ready.", g_node_id);
+
+    g_ticks_per_frame = g_ticks_per_sec * g_delay / 1000;
+
+    memset(&g_pattern, 0, sizeof(pattern_t));
+    memset(&g_color, 0, sizeof(g_color));
+
+//    Timer1.initialize(US_PER_TICK);
+//    Timer1.attachInterrupt(tick);
+    
+    for(i = 0; i < NUM_CLASSES; i++)
+        g_classes[i] = NO_CLASS;
+
+    for(;;)
+        loop();
+
+    return 0;
 }
