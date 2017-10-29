@@ -1,10 +1,7 @@
-#include <TimerOne.h>
-
 #include <util/crc16.h>
-#include <EEPROM.h>
-#include <Adafruit_NeoPixel.h>
 #include <avr/pgmspace.h>
 #include <avr/wdt.h>
+#include <avr/eeprom.h>
 #include <stdarg.h>
 #include "parse.h"
 
@@ -119,18 +116,18 @@ void tick(void)
 
 void reset_ticks(void)
 {
-    noInterrupts();
+    cli();
     g_time = 0;
-    interrupts();
+    sei();
 }
 
 uint32_t ticks(void)
 {
     uint32_t temp;
 
-    noInterrupts();
+    cli();
     temp = g_time;
-    interrupts();
+    sei();
 
     return temp; 
 }
@@ -244,7 +241,7 @@ void handle_packet(uint16_t len, uint8_t *packet)
                 if (g_node_id == NODE_ID_UNKNOWN)
                 {
                     g_node_id = data[0];
-                    EEPROM.write(ee_id_offset, g_node_id);
+                    eeprom_write_byte((uint32_t *)ee_id_offset, g_node_id);
                 }
                 break;
             }
@@ -252,7 +249,7 @@ void handle_packet(uint16_t len, uint8_t *packet)
         case PACKET_CLEAR_ID:
             {
                 g_node_id = NODE_ID_UNKNOWN;
-                EEPROM.write(ee_id_offset, g_node_id);
+                eeprom_write_byte((uint32_t *)ee_id_offset, g_node_id);
                 break;
             }
             
@@ -367,8 +364,8 @@ void handle_packet(uint16_t len, uint8_t *packet)
                 col.c[0] = 255;
 
                 // clear out any stray characters
-                while(Serial.available() > 0) 
-                    Serial.read();
+                while(serial_char_ready()) 
+                    serial_rx();
 
                 show_color(&col);
                 reset_ticks();
@@ -385,24 +382,13 @@ void handle_packet(uint16_t len, uint8_t *packet)
             }
         case PACKET_BOOTLOADER:
             {
-                EEPROM.write(ee_start_program_offset, 0);
+                eeprom_write_byte((uint32_t *)ee_start_program_offset, 0);
                 wdtreset();
             }
         default:
             dprintf("Invalid packet received\n");
     }
 }
-
-#if 0
-void print_col(color_t *c)
-{
-    Serial.print(c->c[0], DEC);
-    Serial.print(", ");
-    Serial.print(c->c[1], DEC);
-    Serial.print(", ");
-    Serial.println(c->c[2], DEC);
-}
-#endif
 
 void set_brightness(int32_t brightness)
 {
@@ -498,49 +484,27 @@ void error_pattern(void)
         show_color(NULL);
 }
 
-#define MAX 80 
-void dprintf(const char *fmt, ...)
-{
-    va_list va;
-    va_start (va, fmt);
-
-    char buffer[MAX];
-    char *ptr = buffer;
-    vsnprintf(buffer, MAX, fmt, va);
-    va_end (va);
-
-    for(ptr = buffer; *ptr; ptr++)
-    {
-       if (*ptr == '\n') 
-           Serial.write('\r');
-       Serial.write(*ptr);
-    }
-}
-
 void setup()
 { 
     uint32_t timer_cal;
     color_t col;
-    uint8_t i, valid_program;
+    uint8_t i;
 
     // Tell the bootloader that we ran, if we haven't before.
-    EEPROM.get(ee_have_valid_program_offset, valid_program);
-    if (!valid_program)
-        EEPROM.write(ee_have_valid_program_offset, 1);
+    if (!eeprom_read_byte(ee_have_valid_program_offset, valid_program))
+        eeprom_write_byte((uint32_t *)ee_have_valid_program_offset, 1);
 
-    Serial.begin(38400);
-    Serial.println("hippie-trap led board!\n");
+    serial_init();
+    dprintf("hippie-trap led board!\n");
 
     g_pixels.begin();
     startup_animation();
         
-    g_node_id = EEPROM.read(ee_id_offset);
-
-    EEPROM.get(ee_calibration_offset, timer_cal);
+    timer_cal = eeprom_read_dword((uint32_t *)ee_calibration_offset, timer_cal);
     if (timer_cal > 1 && timer_cal != 0xFFFF)
     {
         g_ticks_per_sec = timer_cal;
-        Serial.print("calibrated " + String(timer_cal) + " ");
+        dprintf("calibration %d ", timer_cal);
         col.c[0] = 0;
         col.c[1] = 128;
         col.c[2] = 0;
@@ -559,19 +523,28 @@ void setup()
     }
     show_color(&col);
 
-    Serial.println("node " + String(g_node_id) + " ready. ");
+    dprintf("node %d ready.", g_node_id);
 
     g_ticks_per_frame = g_ticks_per_sec * g_delay / 1000;
 
     memset(&g_pattern, 0, sizeof(pattern_t));
     memset(&g_color, 0, sizeof(g_color));
 
-    Timer1.initialize(US_PER_TICK);
-    Timer1.attachInterrupt(tick);
+//    Timer1.initialize(US_PER_TICK);
+//    Timer1.attachInterrupt(tick);
     
     for(i = 0; i < NUM_CLASSES; i++)
         g_classes[i] = NO_CLASS;
+}
 
+void set_color(uint8_t r, uint8_t g, uint8_t b)
+{
+    uint8_t col[3];
+
+    col[0] = g;
+    col[1] = r;
+    col[2] = b;
+    ws2812_sendarray(col, 3);
 }
 
 void loop()
@@ -582,29 +555,29 @@ void loop()
     
     if (g_calibrate)
     {
-        if (Serial.available() > 0 && g_calibrate_start == 0)
+        if (serial_char_ready() && g_calibrate_start == 0)
         {
-             noInterrupts();
+             cli();
              g_calibrate_start = g_time;
-             interrupts();
-             Serial.read();
+             sei();
+             serial_rx();
              
              return;
         }
-        if (Serial.available() > 0 && g_calibrate_start > 0)
+        if (serial_char_ready() > 0 && g_calibrate_start > 0)
         {
              int32_t done, ticks_per_sec;
-             noInterrupts();
+             cli();
              done = (int32_t)g_time;
-             interrupts();
+             sei();
              
              show_color(NULL);
 
              g_ticks_per_sec = (done - g_calibrate_start) / g_calibrate;
              g_ticks_per_frame = g_ticks_per_sec * g_delay / 1000;
-             EEPROM.put(ee_calibration_offset, g_ticks_per_sec);
+             eeprom_write_dword((const uint32_t *)ee_calibration_offset, g_ticks_per_sec);
              
-             Serial.read();
+             serial_rx();
                        
              g_calibrate = 0;
              g_calibrate_start = 0;
@@ -616,9 +589,9 @@ void loop()
     
     update_pattern();
     
-    if (Serial.available() > 0) 
+    if (serial_char_ready()) 
     {
-        ch = Serial.read();
+        ch = serial_rx();
         if (!found_header)
         {
             if (ch == 0xFF)
