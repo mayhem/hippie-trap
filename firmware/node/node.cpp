@@ -122,11 +122,11 @@ void update_pattern(void);
 void error_pattern(void);
 
 volatile uint32_t g_time = 0;
-ISR (TIMER1_OVF_vect)
-{
-    g_time++;
-    TCNT1 = TIMER1_INIT;
-}
+//ISR (TIMER1_OVF_vect)
+//{
+//    g_time++;
+//    TCNT1 = TIMER1_INIT;
+//}
 
 void reset_ticks(void)
 {
@@ -509,7 +509,7 @@ void loop()
     uint8_t            ch;
     static uint8_t     found_header = 0;
     static uint16_t    crc = 0, len = 0, recd = 0;
-    
+
     if (g_calibrate)
     {
         if (serial_char_ready() && g_calibrate_start == 0)
@@ -543,7 +543,7 @@ void loop()
         }
         return;
     }
-    
+
     update_pattern();
     
     if (serial_char_ready()) 
@@ -610,7 +610,6 @@ int main(void)
     if (!eeprom_read_byte((uint8_t *)ee_have_valid_program_offset))
         eeprom_write_byte((uint8_t *)ee_have_valid_program_offset, 1);
 
-    set_output(DDRD, LED_PIN);
     TCCR1B |= TIMER1_FLAGS;
     TCNT1 = TIMER1_INIT;
     TIMSK1 |= (1<<TOIE1);
@@ -618,9 +617,11 @@ int main(void)
     serial_init();
     dprintf("hippie-trap led board!\n");
 
+    set_output(DDRD, LED_PIN);
     set_brightness(1000);
+    set_color(NULL);
     startup_animation();
-        
+
     timer_cal = eeprom_read_dword((uint32_t *)ee_calibration_offset);
     if (timer_cal > 1 && timer_cal != 0xFFFF)
     {

@@ -39,7 +39,7 @@ def send_firmware(dev, filename):
 
         ser.write(chr(13).encode('ascii'))
         print("wrote line %d of %d" % (i, len(lines)))
-        sleep(.1)
+        sleep(.05)
 
     print("Write complete.")
         
