@@ -77,7 +77,7 @@ uint8_t     g_heap[HEAP_SIZE];
 uint8_t g_node_id = 0;
 
 // color/step information for transitions
-color_t  g_color[NUM_PIXELS];
+color_t  g_color[NUM_LEDS];
 int32_t  g_brightness;
 
 // location in space
@@ -189,7 +189,7 @@ void set_color(color_t *col)
 {
     uint8_t j;
    
-    for(j = 0; j < NUM_PIXELS; j++)
+    for(j = 0; j < NUM_LEDS; j++)
         set_pixel_color(j, col);
 
     update_leds();
@@ -209,7 +209,7 @@ void startup_animation(void)
 
     for(i = 0; i < 10; i++)
     {       
-        for(j = 0; j < NUM_PIXELS; j++)
+        for(j = 0; j < NUM_LEDS; j++)
         {
             if (i % 2 == 0)
             {
@@ -281,7 +281,7 @@ void handle_packet(uint16_t len, uint8_t *packet)
                 col.c[1] = data[1];
                 col.c[2] = data[2];
 
-                for(int j=0; j < NUM_PIXELS; j++)
+                for(int j=0; j < NUM_LEDS; j++)
                     set_color(&col);
 
                 break;
@@ -290,7 +290,7 @@ void handle_packet(uint16_t len, uint8_t *packet)
             {
                 color_t col;
 
-                for(int j=0; j < NUM_PIXELS; j++, data += 3)
+                for(int j=0; j < NUM_LEDS; j++, data += 3)
                 {
                     col.c[0] = data[0];
                     col.c[1] = data[1];
@@ -447,7 +447,7 @@ void update_pattern(void)
         g_target += g_ticks_per_frame;
         update_leds();
 
-        for(i = 0; i < NUM_PIXELS; i++)
+        for(i = 0; i < NUM_LEDS; i++)
         {
             color = g_color[i];
             evaluate(&g_pattern, ticks_to_ms(g_target), i, &color);
@@ -618,6 +618,7 @@ int main(void)
     serial_init();
     dprintf("hippie-trap led board!\n");
 
+    set_brightness(1000);
     startup_animation();
         
     timer_cal = eeprom_read_dword((uint32_t *)ee_calibration_offset);

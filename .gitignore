@@ -9,3 +9,7 @@ last_node_id.txt
 *.lib
 *.bak
 gerbers
+*.o
+*.map
+*.hex
+*.obj

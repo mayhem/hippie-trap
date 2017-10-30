@@ -5,7 +5,7 @@ TARGET=test
 LDFLAGS = -Wl,-Map,$(TARGET).map
 
 program: $(TARGET).hex 
-	sudo avrdude -v -D -p m328p -P usb -c avrispmkII -Uflash:w:$(TARGET).hex -B 8
+	sudo avrdude -e -D -p m328p -P usb -c avrispmkII -Uflash:w:$(TARGET).hex -B 8
 
 $(TARGET).o: $(TARGET).c
 	$(CC) $(CFLAGS) -c $(TARGET).c 
