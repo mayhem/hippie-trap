@@ -143,11 +143,6 @@ enum response_t process_line()
     if (checksum != recv_checksum)
         return RSP_CHECKSUM_FAIL;
 
-    dprintf("dbuf check: ");
-    for (i=0; i < data_len; i++)
-        dprintf("%x ", data_buffer[i]);
-    dprintf("\n");
-
     if (line_type == 1)
     {
         if (last_addr != 0xFFFFFFFF)
@@ -176,14 +171,11 @@ enum response_t process_line()
             boot_page_erase (full_addr);
             boot_spm_busy_wait ();
         }
-        dprintf("%p:  ", full_addr);
         for (i=0; i < data_len; i+=2)
         {
             uint16_t w = data_buffer[i] + ((uint16_t) data_buffer[i + 1] << 8);
-            dprintf("%x ", w);
             boot_page_fill (full_addr + i, w);
         }
-        dprintf(" -- wrote 0x%x bytes\n", data_len);
         last_addr = full_addr;
     }
     return RSP_OK;

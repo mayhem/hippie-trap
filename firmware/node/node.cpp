@@ -15,6 +15,9 @@ const uint8_t MAX_NODES = 120;
 const uint8_t LED_PIN = 2;
 const uint8_t NUM_LEDS = 4;
 const uint8_t US_PER_TICK = 25;
+#define TIMER1_INIT      0xFFF7
+#define TIMER1_FLAGS     _BV(CS12)|(1<<CS10); // 8Mhz / 1024 / 8 = .001024 per tick
+
 
 const uint16_t MAX_PACKET_LEN     = 230;
 const uint8_t BROADCAST = 0;
@@ -119,9 +122,10 @@ void update_pattern(void);
 void error_pattern(void);
 
 volatile uint32_t g_time = 0;
-void tick(void)
+ISR (TIMER1_OVF_vect)
 {
     g_time++;
+    TCNT1 = TIMER1_INIT;
 }
 
 void reset_ticks(void)
@@ -607,6 +611,10 @@ int main(void)
         eeprom_write_byte((uint8_t *)ee_have_valid_program_offset, 1);
 
     set_output(DDRD, LED_PIN);
+    TCCR1B |= TIMER1_FLAGS;
+    TCNT1 = TIMER1_INIT;
+    TIMSK1 |= (1<<TOIE1);
+
     serial_init();
     dprintf("hippie-trap led board!\n");
 
@@ -616,7 +624,7 @@ int main(void)
     if (timer_cal > 1 && timer_cal != 0xFFFF)
     {
         g_ticks_per_sec = timer_cal;
-        dprintf("calibration %d ", timer_cal);
+        dprintf("calibration %d\n", timer_cal);
         col.c[0] = 0;
         col.c[1] = 128;
         col.c[2] = 0;
@@ -635,16 +643,13 @@ int main(void)
     }
     set_color(&col);
 
-    dprintf("node %d ready.", g_node_id);
+    dprintf("node %d ready.\n", g_node_id);
 
     g_ticks_per_frame = g_ticks_per_sec * g_delay / 1000;
 
     memset(&g_pattern, 0, sizeof(pattern_t));
     memset(&g_color, 0, sizeof(g_color));
 
-//    Timer1.initialize(US_PER_TICK);
-//    Timer1.attachInterrupt(tick);
-    
     for(i = 0; i < NUM_CLASSES; i++)
         g_classes[i] = NO_CLASS;
 
