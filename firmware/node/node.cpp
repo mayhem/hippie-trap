@@ -122,11 +122,11 @@ void update_pattern(void);
 void error_pattern(void);
 
 volatile uint32_t g_time = 0;
-//ISR (TIMER1_OVF_vect)
-//{
-//    g_time++;
-//    TCNT1 = TIMER1_INIT;
-//}
+ISR (TIMER1_OVF_vect)
+{
+    g_time++;
+    TCNT1 = TIMER1_INIT;
+}
 
 void reset_ticks(void)
 {
@@ -169,9 +169,9 @@ void set_pixel_color(uint8_t index, color_t *col)
         temp.c[2] = pgm_read_byte(&gamma[col->c[2]]);
 
         // Adjust brightness
-        temp.c[0] = temp.c[0] * g_brightness / SCALE_FACTOR;
-        temp.c[1] = temp.c[1] * g_brightness / SCALE_FACTOR;
-        temp.c[2] = temp.c[2] * g_brightness / SCALE_FACTOR;
+//        temp.c[0] = temp.c[0] * g_brightness / SCALE_FACTOR;
+//        temp.c[1] = temp.c[1] * g_brightness / SCALE_FACTOR;
+//        temp.c[2] = temp.c[2] * g_brightness / SCALE_FACTOR;
     }
 
     g_led_buffer[(index * 3)] = temp.c[1];
@@ -602,7 +602,7 @@ void loop()
 
 int main(void)
 { 
-    uint32_t timer_cal;
+    uint32_t timer_cal, t;
     color_t col;
     uint8_t i;
 
@@ -655,8 +655,17 @@ int main(void)
     for(i = 0; i < NUM_CLASSES; i++)
         g_classes[i] = NO_CLASS;
 
+    sei();
     for(;;)
         loop();
+
+    for(;;)
+    {
+        cli();
+        t = g_time;
+        sei();
+        dprintf("%u\n", t);
+    }    
 
     return 0;
 }

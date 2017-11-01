@@ -2,6 +2,7 @@
 #include <util/delay.h>
 #include <stdio.h>
 #include <stdarg.h>
+#include <string.h>
 #include <avr/interrupt.h>
 #include <avr/boot.h>
 #include <avr/wdt.h>
@@ -34,7 +35,16 @@ void set_color(uint8_t r, uint8_t g, uint8_t b)
     col[0] = g;
     col[1] = r;
     col[2] = b;
+
     ws2812_sendarray(col, 3);
+}
+
+void leds_off(void)
+{
+    uint8_t col[12];
+
+    memset(&col, sizeof(col), 0);
+    ws2812_sendarray(col, 12);
 }
 
 void serial_init(void)
@@ -190,7 +200,6 @@ enum response_t process_line()
 
 #define ee_start_program_offset       0
 #define ee_have_valid_program_offset  1
-#define ee_program_version_offset     2
 
 // LED color codes
 // green - entered bootloader as request, waiting to be programmed
@@ -200,7 +209,7 @@ int main()
 {
     uint8_t start_program;
     uint8_t have_valid_program;
-//    uint32_t program_version;
+    uint8_t start_ch_count = 0, ch;
     enum response_t response;
 
     // To force entering the bootloader
@@ -212,15 +221,16 @@ int main()
 
     serial_init();
     dprintf("bootloader\n");
+    leds_off();
 
     start_program = eeprom_read_byte((const uint8_t *)ee_start_program_offset); 
     have_valid_program = eeprom_read_byte((const uint8_t *)ee_have_valid_program_offset); 
     dprintf("start: %d valid: %d\n", start_program, have_valid_program);
-//    program_version = eeprom_read_dword((const uint32_t *)ee_program_version_offset); 
     eeprom_busy_wait();
 
     while(1)
     {
+
         if (start_program)
         {
             if (have_valid_program)
@@ -239,6 +249,18 @@ int main()
             set_color(0, 255, 0);
             dprintf("entered bootloader. ready.\n");
         }
+
+        for(start_ch_count = 0; start_ch_count < 16;)
+        {
+            ch = serial_rx();
+            if (ch == 0x45)
+            {
+                start_ch_count++;
+                continue;
+            }
+            start_ch_count = 0;
+        }
+        dprintf("got program header\n");
 
         response = RSP_OK;
         while (response != RSP_FINISHED)

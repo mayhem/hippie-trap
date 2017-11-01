@@ -27,6 +27,13 @@ def send_firmware(dev, filename):
     with open(filename, "r") as f:
         lines = f.readlines()
 
+    for i in range(16):
+        if not ser.write(chr(0x45).encode('ascii')):
+            print("Cannot write programming header.")
+            return
+
+    sleep(.1)
+
     for i, line in enumerate(lines): 
         if not line:
             break

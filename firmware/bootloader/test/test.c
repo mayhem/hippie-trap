@@ -77,12 +77,21 @@ void dprintf(const char *fmt, ...)
 
 void set_color(uint8_t r, uint8_t g, uint8_t b)
 {
-    uint8_t col[3];
+    uint8_t col[12];
 
     col[0] = g;
     col[1] = r;
     col[2] = b;
-    ws2812_sendarray(col, 3);
+    col[3] = g;
+    col[4] = r;
+    col[5] = b;
+    col[6] = g;
+    col[7] = r;
+    col[8] = b;
+    col[9] = g;
+    col[10] = r;
+    col[11] = b;
+    ws2812_sendarray(col, 12);
 }
 
 #define LED PD2
@@ -91,19 +100,21 @@ void set_color(uint8_t r, uint8_t g, uint8_t b)
 
 int main() 
 {
+    int i;
     set_output(DDRD, LED);
 
     serial_init();
     dprintf("\ntest program running\n");
     eeprom_write_byte((uint8_t *)ee_have_valid_program_offset, 1);
 
-    for(;;)
+    for(i = 0; i < 10; i++)
     {
         set_color(255, 0, 255);
-        _delay_ms(500);
+        _delay_ms(200);
         set_color(255, 128, 0);
-        _delay_ms(500);
+        _delay_ms(200);
     }
+    set_color(0, 0, 0);
 
     return 0;
 }
