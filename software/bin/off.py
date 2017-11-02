@@ -3,7 +3,7 @@
 import os
 import sys
 import math
-from chandelier import Chandelier, BROADCAST
+from hippietrap.chandelier import Chandelier, BROADCAST
 
 device = "/dev/serial0"
 if len(sys.argv) == 2:

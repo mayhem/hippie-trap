@@ -3,13 +3,9 @@
 import os
 import sys
 import math
-from chandelier import Chandelier, BROADCAST, NUM_NODES
-import function
-import generator
-import random
-import common
+from hippietrap.chandelier import Chandelier, BROADCAST, NUM_NODES
+from hippietrap.color import Color
 from time import sleep, time
-from color import Color
 
 device = "/dev/serial0"
 

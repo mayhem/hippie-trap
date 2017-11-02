@@ -13,3 +13,4 @@ gerbers
 *.map
 *.hex
 *.obj
+*.egg-info
