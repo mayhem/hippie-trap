@@ -282,12 +282,12 @@ void handle_packet(uint16_t len, uint8_t *packet)
                 break;
             }
 
-        case PACKET_CLEAR_ID:
-            {
-                g_node_id = NODE_ID_UNKNOWN;
-                eeprom_write_byte((uint8_t *)ee_id_offset, g_node_id);
-                break;
-            }
+//        case PACKET_CLEAR_ID:
+//            {
+//                g_node_id = NODE_ID_UNKNOWN;
+//                eeprom_write_byte((uint8_t *)ee_id_offset, g_node_id);
+//                break;
+//            }
             
         case PACKET_SINGLE_COLOR:
             {
@@ -656,12 +656,15 @@ int main(void)
         col.c[1] = 0;
         col.c[2] = 128;
     }
+
+    g_node_id = eeprom_read_byte((uint8_t *)ee_id_offset);
     if (g_node_id == 0 || g_node_id >= MAX_NODES)
     {
         col.c[0] = 128;
         col.c[1] = 0;
         col.c[2] = 0;
     }
+
     set_color(&col);
 
     dprintf("node %d ready.\n", g_node_id);
