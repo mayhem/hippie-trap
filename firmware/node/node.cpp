@@ -15,7 +15,7 @@ const uint8_t MAX_NODES = 120;
 const uint8_t LED_PIN = 2;
 const uint8_t NUM_LEDS = 4;
 const uint8_t US_PER_TICK = 25;
-#define TIMER1_INIT      0xFFF7
+#define TIMER1_INIT      0xFFF8
 #define TIMER1_FLAGS     _BV(CS12)|(1<<CS10); // 8Mhz / 1024 / 8 = .001024 per tick
 
 
@@ -518,6 +518,24 @@ void error_pattern(void)
         set_color(NULL);
 }
 
+#if 0
+void timer_calibration(void)
+{
+    uint32_t next = 1000;
+    for(i = 0;;i++)
+    {
+        cli();
+        t = g_time;
+        sei();
+
+        if (t >= next)
+        {
+            dprintf("%u\n", t);
+            next = next + 1000;
+        }
+    }    
+#endif
+
 #define output_low(port,pin) port &= ~(1<<pin)
 #define output_high(port,pin) port |= (1<<pin)
 #define set_input(portdir,pin) portdir &= ~(1<<pin)
@@ -681,13 +699,6 @@ int main(void)
     for(;;)
         loop();
 
-    for(;;)
-    {
-        cli();
-        t = g_time;
-        sei();
-        dprintf("%u\n", t);
-    }    
 
     return 0;
 }
