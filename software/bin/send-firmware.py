@@ -2,6 +2,7 @@
 
 import sys
 import os
+import struct
 
 import click
 import serial
@@ -24,12 +25,26 @@ def send_firmware(dev, filename):
         print("Cannot open serial port: %s" % port)
         return 
 
-    with open(filename, "r") as f:
-        lines = f.readlines()
+    try:
+        with open(filename, "r") as f:
+            lines = f.readlines()
+
+        filesize = os.path.getsize(filename)
+    except IOError as err:
+        print("Error loading hex file: %s" % err)
+        return
 
     for i in range(16):
         if not ser.write(chr(0x45).encode('ascii')):
             print("Cannot write programming header.")
+            return
+
+    print("filesize: %d bytes", filesize);
+    fs = struct.pack("<H", filesize);
+    for ch in fs:
+        print("%0X" % ch)
+        if not ser.write(chr(ch).encode('ascii')):
+            print("Cannot write hex file size header.")
             return
 
     sleep(.1)

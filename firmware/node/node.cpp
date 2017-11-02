@@ -639,9 +639,12 @@ void loop()
 
 int main(void)
 { 
-    uint32_t timer_cal, t;
+    uint32_t timer_cal;
     color_t col;
     uint8_t i;
+
+    // Turn off the watchdog timer, in case we were reset that way
+    wdt_disable();
 
     // Tell the bootloader that we ran, if we haven't before.
     if (!eeprom_read_byte((uint8_t *)ee_have_valid_program_offset))

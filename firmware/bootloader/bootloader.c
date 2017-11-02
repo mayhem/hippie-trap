@@ -106,7 +106,7 @@ void dprintf(const char *fmt, ...)
 #define SPM_PAGEMASK ((uint32_t) ~(SPM_PAGESIZE - 1))
 enum response_t {RSP_OK, RSP_CHECKSUM_FAIL, RSP_INVALID, RSP_FINISHED};
 
-enum response_t process_line()
+enum response_t process_line(uint16_t *hex_file_received)
 {
     uint8_t c, line_buffer[80], data_buffer[32];
     uint8_t line_len = 0, data_len = 0, data_count, line_type, line_pos, data;
@@ -118,6 +118,7 @@ enum response_t process_line()
     boot_spm_busy_wait();
 
     c = serial_rx();
+    (*hex_file_received)++;
     while (c != '\r')
     {
         if (c == ':')
@@ -129,6 +130,7 @@ enum response_t process_line()
         else if (line_len < sizeof(line_buffer))
             line_buffer[line_len++] = c;
         c = serial_rx();
+        (*hex_file_received)++;
     }
 
     if (line_len < 2)
@@ -145,19 +147,19 @@ enum response_t process_line()
     line_pos = 8;
     checksum = data_count + addrh + addrl + line_type;
 
-    dprintf("check ");
+//    dprintf("check ");
     for (i=0; i < data_count; i++)
     {
         data = (HEX2DEC(line_buffer[line_pos]) << 4) + HEX2DEC(line_buffer[line_pos + 1]);
         line_pos += 2;
         data_buffer[data_len++] = data;
         checksum += data;
-        dprintf("%x ", data);
+//        dprintf("%x ", data);
     }
 
     checksum = 0xFF - checksum + 1;
     recv_checksum = (HEX2DEC(line_buffer[line_pos]) << 4) + HEX2DEC(line_buffer[line_pos + 1]);
-    dprintf(" -- %x %x (%d bytes)\n", checksum, recv_checksum, data_len);
+//    dprintf(" -- %x %x (%d bytes)\n", checksum, recv_checksum, data_len);
     if (checksum != recv_checksum)
         return RSP_CHECKSUM_FAIL;
 
@@ -185,7 +187,7 @@ enum response_t process_line()
                 boot_page_write (last_addr & SPM_PAGEMASK);
                 boot_spm_busy_wait();
             }
-            dprintf("erase %p\n", full_addr);
+            //dprintf("erase %p\n", full_addr);
             boot_page_erase (full_addr);
             boot_spm_busy_wait ();
         }
@@ -218,6 +220,7 @@ int main()
     uint8_t start_program;
     uint8_t have_valid_program;
     uint8_t start_ch_count = 0, ch, i;
+    uint16_t hex_file_size = 0, *ptr, hex_file_received = 0;
     enum response_t response;
 
     // Turn off the watchdog timer, in case we were reset that way
@@ -253,7 +256,7 @@ int main()
                 asm("jmp 0000");
                 return 0;
             }
-            // No valid program present, but shoud've started it
+            // No valid program present, but should've started it
             set_color(128, 128, 0);
             dprintf("no valid program. ready.\n");
 
@@ -277,11 +280,16 @@ int main()
             start_ch_count = 0;
         }
 
+        // Now load the size of the program
+        hex_file_size = serial_rx();
+        hex_file_size |= serial_rx() << 8;
+        hex_file_received = 0;
+
         i = 0;
         response = RSP_OK;
         while (response != RSP_FINISHED)
         {
-            response = process_line();
+            response = process_line(&hex_file_received);
             if (response == RSP_OK)
             {
                 if (i % 2 == 0)
@@ -296,7 +304,7 @@ int main()
         }   
         set_color(0, 0, 0);
 
-        if (response == RSP_FINISHED)
+        if (response == RSP_FINISHED && hex_file_size == hex_file_received)
         {
             dprintf("programmed ok.\n");
             set_color(0, 128, 128);
@@ -320,20 +328,26 @@ int main()
             eeprom_write_byte((uint8_t *)ee_have_valid_program_offset, 0);
             eeprom_busy_wait();
 
-            if (response == RSP_CHECKSUM_FAIL)
+            if (response == RSP_FINISHED && hex_file_size != hex_file_received)
             {
-                dprintf("checksum fail");
+                dprintf("received incorrect file size\n");
+                dprintf("rec %u of %u bytes.\n", hex_file_received, hex_file_size);
+                led.r = 0; led.g = 0; led.b = 128;
+            }
+            else if (response == RSP_CHECKSUM_FAIL)
+            {
+                dprintf("checksum fail\n");
                 led.r = 128; led.g = 0; led.b = 0;
             }
             else if (response == RSP_INVALID)
             {
-                dprintf("upload invalid");
+                dprintf("upload invalid\n");
                 led.r = 0; led.g = 128; led.b = 0;
             }
             else 
             {
-                dprintf("other error");
-                led.r = 0; led.g = 0; led.b = 128;
+                dprintf("other error\n");
+                led.r = 128; led.g = 128; led.b = 128;
             }
 
             for(i = 0; i < 10; i++)
