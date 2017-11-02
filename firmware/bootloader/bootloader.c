@@ -10,6 +10,8 @@
 #include <avr/eeprom.h>
 #include "ws2812.h"
 
+#define NUM_LEDS 4
+
 
 // 38400 @ 8 Mhz. See http://wormfood.net/avrbaudcalc.php
 #define UBBR 12
@@ -28,23 +30,29 @@
 #define _UDRE  UDRE0
 #define _UDR   UDR0 
 
+struct cRGB g_led_rgb[NUM_LEDS];
+
+void update_leds(void)
+{
+    ws2812_setleds((struct cRGB *)g_led_rgb, NUM_LEDS);
+}
+
 void set_color(uint8_t r, uint8_t g, uint8_t b)
 {
-    uint8_t col[3];
-
-    col[0] = g;
-    col[1] = r;
-    col[2] = b;
-
-    ws2812_sendarray(col, 3);
+    memset(g_led_rgb, 0, sizeof(g_led_rgb));
+    g_led_rgb[0].r = r;    
+    g_led_rgb[0].g = g;    
+    g_led_rgb[0].b = b;    
+    g_led_rgb[3].r = r;    
+    g_led_rgb[3].g = g;    
+    g_led_rgb[3].b = b;    
+    update_leds();
 }
 
 void leds_off(void)
 {
-    uint8_t col[12];
-
-    memset(&col, sizeof(col), 0);
-    ws2812_sendarray(col, 12);
+    memset(g_led_rgb, 0, sizeof(g_led_rgb));
+    update_leds();
 }
 
 void serial_init(void)
@@ -209,8 +217,11 @@ int main()
 {
     uint8_t start_program;
     uint8_t have_valid_program;
-    uint8_t start_ch_count = 0, ch;
+    uint8_t start_ch_count = 0, ch, i;
     enum response_t response;
+
+    // Turn off the watchdog timer, in case we were reset that way
+    wdt_disable();
 
     // To force entering the bootloader
     //eeprom_write_byte((uint8_t *)ee_start_program_offset, 0);
@@ -221,16 +232,18 @@ int main()
 
     serial_init();
     dprintf("bootloader\n");
+
+    set_color(128, 0, 128);
+    _delay_ms(500);
     leds_off();
 
+    eeprom_busy_wait();
     start_program = eeprom_read_byte((const uint8_t *)ee_start_program_offset); 
     have_valid_program = eeprom_read_byte((const uint8_t *)ee_have_valid_program_offset); 
     dprintf("start: %d valid: %d\n", start_program, have_valid_program);
-    eeprom_busy_wait();
 
     while(1)
     {
-
         if (start_program)
         {
             if (have_valid_program)
@@ -241,12 +254,15 @@ int main()
                 return 0;
             }
             // No valid program present, but shoud've started it
-            set_color(255, 0, 0);
+            set_color(128, 128, 0);
             dprintf("no valid program. ready.\n");
+
+            // Do not try to start the program again, if we have no valid program
+            eeprom_write_byte((uint8_t *)ee_start_program_offset, 0);
         }
         else
         {
-            set_color(0, 255, 0);
+            set_color(0, 0, 128);
             dprintf("entered bootloader. ready.\n");
         }
 
@@ -260,29 +276,36 @@ int main()
             }
             start_ch_count = 0;
         }
-        dprintf("got program header\n");
 
+        i = 0;
         response = RSP_OK;
         while (response != RSP_FINISHED)
         {
             response = process_line();
             if (response == RSP_OK)
-                ; //dprintf("ok\n");
+            {
+                if (i % 2 == 0)
+                    set_color(0, 0, 128);
+                else
+                    set_color(128, 0, 0);
+                i++;
+            }
             else 
             if (response != RSP_FINISHED)
                 break;
         }   
+        set_color(0, 0, 0);
 
         if (response == RSP_FINISHED)
         {
             dprintf("programmed ok.\n");
-            set_color(0, 255, 0);
-            _delay_ms(500);
+            set_color(0, 128, 128);
+            _delay_ms(2000);
             set_color(0, 0, 0);
 
             boot_spm_busy_wait();
             eeprom_write_byte((uint8_t *)ee_start_program_offset, 1);
-            eeprom_write_byte((uint8_t *)ee_have_valid_program_offset, 0);
+            eeprom_write_byte((uint8_t *)ee_have_valid_program_offset, 1);
             eeprom_busy_wait();
 
             boot_rww_enable ();
@@ -290,16 +313,43 @@ int main()
         }
         else
         {
-            dprintf("fail");
-            set_color(255, 0, 0);
-            _delay_ms(500);
-            set_color(0, 0, 0);
-        }
+            struct cRGB led;
 
+            boot_spm_busy_wait();
+            eeprom_write_byte((uint8_t *)ee_start_program_offset, 0);
+            eeprom_write_byte((uint8_t *)ee_have_valid_program_offset, 0);
+            eeprom_busy_wait();
+
+            if (response == RSP_CHECKSUM_FAIL)
+            {
+                dprintf("checksum fail");
+                led.r = 128; led.g = 0; led.b = 0;
+            }
+            else if (response == RSP_INVALID)
+            {
+                dprintf("upload invalid");
+                led.r = 0; led.g = 128; led.b = 0;
+            }
+            else 
+            {
+                dprintf("other error");
+                led.r = 0; led.g = 0; led.b = 128;
+            }
+
+            for(i = 0; i < 10; i++)
+            {
+                set_color(led.r, led.g, led.b);
+                _delay_ms(200);
+                set_color(0, 0, 0);
+                _delay_ms(200);
+            }
+        }
         dprintf("reset!\n");
 
         boot_rww_enable ();
-        wdt_reset();
+        boot_spm_busy_wait();
+
+        wdt_enable(WDTO_15MS);
         while(1) 
             ;
     }

@@ -421,7 +421,7 @@ void handle_packet(uint16_t len, uint8_t *packet)
                 _delay_ms(1000);
                 set_color(NULL);
                 eeprom_write_byte((uint8_t *)ee_start_program_offset, 0);
-                wdt_reset();
+                wdt_enable(WDTO_15MS);
             }
         default:
             dprintf("Invalid packet received\n");

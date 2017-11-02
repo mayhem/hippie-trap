@@ -12,7 +12,7 @@ import argparse
 import errno
 
 NODE_ID_FILE = "/tmp/node.raw"
-FUSE_CALL = ["sudo", "avrdude", "-u", "-p", "m328p", "-P", "usb", "-c", "avrispmkII", "-U", "lfuse:w:0xe2:m", "-U", "hfuse:w:0xd1:m", "-U", "efuse:w:0xff:m"]
+BOOT_CALL = ["make", "-C", "bootloader"]
 ID_CALL = ["sudo", "avrdude", "-p", "m328p", "-P", "usb", "-c", "avrispmkII", "-U", "eeprom:w:" + NODE_ID_FILE + ":r"]
 
 def write_node_id(file_name, id):
@@ -32,11 +32,11 @@ args = parser.parse_args()
 id = args.id
 
 while True:
-#    print "programming fuses: *******************************"
-#    try:
-#        subprocess.check_call(FUSE_CALL, stderr=subprocess.STDOUT)
-#    except subprocess.CalledProcessError as e:
-#        pass
+    print "programming bootloader: *******************************"
+    try:
+        subprocess.check_call(BOOT_CALL, stderr=subprocess.STDOUT)
+    except subprocess.CalledProcessError as e:
+        pass
 
     print "writing node id: *********************************"
     write_node_id(NODE_ID_FILE, id)
