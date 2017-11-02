@@ -12,4 +12,5 @@ ch = Chandelier()
 ch.open(device)
 ch.off(BROADCAST)
 ch.calibrate_timers(BROADCAST)
-ch.debug_serial(100)
+
+print "Calibration is complete."

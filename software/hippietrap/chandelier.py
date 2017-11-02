@@ -176,11 +176,10 @@ class Chandelier(object):
     def calibrate_timers(self, dest):
         self._send_packet(dest, PACKET_CALIBRATE, bytearray((CALIBRATION_DURATION,))) 
         sleep(1)
-        print "start calibration"
+        print "Start calibration..."
         self.ser.write(chr(1));
         sleep(CALIBRATION_DURATION);
         self.ser.write(chr(0));
-        print "calibration complete"
         sleep(1)
         self.set_color(BROADCAST, (0,0,0))
 
