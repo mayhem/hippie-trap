@@ -3,13 +3,10 @@
 import os
 import sys
 import math
-from chandelier import Chandelier, BROADCAST
-import function
-import random
-import common
-from random import randint
+from hippietrap.chandelier import Chandelier, BROADCAST
+from hippietrap.color import Color
+from random import randint, seed
 from time import sleep, time
-from color import Color
 
 DELAY = .02
 
@@ -21,13 +18,15 @@ ch.off(BROADCAST)
 ch.send_entropy()
 ch.set_brightness(BROADCAST, 100)
 
-random.seed()
+seed()
 period_s = 1
 
 col = [ randint(60, 255), 0, randint(60, 255) ]
+print col
 
 while True:
     for brightness in xrange(0, 100):
+        print("%d" % brightness)
         ch.set_brightness(BROADCAST, brightness)
-        ch.set_color(2, col) 
-        ch.debug_serial(.01)
+        ch.set_color(BROADCAST, col) 
+        sleep(.1)

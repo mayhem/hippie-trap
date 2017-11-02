@@ -195,6 +195,21 @@ void set_color(color_t *col)
     update_leds();
 }
 
+void set_color_rgb(uint8_t r, uint8_t g, uint8_t b)
+{
+    uint8_t j;
+    color_t col;
+
+    col.c[0] = r;
+    col.c[1] = g;
+    col.c[2] = b;
+   
+    for(j = 0; j < NUM_LEDS; j++)
+        set_pixel_color(j, &col);
+
+    update_leds();
+}
+
 void startup_animation(void)
 {
     uint8_t i, j;
@@ -401,6 +416,10 @@ void handle_packet(uint16_t len, uint8_t *packet)
             }
         case PACKET_BOOTLOADER:
             {
+                dprintf("enter bootloader!\n");
+                set_color_rgb(255, 255, 0);
+                _delay_ms(1000);
+                set_color(NULL);
                 eeprom_write_byte((uint8_t *)ee_start_program_offset, 0);
                 wdt_reset();
             }

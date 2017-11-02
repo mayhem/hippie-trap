@@ -36,6 +36,7 @@ PACKET_CLASSES      = 13
 PACKET_CALIBRATE    = 14
 PACKET_BRIGHTNESS   = 15
 PACKET_ANGLE        = 16
+PACKET_BOOTLOADER   = 17
 BROADCAST = 0
 
 def crc16_update(crc, a):
@@ -51,6 +52,8 @@ def mkcls(cls):
     if cls >= MAX_CLASSES:
         raise ValueError("Invalid class id %d. Max class id is %d." % (cls, MAX_CLASSES))
     return cls + MAX_NODES + 1
+
+
 
 class Chandelier(object):
 
@@ -148,6 +151,9 @@ class Chandelier(object):
     def set_angle(self, dest, a):
         a = int(a * common.SCALE_FACTOR)
         self._send_packet(dest, PACKET_ANGLE, bytearray(struct.pack("<I", a))) 
+
+    def enter_bootloader(self, dest):
+        self._send_packet(dest, PACKET_BOOTLOADER, bytearray()) 
 
     def set_brightness(self, dest, brightness):
         self._send_packet(dest, PACKET_BRIGHTNESS, bytearray((brightness,)))
