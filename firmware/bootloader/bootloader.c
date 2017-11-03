@@ -167,7 +167,8 @@ enum response_t process_line(uint16_t *hex_file_received)
     {
         if (last_addr != 0xFFFFFFFF)
         {
-            dprintf("write %p\n", last_addr & SPM_PAGEMASK);
+//            dprintf("write %p\n", last_addr & SPM_PAGEMASK);
+            serial_tx('.');
             boot_page_write (last_addr & SPM_PAGEMASK);
             boot_spm_busy_wait();
         }
@@ -183,7 +184,8 @@ enum response_t process_line(uint16_t *hex_file_received)
         {
             if (last_addr != 0xFFFFFFFF)
             {
-                dprintf("write %p\n", last_addr & SPM_PAGEMASK);
+//                dprintf("write %p\n", last_addr & SPM_PAGEMASK);
+                serial_tx('.');
                 boot_page_write (last_addr & SPM_PAGEMASK);
                 boot_spm_busy_wait();
             }
@@ -219,7 +221,7 @@ int main()
 {
     uint8_t start_program;
     uint8_t have_valid_program;
-    uint8_t start_ch_count = 0, ch, i;
+    uint8_t start_ch_count = 0, ch, i, step;
     uint16_t hex_file_size = 0, hex_file_received = 0;
     enum response_t response;
 
@@ -244,7 +246,7 @@ int main()
     eeprom_busy_wait();
     start_program = eeprom_read_byte((const uint8_t *)ee_start_program_offset); 
     have_valid_program = eeprom_read_byte((const uint8_t *)ee_have_valid_program_offset); 
-    dprintf("start: %d valid: %d\n", start_program, have_valid_program);
+//    dprintf("start: %d valid: %d\n", start_program, have_valid_program);
 
     while(1)
     {
@@ -286,29 +288,29 @@ int main()
         hex_file_size |= serial_rx() << 8;
         hex_file_received = 0;
 
-        i = 0;
+        i = 0; step = 4;
         response = RSP_OK;
         while (response != RSP_FINISHED)
         {
             response = process_line(&hex_file_received);
             if (response == RSP_OK)
             {
-                if (i % 2 == 0)
-                    set_color(0, 0, 128);
-                else
-                    set_color(128, 0, 0);
-                i++;
+                set_color(0, 0, i);
+                i += step;
+                if (i == 0 || i == 128)
+                    step = -step;
             }
             else 
             if (response != RSP_FINISHED)
                 break;
         }   
         set_color(0, 0, 0);
+        dprintf("\n");
 
         if (response == RSP_FINISHED && hex_file_size == hex_file_received)
         {
             dprintf("programmed ok.\n");
-            set_color(0, 128, 128);
+            set_color(0, 64, 64);
             _delay_ms(2000);
             set_color(0, 0, 0);
 
