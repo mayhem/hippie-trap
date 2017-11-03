@@ -220,10 +220,11 @@ int main()
     uint8_t start_program;
     uint8_t have_valid_program;
     uint8_t start_ch_count = 0, ch, i;
-    uint16_t hex_file_size = 0, *ptr, hex_file_received = 0;
+    uint16_t hex_file_size = 0, hex_file_received = 0;
     enum response_t response;
 
     // Turn off the watchdog timer, in case we were reset that way
+    MCUSR = 0;
     wdt_disable();
 
     // To force entering the bootloader
@@ -279,11 +280,14 @@ int main()
             }
             start_ch_count = 0;
         }
+        dprintf("got header\n");
 
         // Now load the size of the program
         hex_file_size = serial_rx();
         hex_file_size |= serial_rx() << 8;
         hex_file_received = 0;
+        dprintf("got size %u\n", hex_file_size);
+
 
         i = 0;
         response = RSP_OK;

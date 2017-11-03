@@ -37,6 +37,7 @@ PACKET_CALIBRATE    = 14
 PACKET_BRIGHTNESS   = 15
 PACKET_ANGLE        = 16
 PACKET_BOOTLOADER   = 17
+PACKET_RESET        = 18
 BROADCAST = 0
 
 def crc16_update(crc, a):
@@ -154,6 +155,9 @@ class Chandelier(object):
 
     def enter_bootloader(self, dest):
         self._send_packet(dest, PACKET_BOOTLOADER, bytearray()) 
+
+    def reset_nodes(self, dest):
+        self._send_packet(dest, PACKET_RESET, bytearray()) 
 
     def set_brightness(self, dest, brightness):
         self._send_packet(dest, PACKET_BRIGHTNESS, bytearray((brightness,)))

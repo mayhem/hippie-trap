@@ -39,6 +39,7 @@ const uint8_t PACKET_CALIBRATE    = 14;
 const uint8_t PACKET_BRIGHTNESS   = 15;
 const uint8_t PACKET_ANGLE        = 16;
 const uint8_t PACKET_BOOTLOADER   = 17;
+const uint8_t PACKET_RESET        = 18;
 
 // where in EEPROM our node id is stored. The first 16 are reserved for the bootloader
 // Bootloader items
@@ -247,6 +248,14 @@ void startup_animation(void)
     set_color(NULL);
 }
 
+void reset(void)
+{
+    eeprom_busy_wait();
+    wdt_enable(WDTO_15MS);
+    for(;;)
+        ;
+}
+
 void handle_packet(uint16_t len, uint8_t *packet)
 {
     uint8_t    type, target;
@@ -416,12 +425,18 @@ void handle_packet(uint16_t len, uint8_t *packet)
             }
         case PACKET_BOOTLOADER:
             {
+                eeprom_write_byte((uint8_t *)ee_start_program_offset, 0);
+                eeprom_write_byte((uint8_t *)ee_have_valid_program_offset, 0);
+
                 dprintf("enter bootloader!\n");
-                set_color_rgb(255, 255, 0);
+                set_color_rgb(255, 0, 0);
                 _delay_ms(1000);
                 set_color(NULL);
-                eeprom_write_byte((uint8_t *)ee_start_program_offset, 0);
-                wdt_enable(WDTO_15MS);
+                reset();
+            }
+        case PACKET_RESET:
+            {
+                reset();
             }
         default:
             dprintf("Invalid packet received\n");
@@ -644,6 +659,7 @@ int main(void)
     uint8_t i;
 
     // Turn off the watchdog timer, in case we were reset that way
+    MCUSR = 0;
     wdt_disable();
 
     // Tell the bootloader that we ran, if we haven't before.
@@ -701,7 +717,6 @@ int main(void)
     sei();
     for(;;)
         loop();
-
 
     return 0;
 }

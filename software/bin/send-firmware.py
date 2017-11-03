@@ -38,14 +38,12 @@ def send_firmware(dev, filename):
         if not ser.write(chr(0x45).encode('ascii')):
             print("Cannot write programming header.")
             return
+    sleep(.1)
 
-    print("filesize: %d bytes", filesize);
-    fs = struct.pack("<H", filesize);
-    for ch in fs:
-        print("%0X" % ch)
-        if not ser.write(chr(ch).encode('ascii')):
-            print("Cannot write hex file size header.")
-            return
+    print("filesize: %d bytes" % filesize);
+    if not ser.write(bytearray(struct.pack("<H", filesize))):
+        print("Cannot write hex file size header.")
+        return
 
     sleep(.1)
 
@@ -60,7 +58,7 @@ def send_firmware(dev, filename):
 
         ser.write(chr(13).encode('ascii'))
         print("wrote line %d of %d" % (i, len(lines)))
-        sleep(.04)
+        sleep(.015)
 
     print("Write complete.")
         
