@@ -251,7 +251,9 @@ void startup_animation(void)
 void reset(void)
 {
     eeprom_busy_wait();
-    wdt_enable(WDTO_15MS);
+    cli();
+    //wdt_enable(WDTO_15MS);
+    asm("jmp 7000");
     for(;;)
         ;
 }
@@ -281,23 +283,6 @@ void handle_packet(uint16_t len, uint8_t *packet)
     data = &packet[2];
     switch(type)
     {
-        case PACKET_SET_ID:
-            {
-                if (g_node_id == NODE_ID_UNKNOWN)
-                {
-                    g_node_id = data[0];
-                    eeprom_write_byte((uint8_t *)ee_id_offset, g_node_id);
-                }
-                break;
-            }
-
-//        case PACKET_CLEAR_ID:
-//            {
-//                g_node_id = NODE_ID_UNKNOWN;
-//                eeprom_write_byte((uint8_t *)ee_id_offset, g_node_id);
-//                break;
-//            }
-            
         case PACKET_SINGLE_COLOR:
             {
                 color_t col;
@@ -334,7 +319,6 @@ void handle_packet(uint16_t len, uint8_t *packet)
 
                 if (parse_packet(data, len - 2, &g_pattern))
                 {
-                    dprintf("parse ok\n");
                     g_have_valid_pattern = 1;
                 }                    
                 break;  
@@ -342,7 +326,6 @@ void handle_packet(uint16_t len, uint8_t *packet)
 
         case PACKET_START:
             {
-                dprintf("Received start\n");
                 start_pattern();
                 break;
             }
@@ -428,7 +411,6 @@ void handle_packet(uint16_t len, uint8_t *packet)
                 eeprom_write_byte((uint8_t *)ee_start_program_offset, 0);
                 eeprom_write_byte((uint8_t *)ee_have_valid_program_offset, 0);
 
-                dprintf("enter bootloader!\n");
                 set_color_rgb(255, 0, 0);
                 _delay_ms(1000);
                 set_color(NULL);
@@ -682,7 +664,7 @@ int main(void)
     if (timer_cal > 1 && timer_cal != 0xFFFF)
     {
         g_ticks_per_sec = timer_cal;
-        dprintf("calibration %d\n", timer_cal);
+        dprintf("cal %d\n", timer_cal);
         col.c[0] = 0;
         col.c[1] = 128;
         col.c[2] = 0;

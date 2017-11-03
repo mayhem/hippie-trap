@@ -280,14 +280,11 @@ int main()
             }
             start_ch_count = 0;
         }
-        dprintf("got header\n");
 
         // Now load the size of the program
         hex_file_size = serial_rx();
         hex_file_size |= serial_rx() << 8;
         hex_file_received = 0;
-        dprintf("got size %u\n", hex_file_size);
-
 
         i = 0;
         response = RSP_OK;
