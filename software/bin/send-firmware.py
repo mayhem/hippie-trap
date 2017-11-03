@@ -34,13 +34,17 @@ def send_firmware(dev, filename):
         print("Error loading hex file: %s" % err)
         return
 
+    print("filesize: %d (%x) bytes" % (filesize, filesize));
+#    if filesize >= 0x7000:
+#        print("hex file too large. Can't upload.");
+#        return
+
     for i in range(16):
         if not ser.write(chr(0x45).encode('ascii')):
             print("Cannot write programming header.")
             return
     sleep(.1)
 
-    print("filesize: %d bytes" % filesize);
     if not ser.write(bytearray(struct.pack("<H", filesize))):
         print("Cannot write hex file size header.")
         return

@@ -248,12 +248,15 @@ void startup_animation(void)
     set_color(NULL);
 }
 
+
 void reset(void)
 {
     eeprom_busy_wait();
     cli();
-    //wdt_enable(WDTO_15MS);
-    asm("jmp 7000");
+
+    void *bl = (void *) 0x7000;
+    goto *bl;
+
     for(;;)
         ;
 }
