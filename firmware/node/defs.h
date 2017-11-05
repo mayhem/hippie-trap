@@ -15,7 +15,7 @@
 
 typedef struct 
 {
-    uint8_t c[3];
+    uint8_t r,g,b;
 } color_t;
 
 extern uint8_t g_error;

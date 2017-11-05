@@ -186,14 +186,14 @@ uint8_t evaluate_function(function_t *function, uint32_t t, uint8_t *color)
 
 void evaluate(pattern_t *pattern, uint32_t _t, uint8_t led, color_t *color)
 {
-    uint8_t  i, value;
+    uint8_t  i, value, *ptr = (uint8_t *)color;
     uint32_t t;
    
     t = (_t * g_speed) / SCALE_FACTOR;
-    for(i = 0; i < 3; i++)
+    for(i = 0; i < 3; i++, ptr++)
     {
         uint8_t findex = (led * 3) + i;
         if (evaluate_function(&pattern->functions[findex], t, &value))
-            color->c[i] = value;
+            *(ptr++) = value;
     }
 }

@@ -158,26 +158,26 @@ void set_pixel_color(uint8_t index, color_t *col)
 
     if (!col)
     {
-        temp.c[0] = 0;
-        temp.c[1] = 0;
-        temp.c[2] = 0;
+        temp.r = 0;
+        temp.g = 0;
+        temp.b = 0;
     }
     else
     {
         // Color correct
-        temp.c[0] = pgm_read_byte(&gamma[col->c[0]]);
-        temp.c[1] = pgm_read_byte(&gamma[col->c[1]]);
-        temp.c[2] = pgm_read_byte(&gamma[col->c[2]]);
+        temp.r = pgm_read_byte(&gamma[col->r]);
+        temp.g = pgm_read_byte(&gamma[col->g]);
+        temp.b = pgm_read_byte(&gamma[col->b]);
 
         // Adjust brightness
-//        temp.c[0] = temp.c[0] * g_brightness / SCALE_FACTOR;
-//        temp.c[1] = temp.c[1] * g_brightness / SCALE_FACTOR;
-//        temp.c[2] = temp.c[2] * g_brightness / SCALE_FACTOR;
+//        temp.r = temp.r * g_brightness / SCALE_FACTOR;
+//        temp.g = temp.g * g_brightness / SCALE_FACTOR;
+//        temp.b = temp.b * g_brightness / SCALE_FACTOR;
     }
 
-    g_led_buffer[(index * 3)] = temp.c[1];
-    g_led_buffer[(index * 3) + 1] = temp.c[0];
-    g_led_buffer[(index * 3) + 2] = temp.c[2];
+    g_led_buffer[(index * 3)] = temp.g;
+    g_led_buffer[(index * 3) + 1] = temp.r;
+    g_led_buffer[(index * 3) + 2] = temp.b;
     g_color[index] = temp;
 }
 
@@ -201,9 +201,9 @@ void set_color_rgb(uint8_t r, uint8_t g, uint8_t b)
     uint8_t j;
     color_t col;
 
-    col.c[0] = r;
-    col.c[1] = g;
-    col.c[2] = b;
+    col.r = r;
+    col.g = g;
+    col.b = b;
    
     for(j = 0; j < NUM_LEDS; j++)
         set_pixel_color(j, &col);
@@ -216,12 +216,12 @@ void startup_animation(void)
     uint8_t i, j;
     color_t col1, col2;
 
-    col1.c[0] = 255;
-    col1.c[1] = 140;
-    col1.c[2] = 0;
-    col2.c[0] = 255;
-    col2.c[1] = 0;
-    col2.c[2] = 255;
+    col1.r = 255;
+    col1.g = 140;
+    col1.b = 0;
+    col2.r = 255;
+    col2.g = 0;
+    col2.b = 255;
 
     for(i = 0; i < 10; i++)
     {       
@@ -289,9 +289,9 @@ void handle_packet(uint16_t len, uint8_t *packet)
         case PACKET_SINGLE_COLOR:
             {
                 color_t col;
-                col.c[0] = data[0];
-                col.c[1] = data[1];
-                col.c[2] = data[2];
+                col.r = data[0];
+                col.g = data[1];
+                col.b = data[2];
 
                 for(int j=0; j < NUM_LEDS; j++)
                     set_color(&col);
@@ -304,9 +304,9 @@ void handle_packet(uint16_t len, uint8_t *packet)
 
                 for(int j=0; j < NUM_LEDS; j++, data += 3)
                 {
-                    col.c[0] = data[0];
-                    col.c[1] = data[1];
-                    col.c[2] = data[2];
+                    col.r = data[0];
+                    col.g = data[1];
+                    col.b = data[2];
                     set_pixel_color(j, &col);
                 }
                 update_leds();
@@ -389,8 +389,8 @@ void handle_packet(uint16_t len, uint8_t *packet)
             {  
                 color_t col;
 
-                col.c[1] = col.c[2] = 0;
-                col.c[0] = 255;
+                col.g = col.b = 0;
+                col.r = 255;
 
                 // clear out any stray characters
                 while(serial_char_ready()) 
@@ -486,30 +486,30 @@ void error_pattern(void)
         switch(g_error)
         {
             case ERR_NO_VALID_PATTERN: // orange
-                 col.c[0] = 128;
-                 col.c[1] = 40;
-                 col.c[0] = 0;
+                 col.r = 128;
+                 col.g = 40;
+                 col.r = 0;
                  break;
 
             case ERR_STACK_CLASH:  // red
-                 col.c[0] = 255;
-                 col.c[1] = col.c[2] = 0;
+                 col.r = 255;
+                 col.g = col.b = 0;
                  break;
 
             case ERR_OUT_OF_HEAP:  // green
-                 col.c[1] = 255;
-                 col.c[0] = col.c[2] = 0;
+                 col.g = 255;
+                 col.r = col.b = 0;
                  break;
 
             case ERR_PARSE_FAILURE:  // blue
-                 col.c[2] = 255;
-                 col.c[0] = col.c[1] = 0;
+                 col.b = 255;
+                 col.r = col.g = 0;
                  break;
 
             default:    
-                 col.c[0] = 128;
-                 col.c[1] = 0;
-                 col.c[2] = 128;
+                 col.r = 128;
+                 col.g = 0;
+                 col.b = 128;
                  break;
         }
         set_color(&col);
@@ -668,23 +668,23 @@ int main(void)
     {
         g_ticks_per_sec = timer_cal;
         dprintf("cal %d\n", timer_cal);
-        col.c[0] = 0;
-        col.c[1] = 128;
-        col.c[2] = 0;
+        col.r = 0;
+        col.g = 128;
+        col.b = 0;
     }
     else
     {
-        col.c[0] = 0;
-        col.c[1] = 0;
-        col.c[2] = 128;
+        col.r = 0;
+        col.g = 0;
+        col.b = 128;
     }
 
     g_node_id = eeprom_read_byte((uint8_t *)ee_id_offset);
     if (g_node_id == 0 || g_node_id >= MAX_NODES)
     {
-        col.c[0] = 128;
-        col.c[1] = 0;
-        col.c[2] = 0;
+        col.r = 128;
+        col.g = 0;
+        col.b = 0;
     }
 
     set_color(&col);
