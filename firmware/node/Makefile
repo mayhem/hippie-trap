@@ -12,22 +12,22 @@ program: $(TARGET).hex
 fuses:
 	sudo avrdude -p m328p -P usb -c avrispmkII -B 8 -U lfuse:w:0xe2:m -U hfuse:w:0xd7:m -U efuse:w:0xff:m -U lock:w:0xff:m
 
-$(TARGET).o: $(TARGET).cpp
+$(TARGET).o: $(TARGET).cpp defs.h
 	$(CC) $(CFLAGS) -c $(TARGET).cpp 
 
-function.o: function.cpp function.h
+function.o: function.cpp function.h defs.h
 	$(CC) $(CFLAGS) -c function.cpp
 
-serial.o: serial.cpp serial.h
+serial.o: serial.cpp serial.h defs.h
 	$(CC) $(CFLAGS) -c serial.cpp
 
-parse.o: parse.cpp parse.h
+parse.o: parse.cpp parse.h defs.h
 	$(CC) $(CFLAGS) -c parse.cpp
 
-sin_table.o: sin_table.cpp sin_table.h
+sin_table.o: sin_table.cpp sin_table.h defs.h
 	$(CC) $(CFLAGS) -c sin_table.cpp
 
-ws2812.o: ws2812.cpp ws2812.h
+ws2812.o: ws2812.cpp ws2812.h defs.h
 	$(CC) $(CFLAGS) -c ws2812.cpp
 
 $(TARGET).hex: $(TARGET).obj

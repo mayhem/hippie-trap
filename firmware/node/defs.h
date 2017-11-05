@@ -26,12 +26,12 @@ extern uint32_t g_random_seed;
 void print_col(color_t *col);
 void set_error(uint8_t err);
 
-const uint8_t ERROR_DELAY          = 255;
 const uint8_t ERR_OK               = 0;
 const uint8_t ERR_NO_VALID_PATTERN = 1;
-const uint8_t ERR_STACK_CLASH      = 2;
-const uint8_t ERR_OUT_OF_HEAP      = 3;
-const uint8_t ERR_PARSE_FAILURE    = 4;
+const uint8_t ERR_INVALID_PACKET   = 2;
+const uint8_t ERR_STACK_CLASH      = 3;
+const uint8_t ERR_OUT_OF_HEAP      = 4;
+const uint8_t ERR_PARSE_FAILURE    = 5;
 
 void  dprintf(const char *fmt, ...);
 

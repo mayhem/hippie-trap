@@ -20,8 +20,6 @@ MAX_PACKET_LEN = 230
 CALIBRATION_DURATION = 10
 NODE_ID_UNKNOWN = 255
 
-PACKET_SET_ID       = 0 
-PACKET_CLEAR_ID     = 1  
 PACKET_SINGLE_COLOR = 2  
 PACKET_COLOR_ARRAY  = 3  
 PACKET_PATTERN      = 4  
@@ -80,8 +78,6 @@ class Chandelier(object):
         self.ser.write(chr(0))
         self.ser.write(chr(0))
 
-        self.set_speed(BROADCAST, 1000)
-
     def _send_packet(self, dest, type, data):
         if not self.ser:
             return
@@ -125,14 +121,8 @@ class Chandelier(object):
         # Give the bottles a moment to parse the packet before we go on
         sleep(.05)
 
-    def set_id(self, id):
-        self._send_packet(BROADCAST, PACKET_SET_ID, bytearray(struct.pack("<b", id))) 
-
-    def clear_ids(self):
-        self._send_packet(BROADCAST, PACKET_CLEAR_ID, bytearray()) 
-
-    def start_pattern(self, dest):
-        self._send_packet(dest, PACKET_START, bytearray()) 
+    def send_invalid_packet(self, id):
+        self._send_packet(BROADCAST, 254, bytearray()) 
 
     def off(self, dest):
         self._send_packet(dest, PACKET_OFF, bytearray()) 

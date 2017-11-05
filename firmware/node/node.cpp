@@ -55,11 +55,11 @@ const uint8_t ee_calibration_offset         = 17;
 uint8_t    g_error = ERR_OK;
 
 // time keeping
-uint32_t   g_target = 0;
 uint8_t    g_delay = 10;
 uint32_t   g_speed = SCALE_FACTOR;
 uint32_t   g_ticks_per_sec = (int32_t)1000000 / US_PER_TICK;
 uint32_t   g_ticks_per_frame; // setup later
+uint32_t   g_target = g_ticks_per_frame;
 
 // led buffer
 uint8_t    g_led_buffer[3 * NUM_LEDS];
@@ -181,9 +181,24 @@ void set_pixel_color(uint8_t index, color_t *col)
     g_color[index] = temp;
 }
 
+void set_pixel_color_rgb(uint8_t index, uint8_t r, uint8_t g, uint8_t b)
+{
+    color_t temp;
+
+    temp.r = r;
+    temp.g = g;
+    temp.b = b;
+    set_pixel_color(index, &temp);
+}
+
 void update_leds(void)
 {
     ws2812_sendarray(g_led_buffer, 3 * NUM_LEDS);
+}
+
+void clear_leds(void)
+{
+    memset(g_led_buffer, 0, sizeof(g_led_buffer));
 }
 
 void set_color(color_t *col)
@@ -296,6 +311,8 @@ void handle_packet(uint16_t len, uint8_t *packet)
                 for(int j=0; j < NUM_LEDS; j++)
                     set_color(&col);
 
+                set_error(ERR_OK);
+
                 break;
             } 
         case PACKET_COLOR_ARRAY:
@@ -324,6 +341,7 @@ void handle_packet(uint16_t len, uint8_t *packet)
                 {
                     g_have_valid_pattern = 1;
                 }                    
+                set_error(ERR_OK);
                 break;  
             }
 
@@ -389,6 +407,7 @@ void handle_packet(uint16_t len, uint8_t *packet)
             {  
                 color_t col;
 
+                set_error(ERR_OK);
                 col.g = col.b = 0;
                 col.r = 255;
 
@@ -425,6 +444,7 @@ void handle_packet(uint16_t len, uint8_t *packet)
             }
         default:
             dprintf("Invalid packet received\n");
+            set_error(ERR_INVALID_PACKET);
     }
 }
 
@@ -452,27 +472,27 @@ void update_pattern(void)
     uint8_t  i;
     color_t  color;
 
-    if (g_error)
-    {
-        error_pattern();
-        return;
-    }
-
-    if (!g_pattern_active)
-        return;
-
     if (g_target && ticks() >= g_target)
     {
-        g_target += g_ticks_per_frame;
         update_leds();
 
-        for(i = 0; i < NUM_LEDS; i++)
-        {
-            color = g_color[i];
-            evaluate(&g_pattern, ticks_to_ms(g_target), i, &color);
-            set_pixel_color(i, &color);
-        }
+        if (g_error)
+            error_pattern();
+        else
+            if (g_pattern_active)
+                for(i = 0; i < NUM_LEDS; i++)
+                {
+                    color = g_color[i];
+                    evaluate(&g_pattern, ticks_to_ms(g_target), i, &color);
+                    set_pixel_color(i, &color);
+                }
+
+        g_target += g_ticks_per_frame;
     }
+
+    // If for some reason we passed out target time, lets pick a new target time
+    if (g_target <= ticks())
+        g_target = ticks() + g_ticks_per_frame;
 }
 
 void set_error(uint8_t err)
@@ -482,7 +502,9 @@ void set_error(uint8_t err)
 
 void error_pattern(void)
 {
-    set_color_rgb(128, 0, 0);
+    clear_leds();
+    set_pixel_color_rgb(1, 255, 0, 0); 
+    set_pixel_color_rgb(2, 255, 0, 0); 
 }
 
 #if 0
