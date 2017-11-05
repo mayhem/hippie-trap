@@ -336,7 +336,7 @@ void handle_packet(uint16_t len, uint8_t *packet)
         case PACKET_OFF:
             {
                 g_pattern_active = 0;
-                g_error = ERR_OK;
+                set_error(ERR_OK);
                 g_target = 0;
                 set_brightness(1000);
                 set_color(NULL);
@@ -440,7 +440,7 @@ void start_pattern(void)
 
     reset_ticks();
     g_target = g_ticks_per_frame;
-    g_error = ERR_OK;
+    set_error(ERR_OK);
     g_pattern_active = 1;
     g_have_valid_pattern = 0;
 
@@ -475,47 +475,14 @@ void update_pattern(void)
     }
 }
 
+void set_error(uint8_t err)
+{
+    g_error = err;
+}
+
 void error_pattern(void)
 {
-    uint8_t  t;
-    color_t  col;
-
-    t = ticks_to_ms(ticks()) % (ERROR_DELAY * 2);
-    if (t > ERROR_DELAY)
-    {
-        switch(g_error)
-        {
-            case ERR_NO_VALID_PATTERN: // orange
-                 col.r = 128;
-                 col.g = 40;
-                 col.r = 0;
-                 break;
-
-            case ERR_STACK_CLASH:  // red
-                 col.r = 255;
-                 col.g = col.b = 0;
-                 break;
-
-            case ERR_OUT_OF_HEAP:  // green
-                 col.g = 255;
-                 col.r = col.b = 0;
-                 break;
-
-            case ERR_PARSE_FAILURE:  // blue
-                 col.b = 255;
-                 col.r = col.g = 0;
-                 break;
-
-            default:    
-                 col.r = 128;
-                 col.g = 0;
-                 col.b = 128;
-                 break;
-        }
-        set_color(&col);
-    }
-    else
-        set_color(NULL);
+    set_color_rgb(128, 0, 0);
 }
 
 #if 0

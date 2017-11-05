@@ -54,7 +54,7 @@ void *heap_alloc(uint8_t bytes)
     uint8_t *ptr = cur_heap + heap_offset;
     if (bytes + heap_offset > HEAP_SIZE)
     {
-        g_error = ERR_OUT_OF_HEAP;
+        set_error(ERR_OUT_OF_HEAP);
         return NULL;
     }
 
@@ -76,7 +76,7 @@ void *create_object(uint8_t type, uint8_t dest, uint8_t arg_count, uint32_t *arg
             {
                 if (arg_count != 5)
                 {
-                    g_error = ERR_PARSE_FAILURE;
+                    set_error(ERR_PARSE_FAILURE);
                     return NULL;
                 }
  

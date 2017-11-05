@@ -18,13 +18,13 @@ typedef struct
     uint8_t r,g,b;
 } color_t;
 
-extern uint8_t g_error;
 extern uint8_t g_node_id;
 extern int16_t g_pos[3];
 extern int32_t g_angle;
 extern uint32_t g_random_seed;
 
 void print_col(color_t *col);
+void set_error(uint8_t err);
 
 const uint8_t ERROR_DELAY          = 255;
 const uint8_t ERR_OK               = 0;
