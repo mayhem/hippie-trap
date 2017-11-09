@@ -25,7 +25,7 @@ PACKET_COLOR_ARRAY  = 3
 PACKET_PATTERN      = 4  
 PACKET_ENTROPY      = 5  
 PACKET_START        = 6  
-PACKET_OFF          = 7  
+PACKET_CLEAR        = 7  
 PACKET_POSITION     = 9  
 PACKET_DELAY        = 10 
 PACKET_ADDRR        = 11 
@@ -124,8 +124,8 @@ class Chandelier(object):
     def send_invalid_packet(self, id):
         self._send_packet(BROADCAST, 254, bytearray()) 
 
-    def off(self, dest):
-        self._send_packet(dest, PACKET_OFF, bytearray()) 
+    def reset(self, dest):
+        self._send_packet(dest, PACKET_RESET, bytearray()) 
 
     def set_delay(self, dest, delay):
         self._send_packet(dest, PACKET_DELAY, bytearray(struct.pack("<b", delay))) 

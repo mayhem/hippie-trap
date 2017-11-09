@@ -29,21 +29,22 @@
 #define DEST_ALL_GREEN     15
 
 #define FUNCTION_NONE       0
-#define FUNCTION_SQUARE     1
+#define FUNCTION_ERROR      1
+#define FUNCTION_SQUARE     2
 
+// Abstract base class
 typedef struct function_t
 {
     uint8_t       type;
     uint8_t       arg_count;
     uint8_t       dest;
-    void         *object;
 } function_t;
 
 typedef struct pattern_t
 {
     uint8_t      num_funcs;
     uint32_t     period;
-    function_t functions[NUM_PIXELS * 3];
+    function_t  *functions[NUM_PIXELS * 3];
 } pattern_t;
 
 typedef struct f_generator_t
@@ -56,10 +57,8 @@ typedef struct f_generator_t
 
 typedef struct square_t
 {
-    int32_t     period;
-    int32_t     phase;
-    int32_t     amplitude;
-    int32_t     offset;
+    function_t  b;
+    generator_t g;
     int32_t     duty;
 } square_t;
 

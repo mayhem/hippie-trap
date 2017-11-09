@@ -4,13 +4,14 @@ import abc
 from struct import pack
 
 FUNC_NONE                  = 0
-FUNC_SQUARE                = 1
-FUNC_SINE                  = 2
-FUNC_SAWTOOTH              = 3
-FUNC_STEP                  = 4
-FUNC_IMPULSE               = 5
-FUNC_LINE                  = 6
-FUNC_MAX                   = 6
+FUNC_ERROR                 = 1
+FUNC_SQUARE                = 2
+FUNC_SINE                  = 3
+FUNC_SAWTOOTH              = 4
+FUNC_STEP                  = 5
+FUNC_IMPULSE               = 6
+FUNC_LINE                  = 7
+FUNC_MAX                   = 8
 
 MAX_NUM_ARGS           = 8
 SCALE_FACTOR = 1000

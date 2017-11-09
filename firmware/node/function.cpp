@@ -30,10 +30,10 @@ void f_sin_init(void *_self, int32_t period, int32_t phase, int32_t amplitude, i
 void f_square_init(void *_self, int32_t period, int32_t phase, int32_t amplitude, int32_t offset, int32_t duty)
 {
     square_t *self = (square_t *)_self;
-    self->period = period;
-    self->phase = phase;    
-    self->amplitude = amplitude;
-    self->offset = offset;
+    self->g.period = period;
+    self->g.phase = phase;    
+    self->g.amplitude = amplitude;
+    self->g.offset = offset;
     self->duty = duty;
 }
 
@@ -64,17 +64,19 @@ int32_t f_sin(void *_self, int32_t t)
 int32_t f_square(void *_self, int32_t t)
 {
     square_t *self = (square_t *)_self;
-    int32_t v = ((int32_t)t * SCALE_FACTOR / self->period) + self->phase;
+
+    int32_t v = ((int32_t)t * SCALE_FACTOR / self->g.period) + self->g.phase;
     if (pmod(v, SCALE_FACTOR) < self->duty)
-        return self->amplitude + self->offset;
+        return self->g.amplitude + self->g.offset;
     else
-        return self->offset;
+        return self->g.offset;
 }
 
 int32_t f_sawtooth(void *_self, int32_t t)
 {
     generator_t *self = (generator_t *)_self;  
     
+
     int32_t v = (((int32_t)t * self->period / SCALE_FACTOR) + self->phase) % SCALE_FACTOR;
     return v * self->amplitude / SCALE_FACTOR + self->offset;
 }
@@ -82,6 +84,8 @@ int32_t f_sawtooth(void *_self, int32_t t)
 int32_t f_step(void *_self, int32_t t)
 {
     generator_t *self = (generator_t *)_self;
+
+
     int32_t v = ((int32_t)t * SCALE_FACTOR / self->period) + self->phase;
     if (v >= 0)
         return self->amplitude + self->offset;
@@ -92,6 +96,8 @@ int32_t f_step(void *_self, int32_t t)
 int32_t f_impulse(void *_self, int32_t t)
 {
     generator_t *self = (generator_t *)_self;
+
+
     int32_t v = ((int32_t)t * SCALE_FACTOR / self->period) + self->phase;
     if (v >= 0 && v < SCALE_FACTOR)
         return self->amplitude + self->offset;
@@ -105,3 +111,9 @@ int32_t f_line(void *_self, int32_t t)
     return ((int32_t)t * self->amplitude / SCALE_FACTOR) + self->offset;
 }
 
+int32_t f_error(void *_self, int32_t t)
+{
+    t /= 500;
+
+    return (t % 2 == 0) ? 128 : 0;
+}

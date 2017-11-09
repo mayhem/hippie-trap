@@ -28,8 +28,8 @@ const uint8_t PACKET_COLOR_ARRAY  = 3;
 const uint8_t PACKET_PATTERN      = 4; 
 const uint8_t PACKET_ENTROPY      = 5; 
 const uint8_t PACKET_START        = 6; 
-const uint8_t PACKET_OFF          = 7; 
-const uint8_t PACKET_CLEAR_NEXT   = 8; 
+const uint8_t PACKET_CLEAR        = 7; 
+const uint8_t PACKET_XXXXXXXXXXX  = 8; 
 const uint8_t PACKET_POSITION     = 9; 
 const uint8_t PACKET_DELAY        = 10;
 const uint8_t PACKET_ADDR         = 11;
@@ -67,12 +67,11 @@ uint8_t    g_led_buffer[3 * NUM_LEDS];
 // random seed
 uint32_t    g_random_seed = 0;
 
-// pattern, packet, heap
-uint8_t     g_pattern_active = 0;
+// pattern, packet
+uint8_t     g_pattern_active = -1;
 uint8_t     g_have_valid_pattern = 0;
-pattern_t   g_pattern;
+pattern_t   g_patterns[2];
 uint8_t     g_packet[MAX_PACKET_LEN];
-uint8_t     g_heap[HEAP_SIZE];
 
 // our node id
 uint8_t g_node_id = 0;
@@ -116,7 +115,6 @@ const uint8_t PROGMEM gamma[] = {
 };
 
 // ---- prototypes -----
-void next_pattern(void);  
 void set_brightness(int32_t brightness);
 void start_pattern(void);
 void update_pattern(void);
@@ -332,28 +330,25 @@ void handle_packet(uint16_t len, uint8_t *packet)
             
         case PACKET_PATTERN:
             {
-                g_pattern_active = 0;
-
-                // reset the heap, thereby destroying the previous patten object
-                heap_setup(g_heap);
-
-                if (parse_packet(data, len - 2, &g_pattern))
-                {
-                    g_have_valid_pattern = 1;
-                }                    
-                set_error(ERR_OK);
+                uint8_t next = (g_pattern_active + 1) % 2;
+                g_have_valid_pattern = parse_pattern(next, data, len - 2);
                 break;  
             }
 
         case PACKET_START:
             {
-                start_pattern();
+                if (!g_have_valid_pattern)
+                    set_error(ERR_NO_VALID_PATTERN);
+                else
+                    start_pattern();
                 break;
             }
             
-        case PACKET_OFF:
+        case PACKET_CLEAR:
             {
-                g_pattern_active = 0;
+                g_pattern_active = -1;
+                g_have_valid_pattern = 0;
+
                 set_error(ERR_OK);
                 set_brightness(1000);
                 set_color(NULL);
@@ -455,12 +450,16 @@ void set_brightness(int32_t brightness)
 void start_pattern(void)
 {
     if (!g_have_valid_pattern)
+    {
+        set_error(ERR_NO_VALID_PATTERN);
         return;
+    }
 
     reset_ticks();
     g_target = g_ticks_per_frame;
     set_error(ERR_OK);
-    g_pattern_active = 1;
+
+    g_pattern_active = (g_pattern_active + 1) % 2;
     g_have_valid_pattern = 0;
 
     update_pattern();  
@@ -471,15 +470,15 @@ void update_pattern(void)
     uint8_t  i;
     color_t  color;
 
-    if (g_target && ticks() >= g_target)
+    if (g_pattern_active >= 0 && g_target && ticks() >= g_target)
     {
         update_leds();
 
-        if (g_pattern_active)
+        if (g_pattern_active >= 0)
             for(i = 0; i < NUM_LEDS; i++)
             {
                 color = g_color[i];
-                evaluate(&g_pattern, ticks_to_ms(g_target), i, &color);
+                evaluate(&g_patterns[g_pattern_active], ticks_to_ms(g_target), i, &color);
                 set_pixel_color(i, &color);
             }
 
@@ -491,21 +490,13 @@ void set_error(uint8_t err)
 {
     g_error = err;
     set_color(NULL);
+
+    setup_error_pattern();
+
     reset_ticks();
     g_target = g_ticks_per_frame;
-}
-
-void error_pattern(uint32_t t)
-{
-    t /= 500;
-
-    if (t % 2 == 0)
-    {
-        set_pixel_color_rgb(1, 255, 0, 0); 
-        set_pixel_color_rgb(2, 255, 0, 0); 
-    }
-    else
-        clear_leds();
+    g_have_valid_pattern = 0;
+    g_pattern_active = 0;
 }
 
 #if 0
@@ -683,7 +674,7 @@ int main(void)
 
     g_ticks_per_frame = g_ticks_per_sec * g_delay / 1000;
 
-    memset(&g_pattern, 0, sizeof(pattern_t));
+    memset(g_patterns, 0, sizeof(g_patterns));
     memset(&g_color, 0, sizeof(g_color));
 
     for(i = 0; i < NUM_CLASSES; i++)

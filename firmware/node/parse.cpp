@@ -9,9 +9,6 @@
 
 int32_t master_brightness = 1000;
 
-// variables to help manage the heap.
-uint8_t *cur_heap = NULL;
-uint16_t heap_offset = 0;
 
 #define DEFAULT_PERIOD      1.0
 #define DEFAULT_PHASE       0.0
@@ -42,30 +39,37 @@ WIRE PROTOCOL
 
 */
 
+// Reserve space for the patterns
+uint8_t g_pattern_heap[2][HEAP_SIZE];
+uint16_t g_pattern_heap_offset[2];
 
-void heap_setup(uint8_t *heap)
+void func_alloc_setup(uint8_t pattern_index)
 {
-    heap_offset = 0;
-    cur_heap = heap;
+    g_pattern_heap_offset[pattern_index] = 0;
 }
 
-void *heap_alloc(uint8_t bytes)
+function_t *func_alloc(uint8_t pattern_index, uint8_t type, uint8_t dest, uint8_t arg_count, uint8_t bytes)
 { 
-    uint8_t *ptr = cur_heap + heap_offset;
-    if (bytes + heap_offset > HEAP_SIZE)
+    uint8_t *ptr = g_pattern_heap[pattern_index] + g_pattern_heap_offset[pattern_index];
+
+    g_pattern_heap_offset[pattern_index] += bytes;
+    if (g_pattern_heap_offset[pattern_index] >= HEAP_SIZE)
     {
         set_error(ERR_OUT_OF_HEAP);
         return NULL;
     }
 
-    heap_offset += bytes;
+    function_t *func = (function_t *)ptr;
+    func->type = type;
+    func->dest = dest;
+    func->arg_count = arg_count;
 
-    return ptr;
+    return (function_t *)ptr;
 }
 
-void *create_object(uint8_t type, uint8_t dest, uint8_t arg_count, uint32_t *args)
+function_t *create_func(uint8_t pattern_index, uint8_t type, uint8_t dest, uint8_t arg_count, uint32_t *args)
 {
-    void     *obj;
+    function_t *obj;
             
     switch(type)
     {
@@ -80,7 +84,7 @@ void *create_object(uint8_t type, uint8_t dest, uint8_t arg_count, uint32_t *arg
                     return NULL;
                 }
  
-                obj = heap_alloc(sizeof(square_t));
+                obj = func_alloc(pattern_index, type, dest, arg_count, sizeof(square_t));
                 if (!obj)
                     return NULL;
 
@@ -95,44 +99,62 @@ void *create_object(uint8_t type, uint8_t dest, uint8_t arg_count, uint32_t *arg
     return NULL;
 }
 
-uint8_t parse_packet(uint8_t *code, uint16_t len, pattern_t *pattern)
+void setup_error_pattern(void)
+{
+    pattern_t *pattern = &g_patterns[0];
+
+    func_alloc_setup(0);
+    memset(pattern, 0, sizeof(pattern_t));
+
+    pattern->num_funcs = 1;
+    pattern->period = 1000;
+    pattern->functions[0] = create_func(0, FUNCTION_ERROR, DEST_ALL_RED, 0, NULL);
+    pattern->functions[0]->arg_count = 0;
+    pattern->functions[0]->type = FUNCTION_ERROR;
+}
+
+uint8_t parse_pattern(uint8_t pattern_index, uint8_t *code, uint16_t len)
 {
     uint8_t  i, j, *index;
+    pattern_t      *pattern = &g_patterns[pattern_index];
 
     memset(pattern, 0, sizeof(pattern_t));
 
     pattern->num_funcs = code[0];
     pattern->period = *(uint32_t *)&code[1];
 
+    func_alloc_setup(pattern_index);
+
     index = &code[5];
     for(i = 0; i < pattern->num_funcs; i++)
     {
-        function_t   temp;
+        function_t  *temp;
+        uint8_t      type, arg_count, dest;
         uint32_t     args[MAX_ARGS];
 
-        temp.type = *index;
+        type = *index;
         index++;
 
-        temp.arg_count = *index & 0xF;
-        temp.dest = *index >> 4;
+        arg_count = *index & 0xF;
+        dest = *index >> 4;
         index++;
 
-        dprintf("type %d args %d dest: %d\n", temp.type, temp.arg_count, temp.dest);
-        for(j = 0; j < temp.arg_count; j++)
+        dprintf("type %d args %d dest: %d\n", type, arg_count, dest);
+        for(j = 0; j < arg_count; j++)
         {
             args[j] = *(uint32_t *)index;
             index += sizeof(int32_t);
         }
 
         // create function object here
-        temp.object = create_object(temp.type, temp.dest, temp.arg_count, args); 
-        if (!temp.object)
+        temp = create_func(pattern_index, type, dest, arg_count, args); 
+        if (!temp)
             return 0;
 
-        if (temp.dest <= DEST_LED_11)
-            pattern->functions[temp.dest] = temp;
+        if (dest <= DEST_LED_11)
+            pattern->functions[dest] = temp;
         else
-            switch(temp.dest)
+            switch(dest)
             {
                 case DEST_ALL:
                 {
@@ -177,7 +199,7 @@ uint8_t evaluate_function(function_t *function, uint32_t t, uint8_t *color)
             return 0;
 
         case FUNCTION_SQUARE:
-            *color = f_square(function->object, t);
+            *color = f_square(function, t);
             return 1;
         default:
             return 0;
@@ -193,7 +215,7 @@ void evaluate(pattern_t *pattern, uint32_t _t, uint8_t led, color_t *color)
     for(i = 0; i < 3; i++, ptr++)
     {
         uint8_t findex = (led * 3) + i;
-        if (evaluate_function(&pattern->functions[findex], t, &value))
+        if (evaluate_function(pattern->functions[findex], t, &value))
             *(ptr++) = value;
     }
 }
