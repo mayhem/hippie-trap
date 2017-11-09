@@ -42,28 +42,35 @@ WIRE PROTOCOL
 
 */
 
-
-void heap_setup(uint8_t *heap)
+class Function
 {
-    heap_offset = 0;
-    cur_heap = heap;
+    protected:
+
+        uint16_t heap_offset;
+
+    public:
+
+        Function(void)
+        {
+            this->heap_offset = 0;
+        };
+
+        void *Function::alloc(uint8_t bytes)
+        { 
+            uint8_t *ptr = cur_heap + heap_offset;
+            if (bytes + heap_offset > HEAP_SIZE)
+            {
+                set_error(ERR_OUT_OF_HEAP);
+                return NULL;
+            }
+
+            heap_offset += bytes;
+
+            return ptr;
+        };
 }
 
-void *heap_alloc(uint8_t bytes)
-{ 
-    uint8_t *ptr = cur_heap + heap_offset;
-    if (bytes + heap_offset > HEAP_SIZE)
-    {
-        set_error(ERR_OUT_OF_HEAP);
-        return NULL;
-    }
-
-    heap_offset += bytes;
-
-    return ptr;
-}
-
-void *create_object(uint8_t type, uint8_t dest, uint8_t arg_count, uint32_t *args)
+Function *create_func(uint8_t type, uint8_t dest, uint8_t arg_count, uint32_t *args)
 {
     void     *obj;
             
@@ -79,12 +86,8 @@ void *create_object(uint8_t type, uint8_t dest, uint8_t arg_count, uint32_t *arg
                     set_error(ERR_PARSE_FAILURE);
                     return NULL;
                 }
- 
-                obj = heap_alloc(sizeof(square_t));
-                if (!obj)
-                    return NULL;
 
-                f_square_init(obj, args[0], args[1], args[2], args[3], args[4]);
+                obj = new Square(args[0], args[1], args[2], args[3], args[4]);
                 dprintf("Parsed square function\n");
 
                 return obj;
@@ -125,8 +128,8 @@ uint8_t parse_packet(uint8_t *code, uint16_t len, pattern_t *pattern)
         }
 
         // create function object here
-        temp.object = create_object(temp.type, temp.dest, temp.arg_count, args); 
-        if (!temp.object)
+        temp.func = create_func(temp.type, temp.dest, temp.arg_count, args); 
+        if (!temp.func)
             return 0;
 
         if (temp.dest <= DEST_LED_11)
