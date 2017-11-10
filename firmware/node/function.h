@@ -31,35 +31,13 @@
 #define FUNCTION_NONE       0
 #define FUNCTION_SQUARE     1
 
-class Function
+typedef struct function_t
 {
-    protected:
-
-        uint16_t heap_offset;
-        uint8_t  arg_count;
-        uint8_t  dest;
-
-    public:
-
-        Function(void)
-        {
-            this->heap_offset = 0;
-        };
-
-        void *Function::alloc(uint8_t bytes)
-        {
-            uint8_t *ptr = cur_heap + heap_offset;
-            if (bytes + heap_offset > HEAP_SIZE)
-            {
-                set_error(ERR_OUT_OF_HEAP);
-                return NULL;
-            }
-
-            heap_offset += bytes;
-
-            return ptr;
-        };
-}
+    uint8_t       type;
+    uint8_t       arg_count;
+    uint8_t       dest;
+    void         *object;
+} function_t;
 
 typedef struct pattern_t
 {

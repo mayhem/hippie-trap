@@ -120,7 +120,7 @@ void next_pattern(void);
 void set_brightness(int32_t brightness);
 void start_pattern(void);
 void update_pattern(void);
-void error_pattern(uint32_t t);
+void error_pattern(void);
 
 volatile uint32_t g_time = 0;
 ISR (TIMER1_OVF_vect)
@@ -355,6 +355,7 @@ void handle_packet(uint16_t len, uint8_t *packet)
             {
                 g_pattern_active = 0;
                 set_error(ERR_OK);
+                g_target = 0;
                 set_brightness(1000);
                 set_color(NULL);
             }
@@ -475,37 +476,35 @@ void update_pattern(void)
     {
         update_leds();
 
-        if (g_pattern_active)
-            for(i = 0; i < NUM_LEDS; i++)
-            {
-                color = g_color[i];
-                evaluate(&g_pattern, ticks_to_ms(g_target), i, &color);
-                set_pixel_color(i, &color);
-            }
+        if (g_error)
+            error_pattern();
+        else
+            if (g_pattern_active)
+                for(i = 0; i < NUM_LEDS; i++)
+                {
+                    color = g_color[i];
+                    evaluate(&g_pattern, ticks_to_ms(g_target), i, &color);
+                    set_pixel_color(i, &color);
+                }
 
         g_target += g_ticks_per_frame;
     }
+
+    // If for some reason we passed out target time, lets pick a new target time
+    if (g_target <= ticks())
+        g_target = ticks() + g_ticks_per_frame;
 }
 
 void set_error(uint8_t err)
 {
     g_error = err;
-    set_color(NULL);
-    reset_ticks();
-    g_target = g_ticks_per_frame;
 }
 
-void error_pattern(uint32_t t)
+void error_pattern(void)
 {
-    t /= 500;
-
-    if (t % 2 == 0)
-    {
-        set_pixel_color_rgb(1, 255, 0, 0); 
-        set_pixel_color_rgb(2, 255, 0, 0); 
-    }
-    else
-        clear_leds();
+    clear_leds();
+    set_pixel_color_rgb(1, 255, 0, 0); 
+    set_pixel_color_rgb(2, 255, 0, 0); 
 }
 
 #if 0
