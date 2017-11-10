@@ -4,8 +4,9 @@
 #include <stdint.h>
 #include <avr/pgmspace.h>
 
+#include "serial.h"
 #include "function.h"
-#include "parse.h"
+#include "pattern.h"
 
 int32_t master_brightness = 1000;
 
@@ -64,17 +65,27 @@ function_t *func_alloc(uint8_t pattern_index, uint8_t type, uint8_t dest, uint8_
     func->dest = dest;
     func->arg_count = arg_count;
 
-    return (function_t *)ptr;
+    return func;
 }
 
 function_t *create_func(uint8_t pattern_index, uint8_t type, uint8_t dest, uint8_t arg_count, uint32_t *args)
 {
     function_t *obj;
-            
+
     switch(type)
     {
         case FUNCTION_NONE:
             return NULL;
+
+        case FUNCTION_ERROR:
+            {
+                obj = func_alloc(pattern_index, type, dest, arg_count, sizeof(function_t));
+                if (!obj)
+                    return NULL;
+
+                return obj;
+            }
+            break;
 
         case FUNCTION_SQUARE:
             {
@@ -89,7 +100,6 @@ function_t *create_func(uint8_t pattern_index, uint8_t type, uint8_t dest, uint8
                     return NULL;
 
                 f_square_init(obj, args[0], args[1], args[2], args[3], args[4]);
-                dprintf("Parsed square function\n");
 
                 return obj;
             }
@@ -103,14 +113,12 @@ void setup_error_pattern(void)
 {
     pattern_t *pattern = &g_patterns[0];
 
-    func_alloc_setup(0);
     memset(pattern, 0, sizeof(pattern_t));
+    func_alloc_setup(0);
 
     pattern->num_funcs = 1;
     pattern->period = 1000;
-    pattern->functions[0] = create_func(0, FUNCTION_ERROR, DEST_ALL, 0, NULL);
-    pattern->functions[0]->arg_count = 0;
-    pattern->functions[0]->type = FUNCTION_ERROR;
+    pattern->functions[0] = create_func(0, FUNCTION_ERROR, DEST_LED_0, 0, NULL);
 }
 
 uint8_t parse_pattern(uint8_t pattern_index, uint8_t *code, uint16_t len)
@@ -139,7 +147,6 @@ uint8_t parse_pattern(uint8_t pattern_index, uint8_t *code, uint16_t len)
         dest = *index >> 4;
         index++;
 
-        dprintf("type %d args %d dest: %d\n", type, arg_count, dest);
         for(j = 0; j < arg_count; j++)
         {
             args[j] = *(uint32_t *)index;
@@ -198,9 +205,14 @@ uint8_t evaluate_function(function_t *function, uint32_t t, uint8_t *color)
         case FUNCTION_NONE:
             return 0;
 
+        case FUNCTION_ERROR:
+            *color = f_error(function, t);
+            return 1;
+
         case FUNCTION_SQUARE:
             *color = f_square(function, t);
             return 1;
+
         default:
             return 0;
     }
@@ -215,7 +227,7 @@ void evaluate(pattern_t *pattern, uint32_t _t, uint8_t led, color_t *color)
     for(i = 0; i < 3; i++, ptr++)
     {
         uint8_t findex = (led * 3) + i;
-        if (evaluate_function(pattern->functions[findex], t, &value))
-            *(ptr++) = value;
+        if (pattern->functions[findex] && evaluate_function(pattern->functions[findex], t, &value))
+            *ptr = value;
     }
 }

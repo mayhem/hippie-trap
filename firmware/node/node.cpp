@@ -6,7 +6,7 @@
 #include <avr/interrupt.h>
 #include <util/delay.h>
 #include <string.h>
-#include "parse.h"
+#include "pattern.h"
 #include "ws2812.h"
 #include "serial.h"
 
@@ -474,7 +474,7 @@ void update_pattern(void)
     uint8_t  i;
     color_t  color;
 
-    if (g_pattern_active >= 0 && g_target && ticks() >= g_target)
+    if (g_target && ticks() >= g_target)
     {
         update_leds();
 

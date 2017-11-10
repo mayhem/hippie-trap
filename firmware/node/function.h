@@ -73,5 +73,6 @@ int32_t f_sawtooth(void *self, int32_t t);
 int32_t f_step(void *self, int32_t t);
 int32_t f_line(void *self, int32_t t);
 int32_t f_impulse(void *self, int32_t t);
+int32_t f_error(void *self, int32_t t);
 
 #endif

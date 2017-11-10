@@ -1,7 +1,7 @@
 #include <Arduino.h>
 #include <stdlib.h>
 #include "source.h"
-#include "parse.h"
+#include "pattern.h"
 #include "defs.h"
 
 #if 0

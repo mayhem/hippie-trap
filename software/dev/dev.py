@@ -23,6 +23,10 @@ ch.open(device)
 
 # TODO: Sending to the same dest does not have the expected result
 p = Pattern(10,
+        Function(common.FUNC_SQUARE, common.DEST_ALL_RED, .5, 0.0, 1.0, 0.0, .6),
+        Function(common.FUNC_SQUARE, common.DEST_ALL_BLUE, .4, 0.0, 1.0, 0.0, .6),
+)
+p1 = Pattern(10,
         Function(common.FUNC_SQUARE, common.DEST_ALL_RED, 1.0, 0.0, 1.0, 0.0, .6),
         Function(common.FUNC_SQUARE, common.DEST_ALL_BLUE, .8, 0.0, 1.0, 0.0, .5),
         Function(common.FUNC_SQUARE, common.DEST_ALL_GREEN, .6, 0.0, 1.0, 0.0, .4)
@@ -35,28 +39,6 @@ try:
 
     print "start pattern"
     ch.start_pattern(BROADCAST)
-
-    while False:
-        print "start one"
-        sleep(3)
-        break
-
-        print "send two"
-        ch.send_pattern(2, p2)
-
-        print "start two"
-        ch.start_pattern(2)
-        sleep(3)
-
-        print "send three"
-        ch.send_pattern(2, p3)
-
-        print "start three"
-        ch.start_pattern(2)
-        sleep(3)
-
-        print "send one"
-        ch.send_pattern(2, p1)
 
 except KeyboardInterrupt:
     ch.off(BROADCAST)
