@@ -3,12 +3,13 @@
 import os
 import sys
 import math
-from chandelier import Chandelier, BROADCAST
-from function import Pattern, Function
-import common
 from random import randint
 from time import sleep, time
-from color import Color
+
+from hippietrap.chandelier import Chandelier, BROADCAST
+from hippietrap.function import Pattern, Function
+from hippietrap.color import Color
+import hippietrap.common as common
 
 DELAY = .02
 
@@ -16,32 +17,26 @@ device = "/dev/serial0"
 
 ch = Chandelier()
 ch.open(device)
-ch.off(BROADCAST)
-ch.send_entropy()
-ch.set_brightness(BROADCAST, 100)
+#ch.clear(BROADCAST)
+#ch.send_entropy()
+#ch.set_brightness(BROADCAST, 100)
 
+# TODO: Sending to the same dest does not have the expected result
 p = Pattern(10,
-        Function(common.FUNC_SQUARE, 13, 1.0, 0.0, 1.0, 0.0, .6),
-        Function(common.FUNC_SQUARE, 14, .8, 0.0, 1.0, 0.0, .5),
-        Function(common.FUNC_SQUARE, 15, .6, 0.0, 1.0, 0.0, .4)
-)
-p1 = Pattern(10,
-        Function(common.FUNC_SQUARE, 13, .5, 0.0, 1.0, 0.0, .5),
-)
-p2 = Pattern(10,
-        Function(common.FUNC_SQUARE, 14, .5, 0.0, 1.0, 0.0, .5),
-)
-p3 = Pattern(10,
-        Function(common.FUNC_SQUARE, 15, .5, 0.0, 1.0, 0.0, .5),
+        Function(common.FUNC_SQUARE, common.DEST_ALL_RED, 1.0, 0.0, 1.0, 0.0, .6),
+        Function(common.FUNC_SQUARE, common.DEST_ALL_BLUE, .8, 0.0, 1.0, 0.0, .5),
+        Function(common.FUNC_SQUARE, common.DEST_ALL_GREEN, .6, 0.0, 1.0, 0.0, .4)
 )
 
 try:
     print "send one"
-    ch.send_pattern(2, p1)
-    while True:
+    ch.send_pattern(BROADCAST, p)
+    ch.start_pattern(BROADCAST)
+
+    while False:
         print "start one"
-        ch.start_pattern(2)
         sleep(3)
+        break
 
         print "send two"
         ch.send_pattern(2, p2)
@@ -61,4 +56,4 @@ try:
         ch.send_pattern(2, p1)
 
 except KeyboardInterrupt:
-    ch.off(2)
+    ch.off(BROADCAST)

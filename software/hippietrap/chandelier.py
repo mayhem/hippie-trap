@@ -74,9 +74,6 @@ class Chandelier(object):
 
         # Wait for things to settle, then pipe some characters through the line to get things going
         sleep(.250)
-        self.ser.write(chr(0))
-        self.ser.write(chr(0))
-        self.ser.write(chr(0))
 
     def _send_packet(self, dest, type, data):
         if not self.ser:
@@ -90,10 +87,12 @@ class Chandelier(object):
         crc = 0
         for ch in packet:
             crc = crc16_update(crc, ch)
-        packet = struct.pack("<BB", 255,  len(packet) + 2) + packet + struct.pack("<H", crc)
+        print "packet len: %d" % (len(packet) + 2)
+        packet = struct.pack("<BBB", 0xBE, 0xEF, len(packet) + 2) + packet + struct.pack("<H", crc)
         if len(packet) > MAX_PACKET_LEN:
             raise BufferError("Max packet len of %d exceeded. Make your pattern smaller." % MAX_PACKET_LEN)
-        self.ser.write(packet)
+        for ch in packet:
+            self.ser.write(chr(ch))
 
     def send_entropy(self):
         for dest in xrange(1, NUM_NODES + 1):
@@ -116,16 +115,20 @@ class Chandelier(object):
         sleep(.05)
 
     def send_pattern(self, dest, pattern):
+        print "send patt %d" % PACKET_PATTERN
         self._send_packet(dest, PACKET_PATTERN, bytearray(pattern.describe()))
 
         # Give the bottles a moment to parse the packet before we go on
         sleep(.05)
 
+    def start_pattern(self, dest):
+        self._send_packet(dest, PACKET_START, bytearray())
+
     def send_invalid_packet(self, id):
         self._send_packet(BROADCAST, 254, bytearray()) 
 
-    def reset(self, dest):
-        self._send_packet(dest, PACKET_RESET, bytearray()) 
+    def clear(self, dest):
+        self._send_packet(dest, PACKET_CLEAR, bytearray()) 
 
     def set_delay(self, dest, delay):
         self._send_packet(dest, PACKET_DELAY, bytearray(struct.pack("<b", delay))) 

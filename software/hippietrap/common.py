@@ -13,6 +13,23 @@ FUNC_IMPULSE               = 6
 FUNC_LINE                  = 7
 FUNC_MAX                   = 8
 
+DEST_LED_0        =  0
+DEST_LED_1        =  1
+DEST_LED_2        =  2
+DEST_LED_3        =  3
+DEST_LED_4        =  4
+DEST_LED_5        =  5
+DEST_LED_6        =  6
+DEST_LED_7        =  7
+DEST_LED_8        =  8
+DEST_LED_9        =  9
+DEST_LED_10       = 10
+DEST_LED_11       = 10
+DEST_ALL          = 12
+DEST_ALL_RED      = 13
+DEST_ALL_BLUE     = 14
+DEST_ALL_GREEN    = 15
+
 MAX_NUM_ARGS           = 8
 SCALE_FACTOR = 1000
 

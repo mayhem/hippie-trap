@@ -32,6 +32,7 @@ const uint8_t ERR_INVALID_PACKET   = 2;
 const uint8_t ERR_STACK_CLASH      = 3;
 const uint8_t ERR_OUT_OF_HEAP      = 4;
 const uint8_t ERR_PARSE_FAILURE    = 5;
+const uint8_t ERR_CRC_FAIL         = 6;
 
 void  dprintf(const char *fmt, ...);
 

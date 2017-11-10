@@ -115,5 +115,5 @@ int32_t f_error(void *_self, int32_t t)
 {
     t /= 500;
 
-    return (t % 2 == 0) ? 128 : 0;
+    return (t % 2 == 0) ? 64 : 0;
 }

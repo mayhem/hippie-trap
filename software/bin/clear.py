@@ -11,4 +11,4 @@ if len(sys.argv) == 2:
 
 ch = Chandelier()
 ch.open(device)
-ch.off(BROADCAST)
+ch.clear(BROADCAST)
