@@ -88,7 +88,7 @@ function_t *create_func(uint8_t pattern_index, uint8_t type, uint8_t dest, uint8
                 if (!obj)
                     return NULL;
 
-                f_square_init(obj, args[0], args[1], args[2], args[3], args[4]);
+                obj = new Square(args[0], args[1], args[2], args[3], args[4]);
                 dprintf("Parsed square function\n");
 
                 return obj;
@@ -108,7 +108,7 @@ void setup_error_pattern(void)
 
     pattern->num_funcs = 1;
     pattern->period = 1000;
-    pattern->functions[0] = create_func(0, FUNCTION_ERROR, DEST_ALL_RED, 0, NULL);
+    pattern->functions[0] = create_func(0, FUNCTION_ERROR, DEST_ALL, 0, NULL);
     pattern->functions[0]->arg_count = 0;
     pattern->functions[0]->type = FUNCTION_ERROR;
 }

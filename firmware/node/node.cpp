@@ -297,6 +297,7 @@ void handle_packet(uint16_t len, uint8_t *packet)
       
     type = packet[1];
     data = &packet[2];
+    dprintf("rec packet %d\n", type);
     switch(type)
     {
         case PACKET_SINGLE_COLOR:
@@ -324,6 +325,7 @@ void handle_packet(uint16_t len, uint8_t *packet)
                     col.b = data[2];
                     set_pixel_color(j, &col);
                 }
+                set_error(ERR_OK);
                 update_leds();
                 break;  
             }
@@ -439,7 +441,9 @@ void handle_packet(uint16_t len, uint8_t *packet)
         default:
             dprintf("Invalid packet received\n");
             set_error(ERR_INVALID_PACKET);
+            return;
     }
+    dprintf("packet ok\n");
 }
 
 void set_brightness(int32_t brightness)
@@ -489,8 +493,10 @@ void update_pattern(void)
 void set_error(uint8_t err)
 {
     g_error = err;
-    set_color(NULL);
+    if (err == ERR_OK)
+        return;
 
+    set_color(NULL);
     setup_error_pattern();
 
     reset_ticks();
@@ -567,12 +573,13 @@ void loop()
     if (serial_char_ready()) 
     {
         ch = serial_rx();
-        if (!found_header)
+        if (found_header < 2)
         {
-            if (ch == 0xFF)
-            {
+            if (ch == 0xBE)
                 found_header = 1;
-            }
+            else
+            if (found_header == 1 && ch == 0xEF)
+                found_header = 2;
         }
         else
         {
@@ -595,10 +602,9 @@ void loop()
                 if (recd <= len - 2)
                     crc = _crc16_update(crc, ch);
 
-                if (recd == len || recd == MAX_PACKET_LEN)
+                if (recd > 0 && (recd == len || recd == MAX_PACKET_LEN))
                 {
                     uint16_t *pcrc;
-                            
                             
                     // if we received the right length, check the crc. If that matches, we have a packet!
                     if (recd == len)
@@ -606,6 +612,11 @@ void loop()
                         pcrc = (uint16_t *)(g_packet + len - 2);
                         if (crc == *pcrc)
                             handle_packet(len - 2, g_packet);
+                        else
+                        {  
+                            dprintf("CRC fail\n");
+                            set_error(ERR_CRC_FAIL);
+                        }
                     }
 
                     len = 0;
