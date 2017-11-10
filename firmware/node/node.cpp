@@ -573,6 +573,7 @@ void loop()
     if (serial_char_ready()) 
     {
         ch = serial_rx();
+//        dprintf("%02X ", ch);
         if (found_header < 2)
         {
             if (ch == 0xBE)
@@ -580,6 +581,10 @@ void loop()
             else
             if (found_header == 1 && ch == 0xEF)
                 found_header = 2;
+            else
+                found_header = 0;
+
+//            dprintf("(%d) ", found_header);
         }
         else
         {
@@ -590,6 +595,8 @@ void loop()
                 {
                     len = ch;
                     recd = 0;
+                    crc = 0;
+//                    dprintf("(len %d) ", len);
                 }
                 else
                     // Nope, that was no header, better keep looking.
@@ -610,17 +617,20 @@ void loop()
                     if (recd == len)
                     {            
                         pcrc = (uint16_t *)(g_packet + len - 2);
+//                        dprintf("CRC %04X", crc);
                         if (crc == *pcrc)
+                        {
+//                            dprintf(" -- OK\n");
                             handle_packet(len - 2, g_packet);
+                        }
                         else
                         {  
-                            dprintf("CRC fail\n");
+//                            dprintf(" -- CRC fail\n");
                             set_error(ERR_CRC_FAIL);
                         }
                     }
 
                     len = 0;
-                    crc = 0;
                     found_header = 0;
                     recd = 0;
                 }

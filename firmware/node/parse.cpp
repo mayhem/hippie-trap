@@ -88,7 +88,7 @@ function_t *create_func(uint8_t pattern_index, uint8_t type, uint8_t dest, uint8
                 if (!obj)
                     return NULL;
 
-                obj = new Square(args[0], args[1], args[2], args[3], args[4]);
+                f_square_init(obj, args[0], args[1], args[2], args[3], args[4]);
                 dprintf("Parsed square function\n");
 
                 return obj;

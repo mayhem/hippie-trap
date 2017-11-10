@@ -29,8 +29,11 @@ p = Pattern(10,
 )
 
 try:
-    print "send one"
+    print "send pattern"
     ch.send_pattern(BROADCAST, p)
+    sleep(.1)
+
+    print "start pattern"
     ch.start_pattern(BROADCAST)
 
     while False:

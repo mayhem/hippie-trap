@@ -87,12 +87,13 @@ class Chandelier(object):
         crc = 0
         for ch in packet:
             crc = crc16_update(crc, ch)
-        print "packet len: %d" % (len(packet) + 2)
         packet = struct.pack("<BBB", 0xBE, 0xEF, len(packet) + 2) + packet + struct.pack("<H", crc)
         if len(packet) > MAX_PACKET_LEN:
             raise BufferError("Max packet len of %d exceeded. Make your pattern smaller." % MAX_PACKET_LEN)
         for ch in packet:
+#            print "%02X " % ch,
             self.ser.write(chr(ch))
+            sleep(.001)
 
     def send_entropy(self):
         for dest in xrange(1, NUM_NODES + 1):
