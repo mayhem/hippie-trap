@@ -10,7 +10,8 @@ device = "/dev/serial0"
 
 ch = Chandelier()
 ch.open(device)
-ch.off(BROADCAST)
+ch.clear(BROADCAST)
+ch.clear(BROADCAST)
 ch.calibrate_timers(BROADCAST)
 
 print "Calibration is complete."
