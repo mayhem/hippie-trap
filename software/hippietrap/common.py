@@ -9,9 +9,10 @@ FUNC_SQUARE                = 2
 FUNC_SINE                  = 3
 FUNC_SAWTOOTH              = 4
 FUNC_STEP                  = 5
-FUNC_IMPULSE               = 6
-FUNC_LINE                  = 7
-FUNC_MAX                   = 8
+FUNC_LINE                  = 6
+FUNC_IMPULSE               = 7
+FUNC_RAINBOW               = 8
+FUNC_MAX                   = FUNC_IMPULSE
 
 DEST_LED_0        =  0
 DEST_LED_1        =  1

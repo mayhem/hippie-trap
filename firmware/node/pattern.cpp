@@ -104,6 +104,46 @@ function_t *create_func(uint8_t pattern_index, uint8_t type, uint8_t dest, uint8
                 return obj;
             }
             break;
+
+        case FUNCTION_SAWTOOTH:
+        case FUNCTION_LINE:
+        case FUNCTION_IMPULSE:
+        case FUNCTION_STEP:
+        case FUNCTION_SINE:
+            {
+                if (arg_count != 4)
+                {
+                    set_error(ERR_PARSE_FAILURE);
+                    return NULL;
+                }
+ 
+                obj = func_alloc(pattern_index, type, dest, arg_count, sizeof(generator_t));
+                if (!obj)
+                    return NULL;
+
+                f_generator_init(obj, args[0], args[1], args[2], args[3]);
+
+                return obj;
+            }
+            break;
+
+        case FUNCTION_RAINBOW:
+            {
+                if (arg_count != 1)
+                {
+                    set_error(ERR_PARSE_FAILURE);
+                    return NULL;
+                }
+ 
+                obj = func_alloc(pattern_index, type, dest, arg_count, sizeof(rainbow_t));
+                if (!obj)
+                    return NULL;
+
+                f_rainbow_init(obj, args[0]);
+
+                return obj;
+            }
+            break;
     }
                      
     return NULL;
@@ -198,7 +238,7 @@ uint8_t parse_pattern(uint8_t pattern_index, uint8_t *code, uint16_t len)
     return 1;
 }
 
-uint8_t evaluate_function(function_t *function, uint32_t t, uint8_t *color)
+uint8_t evaluate_function(function_t *function, uint32_t t, uint8_t led, uint8_t *color)
 {
     switch(function->type)
     {
@@ -211,6 +251,30 @@ uint8_t evaluate_function(function_t *function, uint32_t t, uint8_t *color)
 
         case FUNCTION_SQUARE:
             *color = f_square(function, t);
+            return 1;
+
+        case FUNCTION_SINE:
+            *color = f_sin(function, t);
+            return 1;
+
+        case FUNCTION_SAWTOOTH:
+            *color = f_sawtooth(function, t);
+            return 1;
+
+        case FUNCTION_LINE:
+            *color = f_line(function, t);
+            return 1;
+
+        case FUNCTION_IMPULSE:
+            *color = f_impulse(function, t);
+            return 1;
+
+        case FUNCTION_STEP:
+            *color = f_step(function, t);
+            return 1;
+
+        case FUNCTION_RAINBOW:
+            *color = f_rainbow(function, t, led);
             return 1;
 
         default:
@@ -227,7 +291,7 @@ void evaluate(pattern_t *pattern, uint32_t _t, uint8_t led, color_t *color)
     for(i = 0; i < 3; i++, ptr++)
     {
         uint8_t findex = (led * 3) + i;
-        if (pattern->functions[findex] && evaluate_function(pattern->functions[findex], t, &value))
+        if (pattern->functions[findex] && evaluate_function(pattern->functions[findex], t, i, &value))
             *ptr = value;
     }
 }

@@ -23,8 +23,7 @@ ch.open(device)
 
 # TODO: Sending to the same dest does not have the expected result
 p = Pattern(10,
-        Function(common.FUNC_SQUARE, common.DEST_ALL_RED, .5, 0.0, 1.0, 0.0, .6),
-        Function(common.FUNC_SQUARE, common.DEST_ALL_BLUE, .4, 0.0, 1.0, 0.0, .6),
+        Function(common.FUNC_RAINBOW, common.DEST_ALL, .3),
 )
 p1 = Pattern(10,
         Function(common.FUNC_SQUARE, common.DEST_ALL_RED, 1.0, 0.0, 1.0, 0.0, .6),

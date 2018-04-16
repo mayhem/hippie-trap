@@ -8,7 +8,7 @@ from hippietrap.chandelier import Chandelier, BROADCAST, NUM_NODES
 from hippietrap.color import Color
 from time import sleep, time
 
-STEPS = 20000
+STEPS = 5000
 
 device = "/dev/serial0"
 

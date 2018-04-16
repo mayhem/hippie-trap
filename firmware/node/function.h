@@ -31,6 +31,12 @@
 #define FUNCTION_NONE       0
 #define FUNCTION_ERROR      1
 #define FUNCTION_SQUARE     2
+#define FUNCTION_SINE       3
+#define FUNCTION_SAWTOOTH   4
+#define FUNCTION_STEP       5
+#define FUNCTION_LINE       6
+#define FUNCTION_IMPULSE    7
+#define FUNCTION_RAINBOW    8
 
 // Abstract base class
 typedef struct function_t
@@ -47,8 +53,9 @@ typedef struct pattern_t
     function_t  *functions[NUM_PIXELS * 3];
 } pattern_t;
 
-typedef struct f_generator_t
+typedef struct generator_t
 {
+    function_t  b;
     int32_t     period;
     int32_t     phase;
     int32_t     amplitude;
@@ -57,15 +64,21 @@ typedef struct f_generator_t
 
 typedef struct square_t
 {
-    function_t  b;
     generator_t g;
     int32_t     duty;
 } square_t;
+
+typedef struct rainbow_t
+{
+    generator_t g;
+    int32_t     period;
+} rainbow_t;
 
 void f_generator_init(void *self, int32_t period, int32_t phase, int32_t amplitude, int32_t offset);
 void f_square_init(void *self, int32_t period, int32_t phase, int32_t amplitude, int32_t offset, int32_t duty);
 void f_sin_init(void *self, int32_t period, int32_t phase, int32_t amplitude, int32_t offset);
 void f_sawtooth_init(void *self, int32_t period, int32_t phase, int32_t amplitude, int32_t offset);
+void f_rainbow_init(void *self, int32_t period);
 
 int32_t f_sin(void *self, int32_t t);
 int32_t f_square(void *self, int32_t t);
@@ -74,5 +87,6 @@ int32_t f_step(void *self, int32_t t);
 int32_t f_line(void *self, int32_t t);
 int32_t f_impulse(void *self, int32_t t);
 int32_t f_error(void *self, int32_t t);
+int32_t f_rainbow(void *self, int32_t t, uint8_t led);
 
 #endif

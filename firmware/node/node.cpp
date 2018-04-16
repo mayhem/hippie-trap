@@ -59,7 +59,7 @@ uint8_t    g_delay = 10;
 uint32_t   g_speed = SCALE_FACTOR;
 uint32_t   g_ticks_per_sec = (int32_t)1000000 / US_PER_TICK;
 uint32_t   g_ticks_per_frame; // setup later
-uint32_t   g_target = g_ticks_per_frame;
+uint32_t   g_target = 0;
 
 // led buffer
 uint8_t    g_led_buffer[3 * NUM_LEDS];
@@ -310,7 +310,7 @@ void handle_packet(uint16_t len, uint8_t *packet)
                 for(int j=0; j < NUM_LEDS; j++)
                     set_color(&col);
 
-                set_error(ERR_OK);
+//                set_error(ERR_OK);
 
                 break;
             } 
@@ -496,13 +496,13 @@ void set_error(uint8_t err)
     if (err == ERR_OK)
         return;
 
-    set_color(NULL);
-    setup_error_pattern();
+//    set_color(NULL);
+//    setup_error_pattern();
 
-    reset_ticks();
-    g_target = g_ticks_per_frame;
-    g_have_valid_pattern = 0;
-    g_pattern_active = 0;
+//    reset_ticks();
+//    g_target = g_ticks_per_frame;
+//    g_have_valid_pattern = 0;
+//    g_pattern_active = 0;
 }
 
 #if 0
@@ -663,7 +663,8 @@ int main(void)
     set_output(DDRD, LED_PIN);
     set_brightness(1000);
     set_color(NULL);
-    startup_animation();
+    for(;;)
+        startup_animation();
 
     timer_cal = eeprom_read_dword((uint32_t *)ee_calibration_offset);
     if (timer_cal > 1 && timer_cal != 0xFFFF)

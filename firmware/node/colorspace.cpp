@@ -1,17 +1,17 @@
-#include <Arduino.h>
 #include <stdlib.h>
-#include "source.h"
-#include "pattern.h"
-#include "defs.h"
+#include "colorspace.h"
+
+#define min(a,b) ((a) < (b) ? (a) : (b))
+#define max(a,b) ((a) > (b) ? (a) : (b))
 
 #if 0
 void print_col(color_t *c)
 {
-    Serial.print(c->c[0], DEC);
+    Serial.print(c->r, DEC);
     Serial.print(", ");
-    Serial.print(c->c[1], DEC);
+    Serial.print(c->g, DEC);
     Serial.print(", ");
-    Serial.print(c->c[2], DEC);
+    Serial.print(c->b, DEC);
 }
 #endif
 
@@ -40,9 +40,9 @@ uint8_t hsv_to_rgb(int32_t h, int32_t s, int32_t v, color_t *color)
 
     if (sat == 0) 
     {
-        color->c[0]=val;
-        color->c[1]=val;
-        color->c[2]=val;   
+        color->r=val;
+        color->g=val;
+        color->b=val;   
         return 0;
     } 
 
@@ -86,21 +86,21 @@ uint8_t hsv_to_rgb(int32_t h, int32_t s, int32_t v, color_t *color)
             b = (((val-base)*(60-(hue%60)))/60)+base;
             break;
     }
-    color->c[0] = r;
-    color->c[1] = g;
-    color->c[2] = b;
+    color->r = r;
+    color->g = g;
+    color->b = b;
 
     return 1;
 }
 
 uint8_t rgb_to_hsv(color_t *col, int32_t *_h, int32_t *_s, int32_t *_v)
 {
-    int32_t rd = ((int32_t)col->c[0] * (int32_t)SCALE_FACTOR)/(int32_t)255;
-    int32_t gd = ((int32_t)col->c[1] * (int32_t)SCALE_FACTOR)/(int32_t)255;
-    int32_t bd = ((int32_t)col->c[2] * (int32_t)SCALE_FACTOR)/(int32_t)255;
+    int32_t rd = ((int32_t)col->r * (int32_t)SCALE_FACTOR)/(int32_t)255;
+    int32_t gd = ((int32_t)col->g * (int32_t)SCALE_FACTOR)/(int32_t)255;
+    int32_t bd = ((int32_t)col->b * (int32_t)SCALE_FACTOR)/(int32_t)255;
     int32_t mx = max(rd, max(gd, bd)); 
     int32_t mn = min(rd, min(gd, bd));
-    int32_t h, s, v = mx;
+    int32_t h = 0, s, v = mx;
 
     int32_t d = mx - mn;
     s = mx == 0 ? 0 : d * SCALE_FACTOR / mx;
