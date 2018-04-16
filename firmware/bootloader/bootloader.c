@@ -215,7 +215,7 @@ enum response_t process_line(uint16_t *hex_file_received)
 int main() 
 {
     uint8_t init_ok;
-    uint8_t have_valid_program;
+    uint8_t valid_program;
     uint8_t start_ch_count = 0, ch, i, step;
     uint16_t hex_file_size = 0, hex_file_received = 0;
     enum response_t response;
@@ -226,7 +226,7 @@ int main()
 
     // To force entering the bootloader
     //eeprom_write_byte((uint8_t *)ee_start_program_offset, 0);
-    //eeprom_write_byte((uint8_t *)ee_have_valid_program_offset, 0);
+    //eeprom_write_byte((uint8_t *)ee_valid_program_offset, 0);
     //eeprom_busy_wait();
 
     set_output(DDRD, LED);
@@ -239,13 +239,13 @@ int main()
     leds_off();
 
     eeprom_busy_wait();
-    have_valid_program = eeprom_read_byte((const uint8_t *)ee_have_valid_program_offset); 
+    valid_program = eeprom_read_byte((const uint8_t *)ee_valid_program_offset); 
     init_ok = eeprom_read_byte((const uint8_t *)ee_init_ok_offset); 
-    dprintf("start: %d valid: %d\n", have_valid_program, init_ok);
+    dprintf("start: %d valid: %d\n", valid_program, init_ok);
 
     while(1)
     {
-        if (have_valid_program)
+        if (valid_program)
         {
             if (init_ok)
             {
@@ -259,7 +259,7 @@ int main()
             dprintf("init not ok. ready to program.\n");
 
             // Do not try to start the program again, if we have no valid program
-            eeprom_write_byte((uint8_t *)ee_have_valid_program_offset, 0);
+            eeprom_write_byte((uint8_t *)ee_valid_program_offset, 0);
         }
         else
         {
@@ -310,7 +310,7 @@ int main()
             set_color(0, 0, 0);
 
             boot_spm_busy_wait();
-            eeprom_write_byte((uint8_t *)ee_have_valid_program_offset, 1);
+            eeprom_write_byte((uint8_t *)ee_valid_program_offset, 1);
             eeprom_write_byte((uint8_t *)ee_init_ok_offset, 0);
             eeprom_busy_wait();
 
@@ -322,8 +322,8 @@ int main()
             struct cRGB led;
 
             boot_spm_busy_wait();
-            eeprom_write_byte((uint8_t *)ee_start_program_offset, 0);
-            eeprom_write_byte((uint8_t *)ee_have_valid_program_offset, 0);
+            eeprom_write_byte((uint8_t *)ee_init_ok_offset, 0);
+            eeprom_write_byte((uint8_t *)ee_valid_program_offset, 0);
             eeprom_busy_wait();
 
             if (response == RSP_FINISHED && hex_file_size != hex_file_received)

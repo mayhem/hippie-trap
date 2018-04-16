@@ -11,4 +11,6 @@ if len(sys.argv) == 2:
 
 ch = Chandelier()
 ch.open(device)
+ch.clear(BROADCAST)
+ch.clear(BROADCAST)
 ch.enter_bootloader(BROADCAST)

@@ -43,8 +43,8 @@ const uint8_t PACKET_RESET        = 18;
 
 // where in EEPROM our node id is stored. The first 16 are reserved for the bootloader
 // Bootloader items
-const uint8_t ee_have_valid_program_offset  = 0;
-const uint8_t ee_init_ok_offset             = 1;
+const uint8_t ee_valid_program_offset  = 0;
+const uint8_t ee_init_ok_offset        = 1;
 
 // Node items
 const uint8_t ee_id_offset                  = 16;
@@ -263,7 +263,6 @@ void startup_animation(void)
 
 void reset(void)
 {
-    eeprom_busy_wait();
     cli();
 
     void *bl = (void *) 0x7000;
@@ -296,7 +295,6 @@ void handle_packet(uint16_t len, uint8_t *packet)
       
     type = packet[1];
     data = &packet[2];
-    dprintf("rec packet %d\n", type);
     switch(type)
     {
         case PACKET_SINGLE_COLOR:
@@ -425,8 +423,10 @@ void handle_packet(uint16_t len, uint8_t *packet)
             }
         case PACKET_BOOTLOADER:
             {
-                eeprom_write_byte((uint8_t *)ee_start_program_offset, 0);
+                dprintf("Enter bootloader command recevied.");
+                eeprom_write_byte((uint8_t *)ee_valid_program_offset, 0);
                 eeprom_write_byte((uint8_t *)ee_init_ok_offset, 0);
+                eeprom_busy_wait();
 
                 set_color_rgb(255, 0, 0);
                 _delay_ms(1000);
@@ -442,7 +442,6 @@ void handle_packet(uint16_t len, uint8_t *packet)
             set_error(ERR_INVALID_PACKET);
             return;
     }
-    dprintf("packet ok\n");
 }
 
 void set_brightness(int32_t brightness)
@@ -616,15 +615,12 @@ void loop()
                     if (recd == len)
                     {            
                         pcrc = (uint16_t *)(g_packet + len - 2);
-//                        dprintf("CRC %04X", crc);
                         if (crc == *pcrc)
                         {
-//                            dprintf(" -- OK\n");
                             handle_packet(len - 2, g_packet);
                         }
                         else
                         {  
-//                            dprintf(" -- CRC fail\n");
                             set_error(ERR_CRC_FAIL);
                         }
                     }
@@ -658,8 +654,7 @@ int main(void)
     set_output(DDRD, LED_PIN);
     set_brightness(1000);
     set_color(NULL);
-    for(;;)
-        startup_animation();
+    startup_animation();
 
     timer_cal = eeprom_read_dword((uint32_t *)ee_calibration_offset);
     if (timer_cal > 1 && timer_cal != 0xFFFF)
@@ -690,8 +685,8 @@ int main(void)
 
     g_ticks_per_frame = g_ticks_per_sec * g_delay / 1000;
 
-    memset(g_patterns, 0, sizeof(g_patterns));
-    memset(&g_color, 0, sizeof(g_color));
+    g_have_valid_pattern = 0;
+    memset(g_color, 0, sizeof(g_color));
 
     for(i = 0; i < NUM_CLASSES; i++)
         g_classes[i] = NO_CLASS;
