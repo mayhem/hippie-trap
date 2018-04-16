@@ -43,9 +43,8 @@ const uint8_t PACKET_RESET        = 18;
 
 // where in EEPROM our node id is stored. The first 16 are reserved for the bootloader
 // Bootloader items
-const uint8_t ee_start_program_offset       = 0;
-const uint8_t ee_have_valid_program_offset  = 1;
-const uint8_t ee_program_version_offset     = 2;
+const uint8_t ee_have_valid_program_offset  = 0;
+const uint8_t ee_init_ok_offset             = 1;
 
 // Node items
 const uint8_t ee_id_offset                  = 16;
@@ -427,7 +426,7 @@ void handle_packet(uint16_t len, uint8_t *packet)
         case PACKET_BOOTLOADER:
             {
                 eeprom_write_byte((uint8_t *)ee_start_program_offset, 0);
-                eeprom_write_byte((uint8_t *)ee_have_valid_program_offset, 0);
+                eeprom_write_byte((uint8_t *)ee_init_ok_offset, 0);
 
                 set_color_rgb(255, 0, 0);
                 _delay_ms(1000);
@@ -649,10 +648,6 @@ int main(void)
     MCUSR = 0;
     wdt_disable();
 
-    // Tell the bootloader that we ran, if we haven't before.
-    if (!eeprom_read_byte((uint8_t *)ee_have_valid_program_offset))
-        eeprom_write_byte((uint8_t *)ee_have_valid_program_offset, 1);
-
     TCCR1B |= TIMER1_FLAGS;
     TCNT1 = TIMER1_INIT;
     TIMSK1 |= (1<<TOIE1);
@@ -692,7 +687,6 @@ int main(void)
 
     set_color(&col);
 
-    dprintf("node %d ready.\n", g_node_id);
 
     g_ticks_per_frame = g_ticks_per_sec * g_delay / 1000;
 
@@ -701,6 +695,12 @@ int main(void)
 
     for(i = 0; i < NUM_CLASSES; i++)
         g_classes[i] = NO_CLASS;
+
+    dprintf("node %d ready.\n", g_node_id);
+
+    // Tell the bootloader that init completed ok, if that flag isn't set.
+    if (!eeprom_read_byte((uint8_t *)ee_init_ok_offset))
+        eeprom_write_byte((uint8_t *)ee_init_ok_offset, 1);
 
     sei();
     for(;;)

@@ -147,19 +147,16 @@ enum response_t process_line(uint16_t *hex_file_received)
     line_pos = 8;
     checksum = data_count + addrh + addrl + line_type;
 
-//    dprintf("check ");
     for (i=0; i < data_count; i++)
     {
         data = (HEX2DEC(line_buffer[line_pos]) << 4) + HEX2DEC(line_buffer[line_pos + 1]);
         line_pos += 2;
         data_buffer[data_len++] = data;
         checksum += data;
-//        dprintf("%x ", data);
     }
 
     checksum = 0xFF - checksum + 1;
     recv_checksum = (HEX2DEC(line_buffer[line_pos]) << 4) + HEX2DEC(line_buffer[line_pos + 1]);
-//    dprintf(" -- %x %x (%d bytes)\n", checksum, recv_checksum, data_len);
     if (checksum != recv_checksum)
         return RSP_CHECKSUM_FAIL;
 
@@ -167,7 +164,6 @@ enum response_t process_line(uint16_t *hex_file_received)
     {
         if (last_addr != 0xFFFFFFFF)
         {
-//            dprintf("write %p\n", last_addr & SPM_PAGEMASK);
             serial_tx('.');
             boot_page_write (last_addr & SPM_PAGEMASK);
             boot_spm_busy_wait();
@@ -184,7 +180,6 @@ enum response_t process_line(uint16_t *hex_file_received)
         {
             if (last_addr != 0xFFFFFFFF)
             {
-//                dprintf("write %p\n", last_addr & SPM_PAGEMASK);
                 serial_tx('.');
                 boot_page_write (last_addr & SPM_PAGEMASK);
                 boot_spm_busy_wait();
@@ -210,8 +205,8 @@ enum response_t process_line(uint16_t *hex_file_received)
 
 #define LED PD2
 
-#define ee_start_program_offset       0
-#define ee_have_valid_program_offset  1
+#define ee_valid_program_offset  0
+#define ee_init_ok_offset        1
 
 // LED color codes
 // green - entered bootloader as request, waiting to be programmed
@@ -219,7 +214,7 @@ enum response_t process_line(uint16_t *hex_file_received)
 
 int main() 
 {
-    uint8_t start_program;
+    uint8_t init_ok;
     uint8_t have_valid_program;
     uint8_t start_ch_count = 0, ch, i, step;
     uint16_t hex_file_size = 0, hex_file_received = 0;
@@ -244,15 +239,15 @@ int main()
     leds_off();
 
     eeprom_busy_wait();
-    start_program = eeprom_read_byte((const uint8_t *)ee_start_program_offset); 
     have_valid_program = eeprom_read_byte((const uint8_t *)ee_have_valid_program_offset); 
-//    dprintf("start: %d valid: %d\n", start_program, have_valid_program);
+    init_ok = eeprom_read_byte((const uint8_t *)ee_init_ok_offset); 
+    dprintf("start: %d valid: %d\n", have_valid_program, init_ok);
 
     while(1)
     {
-        if (start_program)
+        if (have_valid_program)
         {
-            if (have_valid_program)
+            if (init_ok)
             {
                 set_color(0, 0, 0);
                 dprintf("start program\n");
@@ -261,15 +256,15 @@ int main()
             }
             // No valid program present, but should've started it
             set_color(128, 128, 0);
-            dprintf("no valid program. ready.\n");
+            dprintf("init not ok. ready to program.\n");
 
             // Do not try to start the program again, if we have no valid program
-            eeprom_write_byte((uint8_t *)ee_start_program_offset, 0);
+            eeprom_write_byte((uint8_t *)ee_have_valid_program_offset, 0);
         }
         else
         {
             set_color(0, 0, 128);
-            dprintf("entered bootloader. ready.\n");
+            dprintf("no valid program, entered bootloader. ready.\n");
         }
 
         for(start_ch_count = 0; start_ch_count < 16;)
@@ -315,8 +310,8 @@ int main()
             set_color(0, 0, 0);
 
             boot_spm_busy_wait();
-            eeprom_write_byte((uint8_t *)ee_start_program_offset, 1);
             eeprom_write_byte((uint8_t *)ee_have_valid_program_offset, 1);
+            eeprom_write_byte((uint8_t *)ee_init_ok_offset, 0);
             eeprom_busy_wait();
 
             boot_rww_enable ();
