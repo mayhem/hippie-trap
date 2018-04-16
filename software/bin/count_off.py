@@ -13,7 +13,7 @@ device = "/dev/serial0"
 
 ch = Chandelier()
 ch.open(device)
-ch.off(BROADCAST)
+ch.clear(BROADCAST)
 
 start = int(sys.argv[1])
 
