@@ -338,10 +338,8 @@ void handle_packet(uint16_t len, uint8_t *packet)
                     col.r >>= 1;
                     col.g >>= 1;
                     col.b >>= 1;
-                    col.r = 125;
-                    col.g = 50;
-                    col.g = 150;
                     set_pixel_color(j, &col);
+                    update_leds();
                 }
                 break;
             } 
