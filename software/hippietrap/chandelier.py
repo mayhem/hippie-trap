@@ -20,6 +20,7 @@ MAX_PACKET_LEN = 230
 CALIBRATION_DURATION = 10
 NODE_ID_UNKNOWN = 255
 
+PACKET_SINGLE_LED   = 1  
 PACKET_SINGLE_COLOR = 2  
 PACKET_COLOR_ARRAY  = 3  
 PACKET_PATTERN      = 4  
@@ -103,6 +104,9 @@ class Chandelier(object):
 
     def set_color(self, dest, col):
         self._send_packet(dest, PACKET_SINGLE_COLOR, bytearray((col[0], col[1], col[2])))
+
+    def set_single_led(self, dest, led, col):
+        self._send_packet(dest, PACKET_SINGLE_LED, bytearray(led, (col[0], col[1], col[2])))
 
     def set_color_array(self, dest, colors):
         packet = bytearray()

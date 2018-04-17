@@ -22,7 +22,7 @@ const uint8_t US_PER_TICK = 25;
 const uint16_t MAX_PACKET_LEN     = 230;
 const uint8_t BROADCAST = 0;
 const uint8_t PACKET_SET_ID       = 0;
-const uint8_t PACKET_CLEAR_ID     = 1; 
+const uint8_t PACKET_SINGLE_LED   = 1; 
 const uint8_t PACKET_SINGLE_COLOR = 2; 
 const uint8_t PACKET_COLOR_ARRAY  = 3; 
 const uint8_t PACKET_PATTERN      = 4; 
@@ -308,10 +308,23 @@ void handle_packet(uint16_t len, uint8_t *packet)
                 for(int j=0; j < NUM_LEDS; j++)
                     set_color(&col);
 
-//                set_error(ERR_OK);
-
                 break;
             } 
+
+        case PACKET_SINGLE_LED:
+            {
+                color_t col;
+                uint8_t led;
+
+                led = data[1];
+                col.r = data[1];
+                col.g = data[2];
+                col.b = data[3];
+
+                set_pixel_color(led, &col);
+                break;
+            } 
+
         case PACKET_COLOR_ARRAY:
             {
                 color_t col;
