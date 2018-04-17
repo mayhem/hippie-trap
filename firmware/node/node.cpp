@@ -40,6 +40,7 @@ const uint8_t PACKET_BRIGHTNESS   = 15;
 const uint8_t PACKET_ANGLE        = 16;
 const uint8_t PACKET_BOOTLOADER   = 17;
 const uint8_t PACKET_RESET        = 18;
+const uint8_t PACKET_DECAY        = 19;
 
 // where in EEPROM our node id is stored. The first 16 are reserved for the bootloader
 // Bootloader items
@@ -326,6 +327,24 @@ void handle_packet(uint16_t len, uint8_t *packet)
                 update_leds();
                 break;  
             }
+
+        case PACKET_DECAY:
+            {
+                color_t col;
+
+                for(int j=0; j < NUM_LEDS; j++)
+                {
+                    col = g_color[j];
+                    col.r >>= 1;
+                    col.g >>= 1;
+                    col.b >>= 1;
+                    col.r = 125;
+                    col.g = 50;
+                    col.g = 150;
+                    set_pixel_color(j, &col);
+                }
+                break;
+            } 
             
         case PACKET_PATTERN:
             {

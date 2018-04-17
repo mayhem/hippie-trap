@@ -36,6 +36,7 @@ PACKET_BRIGHTNESS   = 15
 PACKET_ANGLE        = 16
 PACKET_BOOTLOADER   = 17
 PACKET_RESET        = 18
+PACKET_DECAY        = 19
 BROADCAST = 0
 
 def crc16_update(crc, a):
@@ -106,8 +107,11 @@ class Chandelier(object):
     def set_color_array(self, dest, colors):
         packet = bytearray()
         for col in colors:
-            packet += bytearray(col[0], col[1], col[2])
+            packet += bytearray((col[0], col[1], col[2]))
         self._send_packet(dest, PACKET_COLOR_ARRAY, packet)
+
+    def decay(self, dest):
+        self._send_packet(dest, PACKET_DECAY, bytearray())
 
     def send_pattern_to_class(self, cls, pattern):
         self._send_packet(mkcls(cls), PACKET_PATTERN, bytearray(pattern.describe()))
