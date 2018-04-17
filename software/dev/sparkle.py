@@ -3,6 +3,7 @@
 import os
 import sys
 import math
+from random import random, randint
 from colorsys import hsv_to_rgb
 from hippietrap.chandelier import Chandelier, BROADCAST, NUM_NODES
 from hippietrap.color import Color
@@ -17,12 +18,12 @@ ch.open(device)
 
 while True:
 
-    for i in range(5):
-        bottle = randomint(1, NUM_NODES)
-        led = randomint(1, NUM_LEDS)
+    for i in range(15):
+        bottle = randint(1, NUM_NODES)
+        led = randint(1, 4)
         hue = random()
-        rgb = hsv_to_rgb(i / float(STEPS), 1.0, 1.0)
-        ch.set_single_led(bottle, led, Color(int(255 * rgb[0]), int(255 * rgb[1]), int(255 * rgb[2])))
+        rgb = hsv_to_rgb(hue, 1.0, 1.0)
+        ch.set_color(bottle, Color(int(255 * rgb[0]), int(255 * rgb[1]), int(255 * rgb[2])))
 
     ch.decay(BROADCAST)
-    sleep(.2)
+    sleep(.5)

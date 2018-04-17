@@ -106,7 +106,7 @@ class Chandelier(object):
         self._send_packet(dest, PACKET_SINGLE_COLOR, bytearray((col[0], col[1], col[2])))
 
     def set_single_led(self, dest, led, col):
-        self._send_packet(dest, PACKET_SINGLE_LED, bytearray(led, (col[0], col[1], col[2])))
+        self._send_packet(dest, PACKET_SINGLE_LED, bytearray((led, col[0], col[1], col[2])))
 
     def set_color_array(self, dest, colors):
         packet = bytearray()
