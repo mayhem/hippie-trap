@@ -13,7 +13,7 @@ from time import sleep, time
 
 BAUD_RATE = 38400
 NUM_PIXELS = 4
-NUM_NODES = 24
+NUM_NODES = 30 
 MAX_NODES = 120 
 MAX_CLASSES = 16
 MAX_PACKET_LEN = 230
