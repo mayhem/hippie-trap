@@ -36,8 +36,8 @@ colorspace.o: colorspace.cpp colorspace.h defs.h
 $(TARGET).hex: $(TARGET).obj
 	$(OBJ2HEX) -R .eeprom -O ihex $< $@
 
-$(TARGET).obj: $(TARGET).o ws2812.o function.o serial.o pattern.o sin_table.o colorspace.o
-	$(CC) $(CFLAGS) -o $@ $(LDFLAGS) $(TARGET).o ws2812.o function.o serial.o pattern.o sin_table.o colorspace.o
+$(TARGET).obj: $(TARGET).o ws2812.o function.o serial.o pattern.o colorspace.o
+	$(CC) $(CFLAGS) -o $@ $(LDFLAGS) $(TARGET).o ws2812.o function.o serial.o pattern.o colorspace.o
 
 clean:
 	rm -f *.hex *.obj *.o *.map

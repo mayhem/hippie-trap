@@ -8,8 +8,6 @@
 #include <stdlib.h>
 #include "defs.h"
 
-#include "sin_table.h"
-
 // LED "destinations" 
 #define DEST_LED_0          0
 #define DEST_LED_1          1
