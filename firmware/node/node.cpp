@@ -360,15 +360,22 @@ void handle_packet(uint16_t len, uint8_t *packet)
             {
                 uint8_t next = (g_pattern_active + 1) % 2;
                 g_have_valid_pattern = parse_pattern(next, data, len - 2);
+                dprintf("parse: %d\n", g_have_valid_pattern);
                 break;  
             }
 
         case PACKET_START:
             {
                 if (!g_have_valid_pattern)
+                {
+                    dprintf("No valid pattern\n");
                     set_error(ERR_NO_VALID_PATTERN);
+                }
                 else
+                {
+                    dprintf("start pattern\n");
                     start_pattern();
+                }
                 break;
             }
             

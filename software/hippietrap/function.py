@@ -50,7 +50,7 @@ def square(dest, duty, *args):
     return Function(common.FUNC_SQUARE, *arg_convert(common.FUNC_SQUARE, args))
 
 def sine(dest, *args):
-    return Function(common.FUNC_SINE, dest, duty, *arg_convert(common.FUNC_SINE, args))
+    return Function(common.FUNC_SINE, dest, *arg_convert(common.FUNC_SINE, args))
 
 def rainbow(dest, *args):
-    return Function(common.FUNC_RAINBOW, dest, duty, *arg_convert(common.FUNC_RAINBOW, args))
+    return Function(common.FUNC_RAINBOW, dest, *arg_convert(common.FUNC_RAINBOW, args))

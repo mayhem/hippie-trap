@@ -116,7 +116,7 @@ function_t *create_func(uint8_t pattern_index, uint8_t type, uint8_t dest, uint8
                     set_error(ERR_PARSE_FAILURE);
                     return NULL;
                 }
- 
+
                 obj = func_alloc(pattern_index, type, dest, arg_count, sizeof(generator_t));
                 if (!obj)
                     return NULL;
