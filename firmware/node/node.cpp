@@ -703,6 +703,8 @@ int main(void)
     if (!eeprom_read_byte((uint8_t *)ee_init_ok_offset))
         eeprom_write_byte((uint8_t *)ee_init_ok_offset, 1);
 
+    for(;;);
+
     sei();
     for(;;)
         loop();

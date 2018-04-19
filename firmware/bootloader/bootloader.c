@@ -152,7 +152,7 @@ int main()
     uint8_t init_ok;
     uint8_t valid_program;
     uint8_t start_ch_count = 0, ch, i, step;
-    uint16_t hex_file_size = 0, hex_file_received = 0, panic_count = 0;
+    uint16_t hex_file_size = 0, hex_file_received = 0, panic_count = 0, j;
     enum response_t response;
 
     // Turn off the watchdog timer, in case we were reset that way
@@ -168,8 +168,8 @@ int main()
 
     serial_init();
 
-    set_color(128, 0, 128);
-    for(i = 0; i < 250; i++)
+    set_color(0, 0, 128);
+    for(j = 0; j < 500; j++)
     {
         if (serial_char_ready())
         {
