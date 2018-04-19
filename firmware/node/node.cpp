@@ -367,12 +367,10 @@ void handle_packet(uint16_t len, uint8_t *packet)
             {
                 if (!g_have_valid_pattern)
                 {
-                    dprintf("No valid pattern\n");
                     set_error(ERR_NO_VALID_PATTERN);
                 }
                 else
                 {
-                    dprintf("start pattern\n");
                     start_pattern();
                 }
                 break;
@@ -459,7 +457,6 @@ void handle_packet(uint16_t len, uint8_t *packet)
             }
         case PACKET_BOOTLOADER:
             {
-                dprintf("Enter bootloader command recevied.");
                 eeprom_write_byte((uint8_t *)ee_valid_program_offset, 0);
                 eeprom_write_byte((uint8_t *)ee_init_ok_offset, 0);
                 eeprom_busy_wait();
@@ -474,7 +471,6 @@ void handle_packet(uint16_t len, uint8_t *packet)
                 reset();
             }
         default:
-            dprintf("Invalid packet received\n");
             set_error(ERR_INVALID_PACKET);
             return;
     }
@@ -538,24 +534,6 @@ void set_error(uint8_t err)
 //    g_have_valid_pattern = 0;
 //    g_pattern_active = 0;
 }
-
-#if 0
-void timer_calibration(void)
-{
-    uint32_t next = 1000;
-    for(i = 0;;i++)
-    {
-        cli();
-        t = g_time;
-        sei();
-
-        if (t >= next)
-        {
-            dprintf("%u\n", t);
-            next = next + 1000;
-        }
-    }    
-#endif
 
 #define output_low(port,pin) port &= ~(1<<pin)
 #define output_high(port,pin) port |= (1<<pin)
@@ -681,18 +659,17 @@ int main(void)
     TIMSK1 |= (1<<TOIE1);
 
     serial_init();
-    dprintf("hippie-trap led board!\n");
 
     set_output(DDRD, LED_PIN);
     set_brightness(1000);
     set_color(NULL);
+
     startup_animation();
 
     timer_cal = eeprom_read_dword((uint32_t *)ee_calibration_offset);
     if (timer_cal > 1 && timer_cal != 0xFFFF)
     {
         g_ticks_per_sec = timer_cal;
-        dprintf("cal %d\n", timer_cal);
         col.r = 0;
         col.g = 128;
         col.b = 0;
@@ -721,8 +698,6 @@ int main(void)
 
     for(i = 0; i < NUM_CLASSES; i++)
         g_classes[i] = NO_CLASS;
-
-    dprintf("node %d ready.\n", g_node_id);
 
     // Tell the bootloader that init completed ok, if that flag isn't set.
     if (!eeprom_read_byte((uint8_t *)ee_init_ok_offset))

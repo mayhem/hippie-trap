@@ -64,16 +64,7 @@ int32_t f_error(void *self, int32_t t)
 
 int32_t f_sin(void *_self, int32_t t)
 {
-    int16_t value;
-    
-    generator_t *self = (generator_t *)_self;
-    int32_t index = (((int32_t)t * self->period / SCALE_FACTOR + self->phase) % S_PIM2) * NUM_SIN_TABLE_ENTRIES / S_PIM2;
-    if (index < 0)
-        index += NUM_SIN_TABLE_ENTRIES;
-
-    // first explicitly cast to int16_t, to make sure negative numbers are handled correctly
-    value = (int16_t)pgm_read_word_near(sin_table + index);
-    return (int32_t)value * self->amplitude / SCALE_FACTOR + self->offset;
+    return 0;
 }
 
 int32_t f_square(void *_self, int32_t t)

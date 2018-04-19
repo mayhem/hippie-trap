@@ -77,6 +77,11 @@ class Chandelier(object):
         # Wait for things to settle, then pipe some characters through the line to get things going
         sleep(.250)
 
+    def send_panic(self):
+        while True:
+            self.ser.write('M')
+            sleep(.0005)
+
     def _send_packet(self, dest, type, data):
         if not self.ser:
             return
@@ -93,7 +98,6 @@ class Chandelier(object):
         if len(packet) > MAX_PACKET_LEN:
             raise BufferError("Max packet len of %d exceeded. Make your pattern smaller." % MAX_PACKET_LEN)
         for ch in packet:
-#            print "%02X " % ch,
             self.ser.write(chr(ch))
             sleep(.001)
 

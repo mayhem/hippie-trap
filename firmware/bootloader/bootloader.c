@@ -9,26 +9,9 @@
 #include <avr/pgmspace.h>
 #include <avr/eeprom.h>
 #include "ws2812.h"
+#include "serial.h"
 
 #define NUM_LEDS 4
-
-
-// 38400 @ 8 Mhz. See http://wormfood.net/avrbaudcalc.php
-#define UBBR 12
-
-#define _UBRRH UBRR0H
-#define _UBRRL UBRR0L
-#define _UCSRB UCSR0B
-#define _UCSRC UCSR0C
-#define _TXEN  TXEN0
-#define _RXEN  RXEN0
-#define _RXC   RXC0
-#define _USBS  USBS0
-#define _UCSZ1 UCSZ01
-#define _UCSZ0 UCSZ00
-#define _UCSRA UCSR0A
-#define _UDRE  UDRE0
-#define _UDR   UDR0 
 
 struct cRGB g_led_rgb[NUM_LEDS];
 
@@ -53,53 +36,6 @@ void leds_off(void)
 {
     memset(g_led_rgb, 0, sizeof(g_led_rgb));
     update_leds();
-}
-
-void serial_init(void)
-{
-    // UART 0
-    /*Set baud rate */ 
-    _UBRRH = (unsigned char)(UBBR>>8); 
-    _UBRRL = (unsigned char)UBBR; 
-
-    /* Enable transmitter */ 
-    _UCSRB = (1<<_TXEN)|(1<<_RXEN); 
-    /* Set frame format: 8data, 1stop bit */ 
-    _UCSRC = (0<<_USBS)|(3<<_UCSZ0); 
-}
-
-void serial_tx(unsigned char ch)
-{
-    while ( !( _UCSRA & (1<<_UDRE)) )
-        ;
-
-    _UDR = ch;
-}
-
-unsigned char serial_rx(void)
-{
-    while ( !(_UCSRA & (1<<_RXC))) 
-        ;
-
-    return _UDR;
-}
-
-#define MAX 80 
-void dprintf(const char *fmt, ...)
-{
-    va_list va;
-    va_start (va, fmt);
-
-    char buffer[MAX];
-    char *ptr = buffer;
-    vsnprintf(buffer, MAX, fmt, va);
-    va_end (va);
-
-    for(ptr = buffer; *ptr; ptr++)
-    {
-        if (*ptr == '\n') serial_tx('\r');
-            serial_tx(*ptr);
-    }
 }
 
 #define HEX2DEC(x)  (((x < 'A') ? ((x) - 48) : ((x) - 55)))
@@ -184,7 +120,6 @@ enum response_t process_line(uint16_t *hex_file_received)
                 boot_page_write (last_addr & SPM_PAGEMASK);
                 boot_spm_busy_wait();
             }
-            //dprintf("erase %p\n", full_addr);
             boot_page_erase (full_addr);
             boot_spm_busy_wait ();
         }
@@ -217,7 +152,7 @@ int main()
     uint8_t init_ok;
     uint8_t valid_program;
     uint8_t start_ch_count = 0, ch, i, step;
-    uint16_t hex_file_size = 0, hex_file_received = 0;
+    uint16_t hex_file_size = 0, hex_file_received = 0, panic_count = 0;
     enum response_t response;
 
     // Turn off the watchdog timer, in case we were reset that way
@@ -232,16 +167,31 @@ int main()
     set_output(DDRD, LED);
 
     serial_init();
-    dprintf("bootloader\n");
 
     set_color(128, 0, 128);
-    _delay_ms(500);
+    for(i = 0; i < 250; i++)
+    {
+        if (serial_char_ready())
+        {
+            if (serial_rx() == 'M')
+                panic_count++;
+        }
+
+        _delay_ms(1);
+    }
     leds_off();
 
-    eeprom_busy_wait();
-    valid_program = eeprom_read_byte((const uint8_t *)ee_valid_program_offset); 
-    init_ok = eeprom_read_byte((const uint8_t *)ee_init_ok_offset); 
-    dprintf("start: %d valid: %d\n", valid_program, init_ok);
+    valid_program = 0;
+    init_ok = 0;
+
+    if (panic_count > 10)
+        eeprom_write_byte((uint8_t *)ee_valid_program_offset, 0);
+    else
+    {
+        eeprom_busy_wait();
+        valid_program = eeprom_read_byte((const uint8_t *)ee_valid_program_offset); 
+        init_ok = eeprom_read_byte((const uint8_t *)ee_init_ok_offset); 
+    }
 
     while(1)
     {
@@ -250,21 +200,21 @@ int main()
             if (init_ok)
             {
                 set_color(0, 0, 0);
-                dprintf("start program\n");
                 asm("jmp 0000");
                 return 0;
             }
             // valid program present, but init failed.
-            set_color(128, 128, 0);
-            dprintf("init not ok. ready to program.\n");
+            set_color(0, 0, 128);
 
             // Do not try to start the program again, if we have no valid program
             eeprom_write_byte((uint8_t *)ee_valid_program_offset, 0);
         }
         else
         {
-            set_color(0, 0, 128);
-            dprintf("no valid program, entered bootloader. ready.\n");
+            if (panic_count > 10)
+                set_color(128, 0, 0);
+            else
+                set_color(0, 128, 0);
         }
 
         for(start_ch_count = 0; start_ch_count < 16;)
@@ -300,7 +250,6 @@ int main()
                 break;
         }   
         set_color(0, 0, 0);
-        dprintf("\n");
 
         if (response == RSP_FINISHED && hex_file_size == hex_file_received)
         {
@@ -340,12 +289,12 @@ int main()
             else if (response == RSP_INVALID)
             {
                 dprintf("upload invalid\n");
-                led.r = 0; led.g = 128; led.b = 0;
+                led.r = 128; led.g = 128; led.b = 0;
             }
             else 
             {
                 dprintf("other error\n");
-                led.r = 128; led.g = 128; led.b = 128;
+                led.r = 128; led.g = 0; led.b = 128;
             }
 
             for(i = 0; i < 10; i++)

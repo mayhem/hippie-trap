@@ -24,11 +24,14 @@ $(TARGET).o: $(TARGET).c
 ws2812.o: ws2812.c ws2812.h
 	$(CC) $(CFLAGS) -c ws2812.c
 
+serial.o: serial.c serial.h
+	$(CC) $(CFLAGS) -c serial.c
+
 $(TARGET).hex: $(TARGET).obj
 	$(OBJ2HEX) -R .eeprom -O ihex $< $@
 
-$(TARGET).obj: $(TARGET).o ws2812.o
-	$(CC) $(CFLAGS) -o $@ $(LDFLAGS) $(TARGET).o ws2812.o
+$(TARGET).obj: $(TARGET).o ws2812.o serial.o
+	$(CC) $(CFLAGS) -o $@ $(LDFLAGS) $(TARGET).o ws2812.o serial.o
 
 clean:
 	rm -f *.hex *.obj *.o *.map

@@ -35,7 +35,6 @@ uint8_t serial_rx(void)
     return _UDR;
 }
 
-#ifdef DPRINTF
 #define MAX 80 
 void dprintf(const char *fmt, ...)
 {
@@ -53,4 +52,3 @@ void dprintf(const char *fmt, ...)
             serial_tx(*ptr);
     }
 }
-#endif
