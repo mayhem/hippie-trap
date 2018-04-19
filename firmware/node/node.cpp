@@ -380,6 +380,7 @@ void handle_packet(uint16_t len, uint8_t *packet)
             {
                 g_pattern_active = -1;
                 g_have_valid_pattern = 0;
+                g_target = 0;
 
                 set_error(ERR_OK);
                 set_brightness(1000);
@@ -503,7 +504,7 @@ void update_pattern(void)
     uint8_t  i;
     color_t  color;
 
-    if (g_target && ticks() >= g_target)
+    if (g_have_valid_pattern && g_target && ticks() >= g_target)
     {
         update_leds();
 
@@ -692,9 +693,8 @@ int main(void)
 
 
     g_ticks_per_frame = g_ticks_per_sec * g_delay / 1000;
-
     g_have_valid_pattern = 0;
-    memset(g_color, 0, sizeof(g_color));
+    g_target = 0;
 
     for(i = 0; i < NUM_CLASSES; i++)
         g_classes[i] = NO_CLASS;
