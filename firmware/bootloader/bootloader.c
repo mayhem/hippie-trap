@@ -254,7 +254,7 @@ int main()
                 asm("jmp 0000");
                 return 0;
             }
-            // No valid program present, but should've started it
+            // valid program present, but init failed.
             set_color(128, 128, 0);
             dprintf("init not ok. ready to program.\n");
 

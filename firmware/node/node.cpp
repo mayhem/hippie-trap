@@ -360,7 +360,6 @@ void handle_packet(uint16_t len, uint8_t *packet)
             {
                 uint8_t next = (g_pattern_active + 1) % 2;
                 g_have_valid_pattern = parse_pattern(next, data, len - 2);
-                dprintf("parse: %d\n", g_have_valid_pattern);
                 break;  
             }
 
@@ -383,6 +382,7 @@ void handle_packet(uint16_t len, uint8_t *packet)
             {
                 g_pattern_active = -1;
                 g_have_valid_pattern = 0;
+                g_target = 0;
 
                 set_error(ERR_OK);
                 set_brightness(1000);
@@ -508,7 +508,7 @@ void update_pattern(void)
     uint8_t  i;
     color_t  color;
 
-    if (g_target && ticks() >= g_target)
+    if (g_have_valid_pattern && g_target && ticks() >= g_target)
     {
         update_leds();
 
@@ -607,7 +607,6 @@ void loop()
     if (serial_char_ready()) 
     {
         ch = serial_rx();
-//        dprintf("%02X ", ch);
         if (found_header < 2)
         {
             if (ch == 0xBE)
@@ -617,8 +616,6 @@ void loop()
                 found_header = 2;
             else
                 found_header = 0;
-
-//            dprintf("(%d) ", found_header);
         }
         else
         {
@@ -630,7 +627,6 @@ void loop()
                     len = ch;
                     recd = 0;
                     crc = 0;
-//                    dprintf("(len %d) ", len);
                 }
                 else
                     // Nope, that was no header, better keep looking.
@@ -720,9 +716,8 @@ int main(void)
 
 
     g_ticks_per_frame = g_ticks_per_sec * g_delay / 1000;
-
     g_have_valid_pattern = 0;
-    memset(g_color, 0, sizeof(g_color));
+    g_target = 0;
 
     for(i = 0; i < NUM_CLASSES; i++)
         g_classes[i] = NO_CLASS;
