@@ -13,6 +13,7 @@ import errno
 
 NODE_ID_FILE = "/tmp/node.raw"
 BOOT_CALL = ["make", "-C", "bootloader"]
+FUSES_CALL = ["make", "-C", "bootloader"]
 ID_CALL = ["sudo", "avrdude", "-p", "m328p", "-P", "usb", "-c", "avrispmkII", "-U", "eeprom:w:" + NODE_ID_FILE + ":r"]
 
 def write_node_id(file_name, id):
@@ -35,6 +36,12 @@ while True:
     print "programming bootloader: *******************************"
     try:
         subprocess.check_call(BOOT_CALL, stderr=subprocess.STDOUT)
+    except subprocess.CalledProcessError as e:
+        pass
+
+    print "programming fuses: *******************************"
+    try:
+        subprocess.check_call(FUSES_CALL, stderr=subprocess.STDOUT)
     except subprocess.CalledProcessError as e:
         pass
 

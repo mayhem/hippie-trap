@@ -80,6 +80,7 @@ class Chandelier(object):
     def send_panic(self):
         while True:
             self.ser.write('M')
+            sleep(.0005)
 
     def _send_packet(self, dest, type, data):
         if not self.ser:
