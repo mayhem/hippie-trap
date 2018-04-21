@@ -21,12 +21,6 @@ function.o: function.cpp function.h defs.h
 serial.o: serial.cpp serial.h defs.h
 	$(CC) $(CFLAGS) -c serial.cpp
 
-pattern.o: pattern.cpp pattern.h defs.h
-	$(CC) $(CFLAGS) -c pattern.cpp
-
-sin_table.o: sin_table.cpp sin_table.h defs.h
-	$(CC) $(CFLAGS) -c sin_table.cpp
-
 ws2812.o: ws2812.cpp ws2812.h defs.h
 	$(CC) $(CFLAGS) -c ws2812.cpp
 
@@ -36,8 +30,8 @@ colorspace.o: colorspace.cpp colorspace.h defs.h
 $(TARGET).hex: $(TARGET).obj
 	$(OBJ2HEX) -R .eeprom -O ihex $< $@
 
-$(TARGET).obj: $(TARGET).o ws2812.o function.o serial.o pattern.o colorspace.o
-	$(CC) $(CFLAGS) -o $@ $(LDFLAGS) $(TARGET).o ws2812.o function.o serial.o pattern.o colorspace.o
+$(TARGET).obj: $(TARGET).o ws2812.o function.o serial.o colorspace.o
+	$(CC) $(CFLAGS) -o $@ $(LDFLAGS) $(TARGET).o ws2812.o function.o serial.o colorspace.o
 
 clean:
 	rm -f *.hex *.obj *.o *.map

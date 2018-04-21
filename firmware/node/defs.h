@@ -6,7 +6,7 @@
 #define HEAP_SIZE           256
 #define MAX_FUNCTIONS       256
 #define MAX_ARGS            8
-#define NUM_PIXELS          4
+#define NUM_LEDS            4
 
 #define SCALE_FACTOR 1000
 #define S_PIM2       6283 // PI * 2 * SCALE_FACTOR
