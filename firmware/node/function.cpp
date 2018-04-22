@@ -34,6 +34,7 @@ void p_fade_to(int32_t t, uint8_t *data)
     {
         for(i = 0; i < NUM_LEDS; i++)
             start_cols[i] = g_color[i];
+        dprintf("start: %d %d %d\n", start_cols[0].r, start_cols[0].g, start_cols[0].b);
         return;
     }
 
@@ -43,10 +44,6 @@ void p_fade_to(int32_t t, uint8_t *data)
     // If we're at the end of the pattern, bail
     if (t > duration)
         return;
-
-    int32_t steps = duration / g_ticks_per_frame;  
-//    dprintf("t: %d ", t);
-//    dprintf("s: %u\n", t_steps);
 
     for(i = 0; i < NUM_LEDS; i++)
     {
@@ -59,20 +56,15 @@ void p_fade_to(int32_t t, uint8_t *data)
 
         rgb_to_hsv(&start_cols[i], &h0, &s0, &v0);
         rgb_to_hsv(&target, &h1, &s1, &v1);
-//        dprintf("0: %d %d %d\n", h0, s0, v0);
 
-        delta_h = (h1 - h0) / steps;
-        delta_s = (s1 - s0) / steps;
-        delta_v = (v1 - v0) / steps;
+        delta_h = (h1 - h0);
+        delta_s = (s1 - s0);
+        delta_v = (v1 - v0);
 
-        dprintf("%d %d %d\n", delta_h, delta_s, delta_v);
-
-        int32_t offset = t / g_ticks_per_frame; 
-        hsv_to_rgb(h0 + (delta_h * offset), s0 + (delta_s * offset), v0 + (delta_v * duration), &col);
-//        dprintf("%d\n", h0 + (delta_h * steps));
+        int32_t step = t * SCALE_FACTOR / duration; 
+        hsv_to_rgb(h0 + (delta_h * step) / SCALE_FACTOR, s0 + (delta_s * step) / SCALE_FACTOR, v0 + (delta_v * step) / SCALE_FACTOR, &col);
         set_pixel_color(i, &col);
     }
-//    dprintf("\n");
 }
 
 void apply_pattern(int32_t t, uint8_t *data)
