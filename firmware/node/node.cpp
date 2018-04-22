@@ -294,6 +294,8 @@ void handle_packet(uint16_t len, uint8_t *packet)
     uint8_t    type, target;
     uint8_t   *data;
 
+    dprintf("handle packet\n");
+
     target = packet[0];
     if (target >= MAX_NODES + 1)
     {
@@ -450,6 +452,7 @@ void handle_packet(uint16_t len, uint8_t *packet)
             reset();
         }
         default:
+            dprintf("invalid packet.\n");
             return;
     }
 }

@@ -4,23 +4,10 @@
 #include "function.h"
 #include "colorspace.h"
 
+extern uint32_t  g_target;
 extern uint32_t  g_ticks_per_frame;
 extern color_t  g_color[NUM_LEDS];
 void set_pixel_color(uint8_t index, color_t *col);
-
-void p_dumb(int32_t t, uint8_t *data)
-{
-    uint8_t i;
-    color_t col;
-
-    for(i = 0; i < NUM_LEDS; i++)
-    {
-        col.r = t / 4;
-        col.g = 0;
-        col.b = 0;
-        set_pixel_color(i, &col);
-    }
-}
 
 void p_fade_to(int32_t t, uint8_t *data)
 {
@@ -43,7 +30,10 @@ void p_fade_to(int32_t t, uint8_t *data)
 
     // If we're at the end of the pattern, bail
     if (t > duration)
+    {
+        g_target = 0;
         return;
+    }
 
     for(i = 0; i < NUM_LEDS; i++)
     {
@@ -67,6 +57,19 @@ void p_fade_to(int32_t t, uint8_t *data)
     }
 }
 
+void p_rainbow(int32_t t, uint8_t *data)
+{
+    int8_t divisor = *data, i;
+    int32_t offset = t / divisor;
+    color_t col;
+
+    for(i = 0; i < NUM_LEDS; i++)
+    {
+        hsv_to_rgb((offset + (250 * i)) % SCALE_FACTOR, SCALE_FACTOR, SCALE_FACTOR, &col);
+        set_pixel_color(i, &col);
+    }
+}
+
 void apply_pattern(int32_t t, uint8_t *data)
 {
     switch(*data)
@@ -75,7 +78,7 @@ void apply_pattern(int32_t t, uint8_t *data)
             p_fade_to(t, data+1);
             break;
         case 1:
-            p_dumb(t, data+1);
+            p_rainbow(t, data+1);
             break;
     }
 }

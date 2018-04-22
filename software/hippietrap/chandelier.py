@@ -140,6 +140,13 @@ class Chandelier(object):
         # Give the bottles a moment to parse the packet before we go on
         sleep(.05)
 
+    def send_rainbow(self, dest, divisor):
+        packet = bytearray(struct.pack("<BB", 1, divisor))
+        self._send_packet(dest, PACKET_PATTERN, packet)
+
+        # Give the bottles a moment to parse the packet before we go on
+        sleep(.05)
+
     def start_pattern(self, dest):
         self._send_packet(dest, PACKET_START, bytearray())
 
