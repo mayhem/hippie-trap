@@ -127,9 +127,9 @@ class Chandelier(object):
         # Give the bottles a moment to parse the packet before we go on
         sleep(.05)
 
-    def send_pattern(self, dest, pattern):
+    def send_pattern(self, dest):
         print "send patt %d" % PACKET_PATTERN
-        self._send_packet(dest, PACKET_PATTERN, bytearray(pattern.describe()))
+        self._send_packet(dest, PACKET_PATTERN, bytearray(bytes((1))))
 
         # Give the bottles a moment to parse the packet before we go on
         sleep(.05)
