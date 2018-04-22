@@ -27,6 +27,7 @@ PACKET_PATTERN      = 4
 PACKET_ENTROPY      = 5  
 PACKET_START        = 6  
 PACKET_CLEAR        = 7  
+PACKET_STOP         = 6  
 PACKET_POSITION     = 9  
 PACKET_DELAY        = 10 
 PACKET_ADDRR        = 11 
@@ -99,7 +100,9 @@ class Chandelier(object):
             raise BufferError("Max packet len of %d exceeded. Make your pattern smaller." % MAX_PACKET_LEN)
         for ch in packet:
             self.ser.write(chr(ch))
+            print "%02X " % ch,
             sleep(.001)
+        print
 
     def send_entropy(self):
         for dest in xrange(1, NUM_NODES + 1):
@@ -121,8 +124,9 @@ class Chandelier(object):
     def decay(self, dest):
         self._send_packet(dest, PACKET_DECAY, bytearray())
 
-    def send_pattern_to_class(self, cls, pattern):
-        self._send_packet(mkcls(cls), PACKET_PATTERN, bytearray(pattern.describe()))
+    def send_pattern(self, dest, id):
+        print "send patt %d" % id
+        self._send_packet(dest, PACKET_PATTERN, bytearray(bytes((chr(id)))))
 
         # Give the bottles a moment to parse the packet before we go on
         sleep(.05)
@@ -131,11 +135,27 @@ class Chandelier(object):
         print "send patt %d" % PACKET_PATTERN
         self._send_packet(dest, PACKET_PATTERN, bytearray(bytes((1))))
 
+    def send_fade(self, dest, steps, colors):
+        packet = bytearray(struct.pack("<BH", 0, steps))
+        for col in colors:
+            packet += bytearray((col[0], col[1], col[2]))
+        self._send_packet(dest, PACKET_PATTERN, packet)
+
+        # Give the bottles a moment to parse the packet before we go on
+        sleep(.05)
+
+    def send_rainbow(self, dest, divisor):
+        packet = bytearray(struct.pack("<BB", 1, divisor))
+        self._send_packet(dest, PACKET_PATTERN, packet)
+
         # Give the bottles a moment to parse the packet before we go on
         sleep(.05)
 
     def start_pattern(self, dest):
         self._send_packet(dest, PACKET_START, bytearray())
+
+    def stop_pattern(self, dest):
+        self._send_packet(dest, PACKET_STOP, bytearray())
 
     def send_invalid_packet(self, id):
         self._send_packet(BROADCAST, 254, bytearray()) 

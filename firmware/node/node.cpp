@@ -6,20 +6,19 @@
 #include <avr/interrupt.h>
 #include <util/delay.h>
 #include <string.h>
-#include "pattern.h"
 #include "ws2812.h"
 #include "serial.h"
+#include "function.h"
 
 const uint8_t NODE_ID_UNKNOWN = 255;
 const uint8_t MAX_NODES = 120;
 const uint8_t LED_PIN = 2;
-const uint8_t NUM_LEDS = 4;
 const uint8_t US_PER_TICK = 25;
 #define TIMER1_INIT      0xFFF8
 #define TIMER1_FLAGS     _BV(CS12)|(1<<CS10); // 8Mhz / 1024 / 8 = .001024 per tick
 
 
-const uint16_t MAX_PACKET_LEN     = 230;
+const uint16_t MAX_PACKET_LEN     = 128;
 const uint8_t BROADCAST = 0;
 const uint8_t PACKET_SINGLE_LED   = 1; 
 const uint8_t PACKET_SINGLE_COLOR = 2; 
@@ -28,18 +27,16 @@ const uint8_t PACKET_PATTERN      = 4;
 const uint8_t PACKET_ENTROPY      = 5; 
 const uint8_t PACKET_START        = 6; 
 const uint8_t PACKET_CLEAR        = 7; 
-const uint8_t PACKET_XXXXXXXXXXX  = 8; 
-const uint8_t PACKET_POSITION     = 9; 
+const uint8_t PACKET_STOP         = 8; 
 const uint8_t PACKET_DELAY        = 10;
 const uint8_t PACKET_ADDR         = 11;
 const uint8_t PACKET_SPEED        = 12;
 const uint8_t PACKET_CLASSES      = 13;
 const uint8_t PACKET_CALIBRATE    = 14;
 const uint8_t PACKET_BRIGHTNESS   = 15;
-const uint8_t PACKET_ANGLE        = 16;
 const uint8_t PACKET_BOOTLOADER   = 17;
 const uint8_t PACKET_RESET        = 18;
-const uint8_t PACKET_DECAY        = 19;
+const uint8_t PACKET_FADE         = 19;
 
 // where in EEPROM our node id is stored. The first 16 are reserved for the bootloader
 // Bootloader items
@@ -67,10 +64,8 @@ uint8_t    g_led_buffer[3 * NUM_LEDS];
 uint32_t    g_random_seed = 0;
 
 // pattern, packet
-uint8_t     g_pattern_active = -1;
-uint8_t     g_have_valid_pattern = 0;
-pattern_t   g_patterns[2];
 uint8_t     g_packet[MAX_PACKET_LEN];
+uint8_t     g_pattern_data[MAX_PACKET_LEN];
 
 // our node id
 uint8_t g_node_id = 0;
@@ -78,10 +73,6 @@ uint8_t g_node_id = 0;
 // color/step information for transitions
 color_t  g_color[NUM_LEDS];
 int32_t  g_brightness;
-
-// location in space
-int16_t g_pos[3];
-int32_t g_angle;
 
 // broadcast classes
 const uint8_t NUM_CLASSES = 16;
@@ -115,9 +106,6 @@ const uint8_t PROGMEM gamma[] = {
 
 // ---- prototypes -----
 void set_brightness(int32_t brightness);
-void start_pattern(void);
-void update_pattern(void);
-void error_pattern(uint32_t t);
 
 volatile uint32_t g_time = 0;
 ISR (TIMER1_OVF_vect)
@@ -260,6 +248,35 @@ void startup_animation(void)
     set_color(NULL);
 }
 
+void set_brightness(int32_t brightness)
+{
+    g_brightness = brightness;
+}
+
+void update_pattern(void)
+{
+    if (g_target && ticks() >= g_target)
+    {
+        update_leds();
+
+        apply_pattern(ticks(), g_pattern_data);
+        g_target += g_ticks_per_frame;
+    }
+}
+
+void start_pattern(void)
+{
+    dprintf("\n");
+    reset_ticks();
+    g_target = g_ticks_per_frame;
+    apply_pattern(0, g_pattern_data);
+    update_pattern();  
+}    
+
+void stop_pattern(void)
+{
+    g_target = 0;
+}    
 
 void reset(void)
 {
@@ -276,6 +293,8 @@ void handle_packet(uint16_t len, uint8_t *packet)
 {
     uint8_t    type, target;
     uint8_t   *data;
+
+    dprintf("handle packet\n");
 
     target = packet[0];
     if (target >= MAX_NODES + 1)
@@ -335,54 +354,31 @@ void handle_packet(uint16_t len, uint8_t *packet)
                     col.b = data[2];
                     set_pixel_color(j, &col);
                 }
-                set_error(ERR_OK);
                 update_leds();
                 break;  
             }
 
-        case PACKET_DECAY:
-            {
-                color_t col;
-
-                for(int j=0; j < NUM_LEDS; j++)
-                {
-                    col = g_color[j];
-                    col.r >>= 1;
-                    col.g >>= 1;
-                    col.b >>= 1;
-                    set_pixel_color(j, &col);
-                    update_leds();
-                }
-                break;
-            } 
-            
         case PACKET_PATTERN:
             {
-                uint8_t next = (g_pattern_active + 1) % 2;
-                g_have_valid_pattern = parse_pattern(next, data, len - 2);
+                memcpy(g_pattern_data, data, len - 2); 
                 break;  
             }
 
         case PACKET_START:
             {
-                if (!g_have_valid_pattern)
-                {
-                    set_error(ERR_NO_VALID_PATTERN);
-                }
-                else
-                {
-                    start_pattern();
-                }
+                start_pattern();
+                break;
+            }
+
+        case PACKET_STOP:
+            {
+                stop_pattern();
                 break;
             }
             
         case PACKET_CLEAR:
             {
-                g_pattern_active = -1;
-                g_have_valid_pattern = 0;
-                g_target = 0;
-
-                set_error(ERR_OK);
+                stop_pattern();
                 set_brightness(1000);
                 set_color(NULL);
             }
@@ -404,135 +400,61 @@ void handle_packet(uint16_t len, uint8_t *packet)
             g_speed = *(uint16_t *)data;
             break;  
             
-        case PACKET_POSITION:
-        { 
-            g_pos[0] = *(uint16_t *)data;
-            g_pos[1] = *(uint16_t *)(&data[2]);
-            g_pos[2] = *(uint16_t *)(&data[4]);
-            break;       
-        }
-
-        case PACKET_ANGLE:
-        { 
-            g_angle = *(uint32_t *)data;
-            break;       
-        }
-
         case PACKET_CLASSES:
-            {
-                uint8_t i;
+        {
+            uint8_t i;
 
-                for(i = 0; i < NUM_CLASSES; i++)
-                    g_classes[i] = NO_CLASS;
+            for(i = 0; i < NUM_CLASSES; i++)
+                g_classes[i] = NO_CLASS;
 
-                for(i = 0; i < len - 2; i++)
-                    g_classes[i] = data[i];
+            for(i = 0; i < len - 2; i++)
+                g_classes[i] = data[i];
 
-                break;
-            }
+            break;
+        }
         case PACKET_CALIBRATE:
-            {  
-                color_t col;
+        {  
+            color_t col;
 
-                set_error(ERR_OK);
-                col.g = col.b = 0;
-                col.r = 255;
+            col.g = col.b = 0;
+            col.r = 255;
 
-                // clear out any stray characters
-                while(serial_char_ready()) 
-                    serial_rx();
+            // clear out any stray characters
+            while(serial_char_ready()) 
+                serial_rx();
 
-                set_color(&col);
-                reset_ticks();
-                g_calibrate = data[0];
-                g_calibrate_start = 0;
-                break;
-            }
+            set_color(&col);
+            reset_ticks();
+            g_calibrate = data[0];
+            g_calibrate_start = 0;
+            break;
+        }
         case PACKET_BRIGHTNESS:
-            {
-                int32_t b;
-                b = (int32_t)data[0] * 10;
-                set_brightness(b);
-                break;
-            }
+        {
+            int32_t b;
+            b = (int32_t)data[0] * 10;
+            set_brightness(b);
+            break;
+        }
         case PACKET_BOOTLOADER:
-            {
-                eeprom_write_byte((uint8_t *)ee_valid_program_offset, 0);
-                eeprom_write_byte((uint8_t *)ee_init_ok_offset, 0);
-                eeprom_busy_wait();
+        {
+            eeprom_write_byte((uint8_t *)ee_valid_program_offset, 0);
+            eeprom_write_byte((uint8_t *)ee_init_ok_offset, 0);
+            eeprom_busy_wait();
 
-                set_color_rgb(255, 0, 0);
-                _delay_ms(1000);
-                set_color(NULL);
-                reset();
-            }
+            set_color_rgb(255, 0, 0);
+            _delay_ms(1000);
+            set_color(NULL);
+            reset();
+        }
         case PACKET_RESET:
-            {
-                reset();
-            }
+        {
+            reset();
+        }
         default:
-            set_error(ERR_INVALID_PACKET);
+            dprintf("invalid packet.\n");
             return;
     }
-}
-
-void set_brightness(int32_t brightness)
-{
-    g_brightness = brightness;
-}
-
-void start_pattern(void)
-{
-    if (!g_have_valid_pattern)
-    {
-        set_error(ERR_NO_VALID_PATTERN);
-        return;
-    }
-
-    reset_ticks();
-    g_target = g_ticks_per_frame;
-    set_error(ERR_OK);
-
-    g_pattern_active = (g_pattern_active + 1) % 2;
-    g_have_valid_pattern = 0;
-
-    update_pattern();  
-}    
-
-void update_pattern(void)
-{
-    uint8_t  i;
-    color_t  color;
-
-    if (g_have_valid_pattern && g_target && ticks() >= g_target)
-    {
-        update_leds();
-
-        if (g_pattern_active >= 0)
-            for(i = 0; i < NUM_LEDS; i++)
-            {
-                color = g_color[i];
-                evaluate(&g_patterns[g_pattern_active], ticks_to_ms(g_target), i, &color);
-                set_pixel_color(i, &color);
-            }
-
-        g_target += g_ticks_per_frame;
-    }
-}
-
-void set_error(uint8_t err)
-{
-    g_error = err;
-    if (err == ERR_OK)
-        return;
-
-//    set_color(NULL);
-//    setup_error_pattern();
-
-//    reset_ticks();
-//    g_target = g_ticks_per_frame;
-//    g_have_valid_pattern = 0;
-//    g_pattern_active = 0;
 }
 
 #define output_low(port,pin) port &= ~(1<<pin)
@@ -629,10 +551,10 @@ void loop()
                         {
                             handle_packet(len - 2, g_packet);
                         }
-                        else
-                        {  
-                            set_error(ERR_CRC_FAIL);
-                        }
+//                        else
+//                        {  
+//                            set_error(ERR_CRC_FAIL);
+//                        }
                     }
 
                     len = 0;
@@ -693,7 +615,6 @@ int main(void)
 
 
     g_ticks_per_frame = g_ticks_per_sec * g_delay / 1000;
-    g_have_valid_pattern = 0;
     g_target = 0;
 
     for(i = 0; i < NUM_CLASSES; i++)
