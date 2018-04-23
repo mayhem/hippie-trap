@@ -8,8 +8,8 @@
 #include <avr/wdt.h>
 #include <avr/pgmspace.h>
 #include <avr/eeprom.h>
-#include "ws2812.h"
-#include "serial.h"
+#include "../node/ws2812.h"
+#include "../node/serial.h"
 
 #define NUM_LEDS 4
 #define NUM_PANIC_CHARS 64
@@ -18,7 +18,7 @@ struct cRGB g_led_rgb[NUM_LEDS];
 
 void update_leds(void)
 {
-    ws2812_setleds((struct cRGB *)g_led_rgb, NUM_LEDS);
+    ws2812_sendarray((uint8_t*)g_led_rgb, NUM_LEDS);
 }
 
 void set_color(uint8_t r, uint8_t g, uint8_t b)
@@ -169,6 +169,7 @@ int main()
 
     serial_init();
 
+    leds_off();
     set_color(0, 0, 128);
     for(j = 0; j < 500; j++)
     {
@@ -180,7 +181,6 @@ int main()
 
         _delay_ms(1);
     }
-    leds_off();
 
     valid_program = 0;
     init_ok = 0;

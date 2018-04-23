@@ -100,14 +100,12 @@ class HippieTrap(object):
             raise BufferError("Max packet len of %d exceeded. Make your pattern smaller." % MAX_PACKET_LEN)
         for ch in packet:
             self.ser.write(chr(ch))
-            print "%02X " % ch,
-            sleep(.005)
-        print
+#            print "%02X " % ch,
+#        print
 
     def send_entropy(self):
         for dest in xrange(1, NUM_NODES + 1):
             self._send_packet(dest, PACKET_ENTROPY, bytearray(os.urandom(4)))
-            sleep(.01)
 
     def set_color(self, dest, col):
         self._send_packet(dest, PACKET_SINGLE_COLOR, bytearray((col[0], col[1], col[2])))

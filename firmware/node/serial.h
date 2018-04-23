@@ -25,5 +25,6 @@ void    serial_init(void);
 void    serial_tx(uint8_t ch);
 uint8_t serial_char_ready();
 uint8_t serial_rx();
+void dprintf(const char *fmt, ...);
 
 #endif
