@@ -18,3 +18,10 @@ ch.open(device)
 ch.clear(BROADCAST)
 ch.send_rainbow(BROADCAST, 4)
 ch.start_pattern(BROADCAST)
+
+try:
+    while True:
+        sleep(1000)
+except KeyboardInterrupt:
+    ch.stop_pattern(BROADCAST)
+    ch.clear(BROADCAST)

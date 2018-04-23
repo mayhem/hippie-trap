@@ -8,6 +8,6 @@
 #include <stdlib.h>
 #include "defs.h"
 
-void apply_pattern(int32_t t, uint8_t *data);
+void apply_pattern(int32_t t, uint8_t *data, uint8_t len);
 
 #endif

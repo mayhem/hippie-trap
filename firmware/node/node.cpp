@@ -66,6 +66,7 @@ uint32_t    g_random_seed = 0;
 // pattern, packet
 uint8_t     g_packet[MAX_PACKET_LEN];
 uint8_t     g_pattern_data[MAX_PACKET_LEN];
+uint8_t     g_pattern_data_len = 0;
 
 // our node id
 uint8_t g_node_id = 0;
@@ -259,17 +260,16 @@ void update_pattern(void)
     {
         update_leds();
 
-        apply_pattern(ticks(), g_pattern_data);
+        apply_pattern(ticks(), g_pattern_data, g_pattern_data_len);
         g_target += g_ticks_per_frame;
     }
 }
 
 void start_pattern(void)
 {
-    dprintf("\n");
     reset_ticks();
     g_target = g_ticks_per_frame;
-    apply_pattern(0, g_pattern_data);
+    apply_pattern(0, g_pattern_data, g_pattern_data_len);
     update_pattern();  
 }    
 
@@ -294,8 +294,6 @@ void handle_packet(uint16_t len, uint8_t *packet)
     uint8_t    type, target;
     uint8_t   *data;
 
-    dprintf("handle packet\n");
-
     target = packet[0];
     if (target >= MAX_NODES + 1)
     {
@@ -311,7 +309,7 @@ void handle_packet(uint16_t len, uint8_t *packet)
 
     if (target != BROADCAST && target != g_node_id)
         return;
-      
+
     type = packet[1];
     data = &packet[2];
     switch(type)
@@ -361,6 +359,7 @@ void handle_packet(uint16_t len, uint8_t *packet)
         case PACKET_PATTERN:
             {
                 memcpy(g_pattern_data, data, len - 2); 
+                g_pattern_data_len = len - 2;
                 break;  
             }
 
@@ -529,8 +528,10 @@ void loop()
                     crc = 0;
                 }
                 else
+                {
                     // Nope, that was no header, better keep looking.
                     found_header = 0;
+                }
             }
             else
             {
@@ -546,15 +547,17 @@ void loop()
                     // if we received the right length, check the crc. If that matches, we have a packet!
                     if (recd == len)
                     {            
+                        uint8_t k;
+
                         pcrc = (uint16_t *)(g_packet + len - 2);
                         if (crc == *pcrc)
                         {
                             handle_packet(len - 2, g_packet);
                         }
-//                        else
-//                        {  
-//                            set_error(ERR_CRC_FAIL);
-//                        }
+                        else
+                        {  
+                            dprintf("crc fail.\n");
+                        }
                     }
 
                     len = 0;
@@ -581,6 +584,7 @@ int main(void)
     TIMSK1 |= (1<<TOIE1);
 
     serial_init();
+    dprintf("hippie trap node!\n\n");
 
     set_output(DDRD, LED_PIN);
     set_brightness(1000);

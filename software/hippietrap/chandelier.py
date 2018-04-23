@@ -27,7 +27,7 @@ PACKET_PATTERN      = 4
 PACKET_ENTROPY      = 5  
 PACKET_START        = 6  
 PACKET_CLEAR        = 7  
-PACKET_STOP         = 6  
+PACKET_STOP         = 8  
 PACKET_POSITION     = 9  
 PACKET_DELAY        = 10 
 PACKET_ADDRR        = 11 
@@ -101,7 +101,7 @@ class Chandelier(object):
         for ch in packet:
             self.ser.write(chr(ch))
             print "%02X " % ch,
-            sleep(.001)
+            sleep(.005)
         print
 
     def send_entropy(self):
