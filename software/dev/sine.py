@@ -4,7 +4,7 @@ import os
 import sys
 import math
 from colorsys import hsv_to_rgb
-from hippietrap.chandelier import Chandelier, BROADCAST, NUM_NODES
+from hippietrap.hippietrap import HippieTrap, BROADCAST, NUM_NODES
 from hippietrap.color import Color
 from hippietrap.function import sine, Pattern
 from hippietrap.common import DEST_ALL_RED
@@ -14,7 +14,7 @@ STEPS = 500
 
 device = "/dev/serial0"
 
-ch = Chandelier()
+ch = HippieTrap()
 ch.open(device)
 
 p = Pattern(1, sine(DEST_ALL_RED, 1.0, 0.0, 1.0, 0.0))

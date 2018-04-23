@@ -6,12 +6,12 @@ import math
 import random
 
 from time import sleep, time
-from hippietrap.chandelier import Chandelier, BROADCAST, NUM_NODES
+from hippietrap.hippietrap import HippieTrap, BROADCAST, NUM_NODES
 from hippietrap.color import Color
 
 device = "/dev/serial0"
 
-ch = Chandelier()
+ch = HippieTrap()
 ch.open(device)
 ch.clear(BROADCAST)
 

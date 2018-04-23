@@ -3,12 +3,12 @@
 import os
 import sys
 import math
-from hippietrap.chandelier import Chandelier, BROADCAST
+from hippietrap.hippietrap import HippieTrap, BROADCAST
 from time import sleep, time
 
 device = "/dev/serial0"
 
-ch = Chandelier()
+ch = HippieTrap()
 ch.open(device)
 ch.clear(BROADCAST)
 ch.clear(BROADCAST)

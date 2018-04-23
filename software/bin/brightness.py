@@ -3,7 +3,7 @@
 import os
 import sys
 import math
-from hippietrap.chandelier import Chandelier, BROADCAST
+from hippietrap.hippietrap import HippieTrap, BROADCAST
 from hippietrap.color import Color
 from random import randint, seed
 from time import sleep, time
@@ -12,7 +12,7 @@ DELAY = .02
 
 device = "/dev/serial0"
 
-ch = Chandelier()
+ch = HippieTrap()
 ch.open(device)
 ch.off(BROADCAST)
 ch.send_entropy()

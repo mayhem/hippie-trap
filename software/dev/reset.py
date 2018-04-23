@@ -3,12 +3,12 @@
 import os
 import sys
 import math
-from hippietrap.chandelier import Chandelier, BROADCAST
+from hippietrap.hippietrap import HippieTrap, BROADCAST
 
 device = "/dev/serial0"
 if len(sys.argv) == 2:
     device = sys.argv[1]
 
-ch = Chandelier()
+ch = HippieTrap()
 ch.open(device)
 ch.reset_nodes(BROADCAST)

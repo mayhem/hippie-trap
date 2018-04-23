@@ -3,7 +3,7 @@
 import os
 import sys
 import math
-from chandelier import Chandelier, BROADCAST, NUM_NODES
+from hippietrap import HippieTrap, BROADCAST, NUM_NODES
 import function as s
 import generator as g
 import filter as f
@@ -16,7 +16,7 @@ device = "/dev/ttyAMA0"
 
 r.seed()
 
-ch = Chandelier()
+ch = HippieTrap()
 ch.open(device)
 ch.off(BROADCAST)
 ch.send_entropy()

@@ -4,7 +4,7 @@ import os
 import sys
 import math
 from colorsys import hsv_to_rgb
-from hippietrap.chandelier import Chandelier, BROADCAST, NUM_NODES
+from hippietrap.hippietrap import HippieTrap, BROADCAST, NUM_NODES
 from hippietrap.color import Color
 from time import sleep, time
 from random import random
@@ -13,7 +13,7 @@ STEPS = 5000
 
 device = "/dev/serial0"
 
-ch = Chandelier()
+ch = HippieTrap()
 ch.open(device)
 ch.clear(BROADCAST)
 

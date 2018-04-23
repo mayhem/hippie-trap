@@ -57,7 +57,7 @@ def mkcls(cls):
 
 
 
-class Chandelier(object):
+class HippieTrap(object):
 
     def __init__(self):
         self.ser = None
@@ -130,10 +130,6 @@ class Chandelier(object):
 
         # Give the bottles a moment to parse the packet before we go on
         sleep(.05)
-
-    def send_pattern(self, dest):
-        print "send patt %d" % PACKET_PATTERN
-        self._send_packet(dest, PACKET_PATTERN, bytearray(bytes((1))))
 
     def send_fade(self, dest, steps, colors):
         packet = bytearray(struct.pack("<BH", 0, steps))
