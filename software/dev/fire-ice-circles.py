@@ -4,16 +4,16 @@ import os
 import sys
 import math
 from colorsys import hsv_to_rgb
-from hippietrap.chandelier import Chandelier, BROADCAST, NUM_NODES
+from hippietrap.hippietrap import HippieTrap, BROADCAST, NUM_NODES
 from hippietrap.color import Color
 from time import sleep, time
 from random import random
 
-STEPS = 500
+PERIOD = 4000
 
 device = "/dev/serial0"
 
-ch = Chandelier()
+ch = HippieTrap()
 ch.open(device)
 
 angle = .04
@@ -37,8 +37,11 @@ try:
             rgb = hsv_to_rgb(min(1.0, math.fmod(hue + (angle * 3), 1.0)), 1, 1)
             array.append(Color(int(255 * rgb[0]), int(255 * rgb[1]), int(255 * rgb[2])))
 
-            ch.set_color_array(bottle, array)
-            sleep(.02)
+            ch.stop_pattern(bottle)
+            ch.send_fade(bottle, PERIOD, array)
+            ch.start_pattern(bottle)
+
+#        sleep(PERIOD / 1000)
 
         for bottle in range(14, 31):
             array = []
@@ -56,11 +59,13 @@ try:
             rgb = hsv_to_rgb(min(1.0, math.fmod(hue + (angle * 3), 1.0)), 1, 1)
             array.append(Color(int(255 * rgb[0]), int(255 * rgb[1]), int(255 * rgb[2])))
 
-            ch.set_color_array(bottle, array)
-            sleep(.02)
+            ch.stop_pattern(bottle)
+            ch.send_fade(bottle, PERIOD, array)
+            ch.start_pattern(bottle)
 
+#        sleep(PERIOD / 1000)
         color_offset += .01
 
 except KeyboardInterrupt:
-    ch.clear(BROADCAST)
+    ch.stop_pattern(bottle)
     ch.clear(BROADCAST)
