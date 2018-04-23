@@ -12,6 +12,7 @@
 #include "serial.h"
 
 #define NUM_LEDS 4
+#define NUM_PANIC_CHARS 64
 
 struct cRGB g_led_rgb[NUM_LEDS];
 
@@ -184,7 +185,7 @@ int main()
     valid_program = 0;
     init_ok = 0;
 
-    if (panic_count > 10)
+    if (panic_count > NUM_PANIC_CHARS)
         eeprom_write_byte((uint8_t *)ee_valid_program_offset, 0);
     else
     {
@@ -211,7 +212,7 @@ int main()
         }
         else
         {
-            if (panic_count > 10)
+            if (panic_count > NUM_PANIC_CHARS)
                 set_color(128, 0, 0);
             else
                 set_color(0, 128, 0);
