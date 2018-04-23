@@ -5,9 +5,10 @@
 #include "colorspace.h"
 
 extern uint32_t  g_target;
+extern uint32_t  g_global;
 extern uint32_t  g_ticks_per_frame;
-extern color_t  g_color[NUM_LEDS];
 void set_pixel_color(uint8_t index, color_t *col);
+void get_pixel_color(uint8_t index, color_t *col);
 
 void p_error(int32_t t, uint8_t *data, uint8_t len)
 {
@@ -30,15 +31,17 @@ void p_error(int32_t t, uint8_t *data, uint8_t len)
 void p_fade_to(int32_t t, uint8_t *data, uint8_t len)
 {
     static   color_t start_cols[NUM_LEDS];
-    int32_t  h0, s0, v0, h1, s1, v1, delta_h, delta_s, delta_v;
+    int32_t  delta_r, delta_g, delta_b;
     uint8_t  i;
     color_t  target, col, first_col;
+
+    first_col.r = first_col.g = first_col.b = 0;
 
     // Save the current color if we're starting
     if (t == 0)
     {
         for(i = 0; i < NUM_LEDS; i++)
-            start_cols[i] = g_color[i];
+            get_pixel_color(i, &start_cols[i]);
         return;
     }
 
@@ -69,15 +72,15 @@ void p_fade_to(int32_t t, uint8_t *data, uint8_t len)
         if (i == 0)
             first_col = target;
 
-        rgb_to_hsv(&start_cols[i], &h0, &s0, &v0);
-        rgb_to_hsv(&target, &h1, &s1, &v1);
-
-        delta_h = (h1 - h0);
-        delta_s = (s1 - s0);
-        delta_v = (v1 - v0);
+        delta_r = (target.r - start_cols[i].r);
+        delta_g = (target.g - start_cols[i].g);
+        delta_b = (target.b - start_cols[i].b);
 
         int32_t step = t * SCALE_FACTOR / duration; 
-        hsv_to_rgb(h0 + (delta_h * step) / SCALE_FACTOR, s0 + (delta_s * step) / SCALE_FACTOR, v0 + (delta_v * step) / SCALE_FACTOR, &col);
+        col.r = start_cols[i].r + (delta_r * step) / SCALE_FACTOR;
+        col.g = start_cols[i].g + (delta_g * step) / SCALE_FACTOR;
+        col.b = start_cols[i].b + (delta_b * step) / SCALE_FACTOR;
+
         set_pixel_color(i, &col);
     }
 }

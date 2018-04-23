@@ -59,6 +59,7 @@ uint32_t   g_target = 0;
 
 // led buffer
 uint8_t    g_led_buffer[3 * NUM_LEDS];
+int32_t    g_brightness;
 
 // random seed
 uint32_t    g_random_seed = 0;
@@ -71,9 +72,6 @@ uint8_t     g_pattern_data_len = 0;
 // our node id
 uint8_t g_node_id = 0;
 
-// color/step information for transitions
-color_t  g_color[NUM_LEDS];
-int32_t  g_brightness;
 
 // broadcast classes
 const uint8_t NUM_CLASSES = 16;
@@ -109,9 +107,11 @@ const uint8_t PROGMEM gamma[] = {
 void set_brightness(int32_t brightness);
 
 volatile uint32_t g_time = 0;
+volatile uint32_t g_global = 0;
 ISR (TIMER1_OVF_vect)
 {
     g_time++;
+    g_global++;
     TCNT1 = TIMER1_INIT;
 }
 
@@ -151,20 +151,22 @@ void set_pixel_color(uint8_t index, color_t *col)
     else
     {
         // Color correct
-        temp.r = pgm_read_byte(&gamma[col->r]);
-        temp.g = pgm_read_byte(&gamma[col->g]);
-        temp.b = pgm_read_byte(&gamma[col->b]);
+//        temp.r = pgm_read_byte(&gamma[col->r]);
+//        temp.g = pgm_read_byte(&gamma[col->g]);
+//        temp.b = pgm_read_byte(&gamma[col->b]);
 
         // Adjust brightness
 //        temp.r = temp.r * g_brightness / SCALE_FACTOR;
 //        temp.g = temp.g * g_brightness / SCALE_FACTOR;
 //        temp.b = temp.b * g_brightness / SCALE_FACTOR;
+        temp.r = col->r;
+        temp.g = col->g;
+        temp.b = col->b;
     }
 
     g_led_buffer[(index * 3)] = temp.g;
     g_led_buffer[(index * 3) + 1] = temp.r;
     g_led_buffer[(index * 3) + 2] = temp.b;
-    g_color[index] = temp;
 }
 
 void set_pixel_color_rgb(uint8_t index, uint8_t r, uint8_t g, uint8_t b)
@@ -175,6 +177,13 @@ void set_pixel_color_rgb(uint8_t index, uint8_t r, uint8_t g, uint8_t b)
     temp.g = g;
     temp.b = b;
     set_pixel_color(index, &temp);
+}
+
+void get_pixel_color(uint8_t index, color_t *col)
+{
+    col->r = g_led_buffer[(index * 3) + 1];
+    col->g = g_led_buffer[(index * 3)];
+    col->b = g_led_buffer[(index * 3) + 2];
 }
 
 void update_leds(void)
@@ -547,8 +556,6 @@ void loop()
                     // if we received the right length, check the crc. If that matches, we have a packet!
                     if (recd == len)
                     {            
-                        uint8_t k;
-
                         pcrc = (uint16_t *)(g_packet + len - 2);
                         if (crc == *pcrc)
                         {
@@ -585,6 +592,7 @@ int main(void)
 
     serial_init();
     dprintf("hippie trap node!\n\n");
+    dprintf("\nt,r,g,b\n");
 
     set_output(DDRD, LED_PIN);
     set_brightness(1000);

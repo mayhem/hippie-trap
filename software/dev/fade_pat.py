@@ -15,30 +15,24 @@ device = "/dev/serial0"
 
 ch = HippieTrap()
 ch.open(device)
-ch.clear(BROADCAST)
 
 ch.set_color(BROADCAST, Color(0, 0, 0))
+try:
+    while True:
+        ch.send_fade(BROADCAST, 1000, (Color(128, 0, 0), ))
+        ch.start_pattern(BROADCAST)
+        sleep(1)
 
-print "to red"
-ch.send_fade(BROADCAST, 3000, (Color(255, 0, 0), ))
-ch.start_pattern(BROADCAST)
-sleep(3)
-ch.stop_pattern(BROADCAST)
+        ch.stop_pattern(BROADCAST)
+        ch.send_fade(BROADCAST, 1000, (Color(0, 0, 128), ))
+        ch.start_pattern(BROADCAST)
+        sleep(1)
 
-print "to green"
-ch.send_fade(BROADCAST, 3000, (Color(0, 255, 0), ))
-ch.start_pattern(BROADCAST)
-sleep(3)
-ch.stop_pattern(BROADCAST)
+        ch.stop_pattern(BROADCAST)
+        ch.send_fade(BROADCAST, 1000, (Color(128, 0, 0), ))
+        ch.start_pattern(BROADCAST)
+        sleep(1)
 
-print "to blue"
-ch.send_fade(BROADCAST, 3000, (Color(0, 0, 255), ))
-ch.start_pattern(BROADCAST)
-sleep(3)
-ch.stop_pattern(BROADCAST)
-
-print "to off"
-ch.send_fade(BROADCAST, 3000, (Color(10, 0, 0), ))
-ch.start_pattern(BROADCAST)
-sleep(3)
-ch.stop_pattern(BROADCAST)
+except KeyboardInterrupt:
+    ch.clear(BROADCAST)
+    ch.clear(BROADCAST)
