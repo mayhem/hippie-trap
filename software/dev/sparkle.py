@@ -16,14 +16,18 @@ device = "/dev/serial0"
 ch = HippieTrap()
 ch.open(device)
 
-while True:
+ch.send_decay(BROADCAST, 10);
+ch.start_pattern(BROADCAST)
 
-    for i in range(15):
+try:
+    while True:
         bottle = randint(1, NUM_NODES)
         led = randint(1, 4)
         hue = random()
         rgb = hsv_to_rgb(hue, 1.0, 1.0)
         ch.set_color(bottle, Color(int(255 * rgb[0]), int(255 * rgb[1]), int(255 * rgb[2])))
+        sleep(.050)
 
-    ch.decay(BROADCAST)
-    sleep(.5)
+except KeyboardInterrupt:
+    ch.stop_pattern(BROADCAST)
+    ch.clear(BROADCAST)

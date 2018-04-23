@@ -9,7 +9,7 @@ from hippietrap.color import Color
 from time import sleep, time
 from random import random
 
-PERIOD = 4000
+PERIOD = 1500
 
 device = "/dev/serial0"
 
@@ -41,8 +41,6 @@ try:
             ch.send_fade(bottle, PERIOD, array)
             ch.start_pattern(bottle)
 
-#        sleep(PERIOD / 1000)
-
         for bottle in range(14, 31):
             array = []
 
@@ -63,7 +61,6 @@ try:
             ch.send_fade(bottle, PERIOD, array)
             ch.start_pattern(bottle)
 
-#        sleep(PERIOD / 1000)
         color_offset += .01
 
 except KeyboardInterrupt:

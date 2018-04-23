@@ -38,7 +38,6 @@ PACKET_BRIGHTNESS   = 15
 PACKET_ANGLE        = 16
 PACKET_BOOTLOADER   = 17
 PACKET_RESET        = 18
-PACKET_DECAY        = 19
 BROADCAST = 0
 
 def crc16_update(crc, a):
@@ -119,9 +118,6 @@ class HippieTrap(object):
             packet += bytearray((col[0], col[1], col[2]))
         self._send_packet(dest, PACKET_COLOR_ARRAY, packet)
 
-    def decay(self, dest):
-        self._send_packet(dest, PACKET_DECAY, bytearray())
-
     def send_pattern(self, dest, id):
         print "send patt %d" % id
         self._send_packet(dest, PACKET_PATTERN, bytearray(bytes((chr(id)))))
@@ -135,15 +131,13 @@ class HippieTrap(object):
             packet += bytearray((col[0], col[1], col[2]))
         self._send_packet(dest, PACKET_PATTERN, packet)
 
-        # Give the bottles a moment to parse the packet before we go on
-        sleep(.05)
-
     def send_rainbow(self, dest, divisor):
         packet = bytearray(struct.pack("<BB", 1, divisor))
         self._send_packet(dest, PACKET_PATTERN, packet)
 
-        # Give the bottles a moment to parse the packet before we go on
-        sleep(.05)
+    def send_decay(self, dest, divisor):
+        packet = bytearray(struct.pack("<BB", 2, divisor))
+        self._send_packet(dest, PACKET_PATTERN, packet)
 
     def start_pattern(self, dest):
         self._send_packet(dest, PACKET_START, bytearray())
