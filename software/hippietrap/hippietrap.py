@@ -82,6 +82,10 @@ class HippieTrap(object):
             self.ser.write('M')
             sleep(.0005)
 
+    def clear_cruft(self):
+        for i in range(32):
+            self.ser.write(chr(0))
+
     def _send_packet(self, dest, type, data):
         if not self.ser:
             return
@@ -150,6 +154,13 @@ class HippieTrap(object):
 
     def clear(self, dest):
         self._send_packet(dest, PACKET_CLEAR, bytearray()) 
+
+    def fade_out(self, dest):
+        self.stop_pattern(dest) 
+        self.send_decay(dest, 10);
+        self.start_pattern(dest) 
+        sleep(.5)
+        self.clear(dest)
 
     def set_delay(self, dest, delay):
         self._send_packet(dest, PACKET_DELAY, bytearray(struct.pack("<b", delay))) 

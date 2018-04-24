@@ -64,5 +64,5 @@ try:
         color_offset += .01
 
 except KeyboardInterrupt:
-    ch.stop_pattern(bottle)
-    ch.clear(BROADCAST)
+    ch.clear_cruft()
+    ch.fade_out(BROADCAST)
