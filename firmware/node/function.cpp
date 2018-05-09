@@ -98,6 +98,22 @@ void p_rainbow(int32_t t, uint8_t *data, uint8_t len)
     }
 }
 
+void p_decay(int32_t t, uint8_t *data, uint8_t len)
+{
+    int8_t divisor = *data, i;
+    color_t col;
+
+    if (t % divisor == 0)
+        for(i = 0; i < NUM_LEDS; i++)
+        {
+            get_pixel_color(i, &col);
+            col.r >>= 1;
+            col.g >>= 1;
+            col.b >>= 1;
+            set_pixel_color(i, &col);
+        }
+}
+
 void apply_pattern(int32_t t, uint8_t *data, uint8_t len)
 {
     switch(*data)
@@ -107,6 +123,9 @@ void apply_pattern(int32_t t, uint8_t *data, uint8_t len)
             break;
         case 1:
             p_rainbow(t, data + 1, len - 1);
+            break;
+        case 2:
+            p_decay(t, data + 1, len - 1);
             break;
     }
 }

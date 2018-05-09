@@ -39,7 +39,6 @@ PACKET_BRIGHTNESS   = 15
 PACKET_ANGLE        = 16
 PACKET_BOOTLOADER   = 17
 PACKET_RESET        = 18
-PACKET_DECAY        = 19
 BROADCAST = 0
 
 # Can't find a good constant for ALT0 in GPIO
@@ -107,6 +106,10 @@ class HippieTrap(object):
             self.ser.write('M')
             sleep(.0005)
 
+    def clear_cruft(self):
+        for i in range(32):
+            self.ser.write(chr(0))
+
     def _send_packet(self, dest, type, data):
         if not self.ser:
             return
@@ -143,9 +146,6 @@ class HippieTrap(object):
             packet += bytearray((col[0], col[1], col[2]))
         self._send_packet(dest, PACKET_COLOR_ARRAY, packet)
 
-    def decay(self, dest):
-        self._send_packet(dest, PACKET_DECAY, bytearray())
-
     def send_pattern(self, dest, id):
         print "send patt %d" % id
         self._send_packet(dest, PACKET_PATTERN, bytearray(bytes((chr(id)))))
@@ -159,15 +159,13 @@ class HippieTrap(object):
             packet += bytearray((col[0], col[1], col[2]))
         self._send_packet(dest, PACKET_PATTERN, packet)
 
-        # Give the bottles a moment to parse the packet before we go on
-        sleep(.05)
-
     def send_rainbow(self, dest, divisor):
         packet = bytearray(struct.pack("<BB", 1, divisor))
         self._send_packet(dest, PACKET_PATTERN, packet)
 
-        # Give the bottles a moment to parse the packet before we go on
-        sleep(.05)
+    def send_decay(self, dest, divisor):
+        packet = bytearray(struct.pack("<BB", 2, divisor))
+        self._send_packet(dest, PACKET_PATTERN, packet)
 
     def start_pattern(self, dest):
         self._send_packet(dest, PACKET_START, bytearray())
@@ -180,6 +178,13 @@ class HippieTrap(object):
 
     def clear(self, dest):
         self._send_packet(dest, PACKET_CLEAR, bytearray()) 
+
+    def fade_out(self, dest):
+        self.stop_pattern(dest) 
+        self.send_decay(dest, 10);
+        self.start_pattern(dest) 
+        sleep(.5)
+        self.clear(dest)
 
     def set_delay(self, dest, delay):
         self._send_packet(dest, PACKET_DELAY, bytearray(struct.pack("<b", delay))) 
