@@ -61,5 +61,6 @@ with HippieTrap() as ch:
             color_offset += .01
 
     except KeyboardInterrupt:
-        ch.stop_pattern(bottle)
+        ch.clear_cruft()
+        ch.stop_pattern(BROADCAST)
         ch.clear(BROADCAST)
