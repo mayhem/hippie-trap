@@ -1,71 +1,60 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 
 import sys
 import os
 import struct
+from hippietrap.hippietrap import HippieTrap, BROADCAST
 
 import click
-import serial
 from time import sleep
 
 BAUD_RATE = 38400
 
 @click.command()
-@click.argument('dev')
 @click.argument('filename')
-def send_firmware(dev, filename):
-    try:
-        ser = serial.Serial(dev, 
-            BAUD_RATE, 
-            bytesize=serial.EIGHTBITS, 
-            parity=serial.PARITY_NONE, 
-            stopbits=serial.STOPBITS_ONE,
-            timeout=.01)
-    except serial.serialutil.SerialException as e:
-        print("Cannot open serial port: %s" % port)
-        return 
+def send_firmware(filename):
+    with HippieTrap() as ch:
+        try:
+            with open(filename, "r") as f:
+                lines = f.readlines()
 
-    try:
-        with open(filename, "r") as f:
-            lines = f.readlines()
-
-        filesize = os.path.getsize(filename)
-    except IOError as err:
-        print("Error loading hex file: %s" % err)
-        return
-
-    print("filesize: %d (%x) bytes" % (filesize, filesize));
-#    if filesize >= 0x7000:
-#        print("hex file too large. Can't upload.");
-#        return
-
-    for i in range(16):
-        if not ser.write(chr(0x45).encode('ascii')):
-            print("Cannot write programming header.")
+            filesize = os.path.getsize(filename)
+        except IOError as err:
+            print("Error loading hex file: %s" % err)
             return
-    sleep(.1)
 
-    if not ser.write(bytearray(struct.pack("<H", filesize))):
-        print("Cannot write hex file size header.")
-        return
+        print("filesize: %d (%x) bytes" % (filesize, filesize));
+        if filesize >= 0x7000:
+            print("hex file too large. Can't upload.");
+            return
 
-    sleep(.1)
-
-    for i, line in enumerate(lines): 
-        if not line:
-            break
-
-        for ch in line:
-            if not ser.write(ch.encode('ascii')):
-                print("Cannot write to device.")
+        for i in range(16):
+            if not ch.ser.write(chr(0x45).encode('ascii')):
+                print("Cannot write programming header.")
                 return
-            sleep(.0001)
+        sleep(.1)
 
-        ser.write(chr(13).encode('ascii'))
-        print("wrote line %d of %d" % (i, len(lines)))
-        sleep(.015)
+        if not ch.ser.write(bytearray(struct.pack("<H", filesize))):
+            print("Cannot write hex file size header.")
+            return
 
-    print("Write complete.")
+        sleep(.1)
+
+        for i, line in enumerate(lines): 
+            if not line:
+                break
+
+            for ch in line:
+                if not ch.ser.write(ch.encode('ascii')):
+                    print("Cannot write to device.")
+                    return
+                sleep(.0001)
+
+            ch.ser.write(chr(13).encode('ascii'))
+            print("wrote line %d of %d" % (i, len(lines)))
+            sleep(.015)
+
+        print("Write complete.")
         
 if __name__ == '__main__':
     send_firmware()

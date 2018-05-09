@@ -6,12 +6,9 @@ import math
 from hippietrap.hippietrap import HippieTrap, BROADCAST
 from time import sleep, time
 
-device = "/dev/serial0"
+with HippieTrap() as ch:
+    ch.clear(BROADCAST)
+    ch.clear(BROADCAST)
+    ch.calibrate_timers(BROADCAST)
 
-ch = HippieTrap()
-ch.open(device)
-ch.clear(BROADCAST)
-ch.clear(BROADCAST)
-ch.calibrate_timers(BROADCAST)
-
-print "Calibration is complete."
+    print "Calibration is complete."

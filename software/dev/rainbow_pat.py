@@ -11,17 +11,14 @@ from random import random
 
 STEPS = 5000
 
-device = "/dev/serial0"
-
-ch = HippieTrap()
-ch.open(device)
-ch.clear(BROADCAST)
-ch.send_rainbow(BROADCAST, 4)
-ch.start_pattern(BROADCAST)
-
-try:
-    while True:
-        sleep(1000)
-except KeyboardInterrupt:
-    ch.stop_pattern(BROADCAST)
+with HippieTrap() as ch:
     ch.clear(BROADCAST)
+    ch.send_rainbow(BROADCAST, 4)
+    ch.start_pattern(BROADCAST)
+
+    try:
+        while True:
+            sleep(1000)
+    except KeyboardInterrupt:
+        ch.stop_pattern(BROADCAST)
+        ch.clear(BROADCAST)

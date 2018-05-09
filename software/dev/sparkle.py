@@ -11,19 +11,15 @@ from time import sleep, time
 
 STEPS = 500
 
-device = "/dev/serial0"
+with HippieTrap() as ch:
+    while True:
 
-ch = HippieTrap()
-ch.open(device)
+        for i in range(15):
+            bottle = randint(1, NUM_NODES)
+            led = randint(1, 4)
+            hue = random()
+            rgb = hsv_to_rgb(hue, 1.0, 1.0)
+            ch.set_color(bottle, Color(int(255 * rgb[0]), int(255 * rgb[1]), int(255 * rgb[2])))
 
-while True:
-
-    for i in range(15):
-        bottle = randint(1, NUM_NODES)
-        led = randint(1, 4)
-        hue = random()
-        rgb = hsv_to_rgb(hue, 1.0, 1.0)
-        ch.set_color(bottle, Color(int(255 * rgb[0]), int(255 * rgb[1]), int(255 * rgb[2])))
-
-    ch.decay(BROADCAST)
-    sleep(.5)
+        ch.decay(BROADCAST)
+        sleep(.5)

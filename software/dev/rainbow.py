@@ -10,16 +10,12 @@ from time import sleep, time
 
 STEPS = 500
 
-device = "/dev/serial0"
-
-ch = HippieTrap()
-ch.open(device)
-
-try:
-    while True:
-        for i in range(STEPS):
-            rgb = hsv_to_rgb(i / float(STEPS), 1.0, 1.0)
-            ch.set_color(BROADCAST, Color(int(255 * rgb[0]), int(255 * rgb[1]), int(255 * rgb[2])))
-except KeyboardInterrupt:
-    ch.clear(BROADCAST)
-    ch.clear(BROADCAST)
+with HippieTrap() as ch:
+    try:
+        while True:
+            for i in range(STEPS):
+                rgb = hsv_to_rgb(i / float(STEPS), 1.0, 1.0)
+                ch.set_color(BROADCAST, Color(int(255 * rgb[0]), int(255 * rgb[1]), int(255 * rgb[2])))
+    except KeyboardInterrupt:
+        ch.clear(BROADCAST)
+        ch.clear(BROADCAST)

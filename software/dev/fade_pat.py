@@ -9,30 +9,24 @@ from hippietrap.color import Color
 from time import sleep, time
 from random import random
 
-STEPS = 5000
+with HippieTrap() as ch:
+    ch.set_color(BROADCAST, Color(0, 0, 0))
+    try:
+        while True:
+            ch.send_fade(BROADCAST, 1000, (Color(128, 0, 0), ))
+            ch.start_pattern(BROADCAST)
+            sleep(1)
 
-device = "/dev/serial0"
+            ch.stop_pattern(BROADCAST)
+            ch.send_fade(BROADCAST, 1000, (Color(0, 0, 128), ))
+            ch.start_pattern(BROADCAST)
+            sleep(1)
 
-ch = HippieTrap()
-ch.open(device)
+            ch.stop_pattern(BROADCAST)
+            ch.send_fade(BROADCAST, 1000, (Color(128, 0, 0), ))
+            ch.start_pattern(BROADCAST)
+            sleep(1)
 
-ch.set_color(BROADCAST, Color(0, 0, 0))
-try:
-    while True:
-        ch.send_fade(BROADCAST, 1000, (Color(128, 0, 0), ))
-        ch.start_pattern(BROADCAST)
-        sleep(1)
-
-        ch.stop_pattern(BROADCAST)
-        ch.send_fade(BROADCAST, 1000, (Color(0, 0, 128), ))
-        ch.start_pattern(BROADCAST)
-        sleep(1)
-
-        ch.stop_pattern(BROADCAST)
-        ch.send_fade(BROADCAST, 1000, (Color(128, 0, 0), ))
-        ch.start_pattern(BROADCAST)
-        sleep(1)
-
-except KeyboardInterrupt:
-    ch.clear(BROADCAST)
-    ch.clear(BROADCAST)
+    except KeyboardInterrupt:
+        ch.clear(BROADCAST)
+        ch.clear(BROADCAST)

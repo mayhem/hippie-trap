@@ -4,6 +4,7 @@ import os
 import sys
 import math
 import serial
+from subprocess import check_call, CalledProcessError
 import struct
 import function
 import random
@@ -41,6 +42,9 @@ PACKET_RESET        = 18
 PACKET_DECAY        = 19
 BROADCAST = 0
 
+# Can't find a good constant for ALT0 in GPIO
+ALT0 = 4
+
 def crc16_update(crc, a):
     crc ^= a
     for i in xrange(0, 8):
@@ -59,24 +63,44 @@ def mkcls(cls):
 
 class HippieTrap(object):
 
-    def __init__(self):
+    def __init__(self, device = "/dev/serial0"):
         self.ser = None
+        self.device = device
 
-    def open(self, device):
+
+    def __enter__(self):
 
         try:
-            self.ser = serial.Serial(device, 
+            check_call(["gpio", "-g", "mode", "14", "alt5"])
+        except CalledProcessError as err:
+            print "Is wiringpi installed? error: ", err
+            sys.exit(-1)
+
+        try:
+            self.ser = serial.Serial(self.device, 
                                      BAUD_RATE, 
                                      bytesize=serial.EIGHTBITS, 
                                      parity=serial.PARITY_NONE, 
                                      stopbits=serial.STOPBITS_ONE,
                                      timeout=.01)
         except serial.serialutil.SerialException, e:
-            print "Cant open serial port: %s" % device
+            print "Cant open serial port: %s" % self.device
             sys.exit(-1)
 
         # Wait for things to settle, then pipe some characters through the line to get things going
         sleep(.250)
+
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if self.ser:
+            self.ser.close()
+
+        try:
+            check_call(["gpio", "-g", "mode", "14", "output"])
+        except CalledProcessError as err:
+            print "Is wiringpi installed? error: ", err
+            sys.exit(-1)
 
     def send_panic(self):
         while True:
