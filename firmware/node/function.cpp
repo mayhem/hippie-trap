@@ -7,6 +7,7 @@
 extern uint32_t  g_target;
 extern uint32_t  g_global;
 extern uint32_t  g_ticks_per_frame;
+extern uint32_t  g_random_seed;
 void set_pixel_color(uint8_t index, color_t *col);
 void get_pixel_color(uint8_t index, color_t *col);
 
@@ -93,7 +94,7 @@ void p_rainbow(int32_t t, uint8_t *data, uint8_t len)
 
     for(i = 0; i < NUM_LEDS; i++)
     {
-        hsv_to_rgb((offset + (250 * i)) % SCALE_FACTOR, SCALE_FACTOR, SCALE_FACTOR, &col);
+        hsv_to_rgb((offset + (250 * i) + (g_random_seed % SCALE_FACTOR)) % SCALE_FACTOR, SCALE_FACTOR, SCALE_FACTOR, &col);
         set_pixel_color(i, &col);
     }
 }

@@ -13,6 +13,7 @@ STEPS = 5000
 
 with HippieTrap() as ch:
     ch.clear(BROADCAST)
+    ch.send_entropy()
     ch.send_rainbow(BROADCAST, 4)
     ch.start_pattern(BROADCAST)
 

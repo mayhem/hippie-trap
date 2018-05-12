@@ -396,7 +396,6 @@ void handle_packet(uint16_t len, uint8_t *packet)
             {
                 g_random_seed = *(int32_t *)data;
                 srand(g_random_seed);
-                set_color(NULL);
             }
             break;  
 
