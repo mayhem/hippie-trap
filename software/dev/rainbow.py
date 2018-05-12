@@ -8,7 +8,7 @@ from hippietrap.hippietrap import HippieTrap, BROADCAST, NUM_NODES
 from hippietrap.color import Color
 from time import sleep, time
 
-STEPS = 500
+STEPS = 5000
 
 with HippieTrap() as ch:
     try:

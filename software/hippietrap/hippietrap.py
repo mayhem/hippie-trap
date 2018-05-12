@@ -92,6 +92,10 @@ class HippieTrap(object):
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
+
+        # sleep just a moment to let the bottles process whatever packet might've
+        # been transmitting if we got interrupted
+        sleep(.1)
         if self.ser:
             self.ser.close()
 
