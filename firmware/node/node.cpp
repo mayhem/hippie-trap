@@ -592,7 +592,6 @@ int main(void)
 
     serial_init(1);
     dprintf("hippie trap node!\n\n");
-    dprintf("\nt,r,g,b\n");
 
     set_output(DDRD, LED_PIN);
     set_brightness(1000);

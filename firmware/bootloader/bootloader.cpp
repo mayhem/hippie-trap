@@ -52,7 +52,7 @@ enum response_t process_line(uint16_t *hex_file_received)
     uint8_t c, line_buffer[80], data_buffer[32];
     uint8_t line_len = 0, data_len = 0, data_count, line_type, line_pos, data;
     uint8_t addrh, addrl, checksum, recv_checksum;
-    uint16_t addr, extended_addr = 0, i, j;
+    uint16_t addr, extended_addr = 0, i;
     static uint32_t full_addr, last_addr = 0xFFFFFFFF;
 
     eeprom_busy_wait();
@@ -159,8 +159,8 @@ int main()
 {
     uint8_t init_ok;
     uint8_t valid_program;
-    uint8_t start_ch_count = 0, ch, i, step, j;
-    uint16_t hex_file_size = 0, hex_file_received = 0, force_bl_count = 0;
+    uint8_t start_ch_count = 0, ch, i, step;
+    uint16_t hex_file_size = 0, hex_file_received = 0;
     enum response_t response;
 
     // Turn off the watchdog timer, in case we were reset that way
@@ -177,17 +177,18 @@ int main()
     serial_init(0);
     leds_off();
     set_color(0, 0, 128);
+    _delay_ms(500);
 
-    for(j = 0; j < 500; j++)
-    {
-        if (serial_char_ready_nb())
-        {
-            if (serial_rx_nb() == 'M')
-                force_bl_count++;
-        }
-
-        _delay_ms(1);
-    }
+//    for(j = 0; j < 500; j++)
+//    {
+//        if (serial_char_ready_nb())
+//        {
+//            if (serial_rx_nb() == 'M')
+//                force_bl_count++;
+//        }
+//
+//        _delay_ms(1);
+//    }
 
     valid_program = 0;
     init_ok = 0;
@@ -218,10 +219,7 @@ int main()
         }
         else
         {
-            if (force_bl_count)
-                set_color(128, 0, 0);
-            else
-                set_color(0, 128, 0);
+            set_color(0, 128, 0);
         }
 
         for(start_ch_count = 0; start_ch_count < 16;)
