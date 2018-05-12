@@ -159,7 +159,7 @@ int main()
 {
     uint8_t init_ok;
     uint8_t valid_program;
-    uint8_t start_ch_count = 0, ch, i, step;
+    uint8_t start_ch_count = 0, ch, i, step, j;
     uint16_t hex_file_size = 0, hex_file_received = 0, force_bl_count = 0;
     enum response_t response;
 
@@ -175,19 +175,8 @@ int main()
     set_output(DDRD, LED);
 
     serial_init(0);
-
-    for(i = 0; i < 3; i++)
-    {
-        set_color(128, 0, 0);
-        _delay_ms(75);
-        set_color(0, 0, 0);
-        _delay_ms(75);
-    }
-
     leds_off();
     set_color(0, 0, 128);
-    _delay_ms(500);
-
 
     for(j = 0; j < 500; j++)
     {
@@ -203,14 +192,13 @@ int main()
     valid_program = 0;
     init_ok = 0;
 
-    if (force_bl_count)
-        eeprom_write_byte((uint8_t *)ee_valid_program_offset, 0);
-    else
-    {
+//    if (force_bl_count)
+//        eeprom_write_byte((uint8_t *)ee_valid_program_offset, 0);
+//    else
+//    {
         eeprom_busy_wait();
-        valid_program = eeprom_read_byte((const uint8_t *)ee_valid_program_offset); 
-        init_ok = eeprom_read_byte((const uint8_t *)ee_init_ok_offset); 
-    }
+    valid_program = eeprom_read_byte((const uint8_t *)ee_valid_program_offset); 
+    init_ok = eeprom_read_byte((const uint8_t *)ee_init_ok_offset); 
 
     while(1)
     {
