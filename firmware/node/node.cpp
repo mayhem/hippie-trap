@@ -59,7 +59,7 @@ uint32_t   g_target = 0;
 
 // led buffer
 uint8_t    g_led_buffer[3 * NUM_LEDS];
-int32_t    g_brightness;
+int32_t    g_brightness = SCALE_FACTOR;
 
 // random seed
 uint32_t    g_random_seed = 0;
@@ -81,27 +81,6 @@ uint8_t g_classes[NUM_CLASSES];
 // calibration values
 uint8_t  g_calibrate = 0; // stores the duration of the calibration in seconds
 uint32_t g_calibrate_start = 0;
-
-
-// Gamma correction table in progmem
-const uint8_t PROGMEM gamma[] = {
-    0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-    0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  1,  1,  1,  1,
-    1,  1,  1,  1,  1,  1,  1,  1,  1,  2,  2,  2,  2,  2,  2,  2,
-    2,  3,  3,  3,  3,  3,  3,  3,  4,  4,  4,  4,  4,  5,  5,  5,
-    5,  6,  6,  6,  6,  7,  7,  7,  7,  8,  8,  8,  9,  9,  9, 10,
-   10, 10, 11, 11, 11, 12, 12, 13, 13, 13, 14, 14, 15, 15, 16, 16,
-   17, 17, 18, 18, 19, 19, 20, 20, 21, 21, 22, 22, 23, 24, 24, 25,
-   25, 26, 27, 27, 28, 29, 29, 30, 31, 32, 32, 33, 34, 35, 35, 36,
-   37, 38, 39, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 50,
-   51, 52, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 66, 67, 68,
-   69, 70, 72, 73, 74, 75, 77, 78, 79, 81, 82, 83, 85, 86, 87, 89,
-   90, 92, 93, 95, 96, 98, 99,101,102,104,105,107,109,110,112,114,
-  115,117,119,120,122,124,126,127,129,131,133,135,137,138,140,142,
-  144,146,148,150,152,154,156,158,160,162,164,167,169,171,173,175,
-  177,180,182,184,186,189,191,193,196,198,200,203,205,208,210,213,
-  215,218,220,223,225,228,231,233,236,239,241,244,247,249,252,255 
-};
 
 // ---- prototypes -----
 void set_brightness(int32_t brightness);
@@ -150,19 +129,14 @@ void set_pixel_color(uint8_t index, color_t *col)
     }
     else
     {
-        // Color correct
-//        temp.r = pgm_read_byte(&gamma[col->r]);
-//        temp.g = pgm_read_byte(&gamma[col->g]);
-//        temp.b = pgm_read_byte(&gamma[col->b]);
-
         // Adjust brightness
-//        temp.r = temp.r * g_brightness / SCALE_FACTOR;
-//        temp.g = temp.g * g_brightness / SCALE_FACTOR;
-//        temp.b = temp.b * g_brightness / SCALE_FACTOR;
+//        temp.r = col->r * g_brightness / SCALE_FACTOR;
+//        temp.g = col->g * g_brightness / SCALE_FACTOR;
+//        temp.b = col->b * g_brightness / SCALE_FACTOR;
         temp.r = col->r;
         temp.g = col->g;
         temp.b = col->b;
-    }
+    } 
 
     g_led_buffer[(index * 3)] = temp.g;
     g_led_buffer[(index * 3) + 1] = temp.r;
@@ -221,9 +195,10 @@ void set_color_rgb(uint8_t r, uint8_t g, uint8_t b)
     update_leds();
 }
 
-void startup_animation(void)
+uint16_t startup_animation(void)
 {
-    uint8_t i, j;
+    uint8_t i, j, d;
+    uint16_t force_bl_count = 0;
     color_t col1, col2;
 
     col1.r = 255;
@@ -252,10 +227,20 @@ void startup_animation(void)
                     set_pixel_color(j, NULL);  
             }
         }   
+
         update_leds();
-        _delay_ms(100);
+
+        for(d=0; d < 100; d++)
+        {
+            if (serial_char_ready() && serial_rx() == 0x45)
+                force_bl_count++;
+
+            _delay_ms(1);
+        }
     }
     set_color(NULL);
+
+    return force_bl_count;
 }
 
 void set_brightness(int32_t brightness)
@@ -296,6 +281,18 @@ void reset(void)
 
     for(;;)
         ;
+}
+
+void enter_bootloader(void)
+{
+    eeprom_write_byte((uint8_t *)ee_valid_program_offset, 0);
+    eeprom_write_byte((uint8_t *)ee_init_ok_offset, 0);
+    eeprom_busy_wait();
+
+    set_color_rgb(255, 0, 0);
+    _delay_ms(1000);
+    set_color(NULL);
+    reset();
 }
 
 void handle_packet(uint16_t len, uint8_t *packet)
@@ -445,14 +442,7 @@ void handle_packet(uint16_t len, uint8_t *packet)
         }
         case PACKET_BOOTLOADER:
         {
-            eeprom_write_byte((uint8_t *)ee_valid_program_offset, 0);
-            eeprom_write_byte((uint8_t *)ee_init_ok_offset, 0);
-            eeprom_busy_wait();
-
-            set_color_rgb(255, 0, 0);
-            _delay_ms(1000);
-            set_color(NULL);
-            reset();
+            enter_bootloader();
         }
         case PACKET_RESET:
         {
@@ -575,6 +565,7 @@ void loop()
     }
 }
 
+#define MAX_BL_FORCE_COUNT 5
 int main(void)
 { 
     uint32_t timer_cal;
@@ -590,13 +581,19 @@ int main(void)
     TIMSK1 |= (1<<TOIE1);
 
     serial_init(1);
-    dprintf("hippie trap node!\n\n");
+    sei();
 
     set_output(DDRD, LED_PIN);
+    if (startup_animation() > MAX_BL_FORCE_COUNT)
+    {
+        dprintf("force to bl!\n\n");
+        enter_bootloader();
+    }
+
+    dprintf("hippie trap node!\n\n");
+
     set_brightness(1000);
     set_color(NULL);
-
-    startup_animation();
 
     timer_cal = eeprom_read_dword((uint32_t *)ee_calibration_offset);
     if (timer_cal > 1 && timer_cal != 0xFFFF)
@@ -623,7 +620,6 @@ int main(void)
 
     set_color(&col);
 
-
     g_ticks_per_frame = g_ticks_per_sec * g_delay / 1000;
     g_target = 0;
 
@@ -634,7 +630,6 @@ int main(void)
     if (!eeprom_read_byte((uint8_t *)ee_init_ok_offset))
         eeprom_write_byte((uint8_t *)ee_init_ok_offset, 1);
 
-    sei();
     for(;;)
         loop();
 
