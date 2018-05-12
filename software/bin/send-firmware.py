@@ -44,15 +44,15 @@ def send_firmware(filename):
             if not line:
                 break
 
-            for ch in line:
-                if not ch.ser.write(ch.encode('ascii')):
+            for char in line:
+                if not ch.ser.write(char.encode('ascii')):
                     print("Cannot write to device.")
                     return
                 sleep(.0001)
 
-            ch.ser.write(chr(13).encode('ascii'))
-            print("wrote line %d of %d" % (i, len(lines)))
-            sleep(.015)
+            print("%03d/%03d\b\b\b\b\b\b\b\b" % (i, len(lines))),
+            sys.stdout.flush()
+            sleep(.05)
 
         print("Write complete.")
         
