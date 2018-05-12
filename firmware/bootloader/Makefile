@@ -11,11 +11,11 @@ program: $(TARGET).hex
 
 fuses:
         # Use the bootloader
-	sudo avrdude -p m328p -P usb -c avrispmkII -B 8 -U lfuse:w:0xe2:m -U hfuse:w:0xd0:m -U efuse:w:0xff:m 
+	sudo avrdude -p m328p -P usb -c avrispmkII -B 8 -U lfuse:w:0xe2:m -U hfuse:w:0xd0:m -U efuse:w:0xfd:m 
  
 nobootloader:
         # without bootloader
-	sudo avrdude -p m328p -P usb -c avrispmkII -B 8 -U lfuse:w:0xe2:m -U hfuse:w:0xd1:m -U efuse:w:0xff:m 
+	sudo avrdude -p m328p -P usb -c avrispmkII -B 8 -U lfuse:w:0xe2:m -U hfuse:w:0xd1:m -U efuse:w:0xfd:m 
 	sudo avrdude -v -p m328p -P usb -c avrispmkII -Uflash:w:$(TARGET).hex -B 1.0
 
 $(TARGET).o: $(TARGET).cpp
