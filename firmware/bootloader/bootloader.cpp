@@ -12,21 +12,25 @@
 #include "../node/serial.h"
 
 #define NUM_LEDS 4
-#define NUM_PANIC_CHARS 64
 
 struct cRGB g_led_rgb[NUM_LEDS];
 
 void update_leds(void)
 {
-    ws2812_sendarray((uint8_t*)g_led_rgb, NUM_LEDS);
+    ws2812_sendarray((uint8_t*)g_led_rgb, 3 * NUM_LEDS);
 }
 
 void set_color(uint8_t r, uint8_t g, uint8_t b)
 {
-    memset(g_led_rgb, 0, sizeof(g_led_rgb));
     g_led_rgb[0].r = r;    
     g_led_rgb[0].g = g;    
     g_led_rgb[0].b = b;    
+    g_led_rgb[1].r = 0;    
+    g_led_rgb[1].g = 0;    
+    g_led_rgb[1].b = 0;    
+    g_led_rgb[2].r = 0;    
+    g_led_rgb[2].g = 0;    
+    g_led_rgb[3].b = 0;    
     g_led_rgb[3].r = r;    
     g_led_rgb[3].g = g;    
     g_led_rgb[3].b = b;    
@@ -35,7 +39,7 @@ void set_color(uint8_t r, uint8_t g, uint8_t b)
 
 void leds_off(void)
 {
-    memset(g_led_rgb, 0, sizeof(g_led_rgb));
+    set_color(0,0,0);
     update_leds();
 }
 
@@ -48,13 +52,13 @@ enum response_t process_line(uint16_t *hex_file_received)
     uint8_t c, line_buffer[80], data_buffer[32];
     uint8_t line_len = 0, data_len = 0, data_count, line_type, line_pos, data;
     uint8_t addrh, addrl, checksum, recv_checksum;
-    uint16_t addr, extended_addr = 0, i;
+    uint16_t addr, extended_addr = 0, i, j;
     static uint32_t full_addr, last_addr = 0xFFFFFFFF;
 
     eeprom_busy_wait();
     boot_spm_busy_wait();
 
-    c = serial_rx();
+    c = serial_rx_nb();
     (*hex_file_received)++;
     while (c != '\r')
     {
@@ -66,16 +70,23 @@ enum response_t process_line(uint16_t *hex_file_received)
             ;
         else if (line_len < sizeof(line_buffer))
             line_buffer[line_len++] = c;
-        c = serial_rx();
+        c = serial_rx_nb();
         (*hex_file_received)++;
     }
 
     if (line_len < 2)
+    {
+        dprintf("line_len: %d\n", line_len);
         return RSP_INVALID;
+    }
 
     data_count = (HEX2DEC(line_buffer[0]) << 4) + HEX2DEC(line_buffer[1]);
     if (line_len != data_count * 2 + 10)
+    {
+        dprintf("line_len: %d\n", line_len);
+        dprintf("data_count: %d\n", data_count);
         return RSP_INVALID;
+    }
 
     addrh =  (HEX2DEC(line_buffer[2]) << 4) + HEX2DEC(line_buffer[3]);
     addrl =  (HEX2DEC(line_buffer[4]) << 4) + HEX2DEC(line_buffer[5]);
@@ -144,16 +155,12 @@ enum response_t process_line(uint16_t *hex_file_received)
 #define ee_valid_program_offset  0
 #define ee_init_ok_offset        1
 
-// LED color codes
-// green - entered bootloader as request, waiting to be programmed
-// red   - no valid program, waiting to be programmed
-
 int main() 
 {
     uint8_t init_ok;
     uint8_t valid_program;
     uint8_t start_ch_count = 0, ch, i, step;
-    uint16_t hex_file_size = 0, hex_file_received = 0, panic_count = 0, j;
+    uint16_t hex_file_size = 0, hex_file_received = 0, force_bl_count = 0;
     enum response_t response;
 
     // Turn off the watchdog timer, in case we were reset that way
@@ -167,16 +174,27 @@ int main()
 
     set_output(DDRD, LED);
 
-    serial_init();
+    serial_init(0);
+
+    for(i = 0; i < 3; i++)
+    {
+        set_color(128, 0, 0);
+        _delay_ms(75);
+        set_color(0, 0, 0);
+        _delay_ms(75);
+    }
 
     leds_off();
     set_color(0, 0, 128);
+    _delay_ms(500);
+
+
     for(j = 0; j < 500; j++)
     {
-        if (serial_char_ready())
+        if (serial_char_ready_nb())
         {
-            if (serial_rx() == 'M')
-                panic_count++;
+            if (serial_rx_nb() == 'M')
+                force_bl_count++;
         }
 
         _delay_ms(1);
@@ -185,7 +203,7 @@ int main()
     valid_program = 0;
     init_ok = 0;
 
-    if (panic_count > NUM_PANIC_CHARS)
+    if (force_bl_count)
         eeprom_write_byte((uint8_t *)ee_valid_program_offset, 0);
     else
     {
@@ -212,7 +230,7 @@ int main()
         }
         else
         {
-            if (panic_count > NUM_PANIC_CHARS)
+            if (force_bl_count)
                 set_color(128, 0, 0);
             else
                 set_color(0, 128, 0);
@@ -220,7 +238,7 @@ int main()
 
         for(start_ch_count = 0; start_ch_count < 16;)
         {
-            ch = serial_rx();
+            ch = serial_rx_nb();
             if (ch == 0x45)
             {
                 start_ch_count++;
@@ -230,9 +248,9 @@ int main()
         }
 
         // Now load the size of the program
-        hex_file_size = serial_rx();
-        hex_file_size |= serial_rx() << 8;
-        hex_file_received = 0;
+        hex_file_size = serial_rx_nb();
+        hex_file_size |= serial_rx_nb() << 8;
+        hex_file_received = 1;
 
         i = 0; step = 4;
         response = RSP_OK;
@@ -289,7 +307,7 @@ int main()
             }
             else if (response == RSP_INVALID)
             {
-                dprintf("upload invalid\n");
+                dprintf("upload invalid (size: %02X read: %02X)\n", hex_file_size, hex_file_received);
                 led.r = 128; led.g = 128; led.b = 0;
             }
             else 

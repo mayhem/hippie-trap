@@ -4,8 +4,8 @@
 
 const uint8_t g_circular_buffer_size = 32;
 volatile uint8_t g_circular_buffer[g_circular_buffer_size];
-volatile uint8_t g_circular_buffer_start = 0;
-volatile uint8_t g_circular_buffer_end = 0;
+volatile uint8_t g_circular_buffer_start;
+volatile uint8_t g_circular_buffer_end;
 
 ISR(USART_RX_vect)
 {
@@ -19,7 +19,7 @@ ISR(USART_RX_vect)
     g_circular_buffer_start = next;
 }
 
-void serial_init(void)
+void serial_init(uint8_t use_interrupts)
 {
     // UART 0
     /*Set baud rate */ 
@@ -27,9 +27,16 @@ void serial_init(void)
     _UBRRL = (unsigned char)UBBR; 
 
     /* Enable usart */ 
-    _UCSRB = (1<<_TXEN)|(1<<_RXEN)|(1<<RXCIE0);
+    if (use_interrupts)
+        _UCSRB = (1<<_TXEN)|(1<<_RXEN)|(1<<RXCIE0);
+    else
+        _UCSRB = (1<<_TXEN)|(1<<_RXEN);
+
     /* Set frame format: 8data, 1stop bit */ 
     _UCSRC = (0<<_USBS)|(3<<_UCSZ0); 
+    
+    g_circular_buffer_start = 0;
+    g_circular_buffer_end = 0;
 }
 
 void serial_tx(uint8_t ch)
@@ -38,6 +45,11 @@ void serial_tx(uint8_t ch)
         ;
 
     _UDR = ch;
+}
+
+uint8_t serial_char_ready_nb(void)
+{
+    return (_UCSRA & (1<<_RXC)) != 0;
 }
 
 uint8_t serial_char_ready(void)
@@ -50,6 +62,14 @@ uint8_t serial_char_ready(void)
     sei();
 
     return circular_buffer_start != circular_buffer_end;
+}
+
+uint8_t serial_rx_nb(void)
+{
+    while ( !(_UCSRA & (1<<_RXC)))     
+         ;    
+    
+    return _UDR;
 }
 
 uint8_t serial_rx(void)
@@ -67,7 +87,11 @@ uint8_t serial_rx(void)
     return ch;
 }
 
-#if 1
+#if 0
+void dprintf(const char *fmt, ...)
+{
+}
+#else
 #define MAX 80 
 void dprintf(const char *fmt, ...)
 {

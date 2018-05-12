@@ -21,10 +21,12 @@
 #define _UDRE  UDRE0
 #define _UDR   UDR0 
 
-void    serial_init(void);
+void    serial_init(uint8_t use_interrupts);
 void    serial_tx(uint8_t ch);
+uint8_t serial_char_ready_nb();
 uint8_t serial_char_ready();
 uint8_t serial_rx();
+uint8_t serial_rx_nb();
 void dprintf(const char *fmt, ...);
 
 #endif

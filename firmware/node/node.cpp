@@ -590,7 +590,7 @@ int main(void)
     TCNT1 = TIMER1_INIT;
     TIMSK1 |= (1<<TOIE1);
 
-    serial_init();
+    serial_init(1);
     dprintf("hippie trap node!\n\n");
     dprintf("\nt,r,g,b\n");
 
