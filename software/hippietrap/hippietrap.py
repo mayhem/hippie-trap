@@ -151,7 +151,6 @@ class HippieTrap(object):
         self._send_packet(dest, PACKET_COLOR_ARRAY, packet)
 
     def send_pattern(self, dest, id):
-        print "send patt %d" % id
         self._send_packet(dest, PACKET_PATTERN, bytearray(bytes((chr(id)))))
 
         # Give the bottles a moment to parse the packet before we go on
@@ -213,7 +212,7 @@ class HippieTrap(object):
         self._send_packet(dest, PACKET_RESET, bytearray()) 
 
     def set_brightness(self, dest, brightness):
-        self._send_packet(dest, PACKET_BRIGHTNESS, bytearray((brightness,)))
+        self._send_packet(dest, PACKET_BRIGHTNESS, bytearray(struct.pack("<B", brightness))) 
 
     def set_classes(self, classes):
         if not isinstance(classes, list):

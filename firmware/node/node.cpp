@@ -232,7 +232,7 @@ uint16_t startup_animation(void)
 
         for(d=0; d < 100; d++)
         {
-            if (serial_char_ready() && serial_rx() == 0x45)
+            if (serial_char_ready() && serial_rx() == 'M')
                 force_bl_count++;
 
             _delay_ms(1);
@@ -545,14 +545,16 @@ void loop()
                     // if we received the right length, check the crc. If that matches, we have a packet!
                     if (recd == len)
                     {            
+                        uint8_t q = g_packet[1];
                         pcrc = (uint16_t *)(g_packet + len - 2);
                         if (crc == *pcrc)
                         {
+                            dprintf("packet ok type %d\n", q);
                             handle_packet(len - 2, g_packet);
                         }
                         else
                         {  
-                            dprintf("crc fail.\n");
+                            dprintf("crc fail on packet type %d\n", q);
                         }
                     }
 
