@@ -195,18 +195,10 @@ void set_color_rgb(uint8_t r, uint8_t g, uint8_t b)
     update_leds();
 }
 
-uint16_t startup_animation(void)
+uint16_t flash_animation(color_t *col1, color_t *col2)
 {
     uint8_t i, j, d;
     uint16_t force_bl_count = 0;
-    color_t col1, col2;
-
-    col1.r = 255;
-    col1.g = 140;
-    col1.b = 0;
-    col2.r = 255;
-    col2.g = 0;
-    col2.b = 255;
 
     for(i = 0; i < 10; i++)
     {       
@@ -215,14 +207,14 @@ uint16_t startup_animation(void)
             if (i % 2 == 0)
             {
                 if (j % 2 == 1)
-                    set_pixel_color(j, &col1);
+                    set_pixel_color(j, col1);
                 else
                     set_pixel_color(j, NULL);
             }
             else
             {
                 if (j % 2 == 0)
-                    set_pixel_color(j, &col2);
+                    set_pixel_color(j, col2);
                 else
                     set_pixel_color(j, NULL);  
             }
@@ -241,6 +233,32 @@ uint16_t startup_animation(void)
     set_color(NULL);
 
     return force_bl_count;
+}
+
+uint16_t startup_animation(void)
+{
+    color_t col1, col2;
+
+    col1.r = 255;
+    col1.g = 140;
+    col1.b = 0;
+    col2.r = 255;
+    col2.g = 0;
+    col2.b = 255;
+    return flash_animation(&col1, &col2);
+}
+
+uint16_t error_animation(void)
+{
+    color_t col1, col2;
+
+    col1.r = 128;
+    col1.g = 0;
+    col1.b = 0;
+    col2.r = 128;
+    col2.g = 128;
+    col2.b = 128;
+    return flash_animation(&col1, &col2);
 }
 
 void set_brightness(int32_t brightness)
@@ -553,6 +571,7 @@ void loop()
                         else
                         {  
                             dprintf("crc fail\n");
+                            error_animation();
                         }
                     }
 

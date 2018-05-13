@@ -19,7 +19,7 @@ with HippieTrap() as ch:
                 ch.set_color(BROADCAST, Color(int(255 * rgb[0]), int(255 * rgb[1]), int(255 * rgb[2])))
                 ch.set_brightness(BROADCAST, (t / 4) % 100)
                 t += 1
-                sleep(.02)
+#                sleep(.02)
     except KeyboardInterrupt:
         ch.clear_cruft()
         ch.clear(BROADCAST)
