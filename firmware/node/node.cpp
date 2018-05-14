@@ -58,7 +58,7 @@ uint32_t   g_target = 0;
 
 // led buffer
 uint8_t    g_led_buffer[3 * NUM_LEDS];
-int32_t    g_brightness = SCALE_FACTOR;
+uint8_t    g_brightness = 100;
 
 // random seed
 uint32_t    g_random_seed = 0;
@@ -128,9 +128,9 @@ void set_pixel_color(uint8_t index, color_t *col)
     else
     {
         // Adjust brightness
-//        temp.r = col->r * g_brightness / SCALE_FACTOR;
-//        temp.g = col->g * g_brightness / SCALE_FACTOR;
-//        temp.b = col->b * g_brightness / SCALE_FACTOR;
+//        temp.r = (int16_t)col->r * g_brightness / 100;
+//        temp.g = (int16_t)col->g * g_brightness / 100;
+//        temp.b = (int16_t)col->b * g_brightness / 100;
         temp.r = col->r;
         temp.g = col->g;
         temp.b = col->b;
@@ -321,7 +321,6 @@ void handle_packet(uint16_t len, uint8_t *packet)
     {
         uint8_t group = target & 0x7F;
 
-//        dprintf("dest group: %d, target: %d\n", group, target);
         for(i = 0; i < NUM_GROUPS; i++)
             if (g_groups[i] == group)
             {
@@ -453,14 +452,13 @@ void handle_packet(uint16_t len, uint8_t *packet)
         }
         case PACKET_BRIGHTNESS:
         {
-            int32_t b;
-            b = (int32_t)data[0] * 10;
-            set_brightness(b);
+            set_brightness(data[0]);
             break;
         }
         case PACKET_BOOTLOADER:
         {
             enter_bootloader();
+            break;
         }
         case PACKET_RESET:
         {
