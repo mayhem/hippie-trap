@@ -36,7 +36,6 @@ const uint8_t PACKET_CALIBRATE    = 14;
 const uint8_t PACKET_BRIGHTNESS   = 15;
 const uint8_t PACKET_BOOTLOADER   = 17;
 const uint8_t PACKET_RESET        = 18;
-const uint8_t PACKET_FADE         = 19;
 
 // where in EEPROM our node id is stored. The first 16 are reserved for the bootloader
 // Bootloader items
@@ -322,7 +321,7 @@ void handle_packet(uint16_t len, uint8_t *packet)
     {
         uint8_t group = target & 0x7F;
 
-        dprintf("dest group: %d, target: %d\n", group, target);
+//        dprintf("dest group: %d, target: %d\n", group, target);
         for(i = 0; i < NUM_GROUPS; i++)
             if (g_groups[i] == group)
             {
@@ -431,7 +430,6 @@ void handle_packet(uint16_t len, uint8_t *packet)
 
             for(i = 0; i < len - 2; i++)
             {  
-                dprintf("I am group %d\n", data[i]);
                 g_groups[i] = data[i];
             }
             break;
@@ -616,8 +614,6 @@ int main(void)
     set_brightness(1000);
     set_color(NULL);
 
-    dprintf("1\n");
-
     timer_cal = eeprom_read_dword((uint32_t *)ee_calibration_offset);
     if (timer_cal > 1 && timer_cal != 0xFFFF)
     {
@@ -632,7 +628,6 @@ int main(void)
         col.g = 0;
         col.b = 128;
     }
-    dprintf("2\n");
 
     g_node_id = eeprom_read_byte((uint8_t *)ee_id_offset);
     if (g_node_id == 0 || g_node_id >= MAX_NODES)
@@ -641,18 +636,15 @@ int main(void)
         col.g = 0;
         col.b = 0;
     }
-    dprintf("3\n");
 
     set_color(&col);
 
     g_ticks_per_frame = g_ticks_per_sec * g_delay / 1000;
     g_target = 0;
 
-    dprintf("4\n");
     for(i = 0; i < NUM_GROUPS; i++)
         g_groups[i] = NO_GROUP;
 
-    dprintf("5\n");
     // Tell the bootloader that init completed ok, if that flag isn't set.
     if (!eeprom_read_byte((uint8_t *)ee_init_ok_offset))
         eeprom_write_byte((uint8_t *)ee_init_ok_offset, 1);

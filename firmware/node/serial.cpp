@@ -2,7 +2,7 @@
 #include <avr/interrupt.h>
 #include "serial.h"
 
-const uint8_t g_circular_buffer_size = 32;
+const uint8_t g_circular_buffer_size = 64;
 volatile uint8_t g_circular_buffer[g_circular_buffer_size];
 volatile uint8_t g_circular_buffer_start;
 volatile uint8_t g_circular_buffer_end;
