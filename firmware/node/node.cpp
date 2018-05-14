@@ -11,7 +11,7 @@
 #include "function.h"
 
 const uint8_t NODE_ID_UNKNOWN = 255;
-const uint8_t MAX_NODES = 120;
+const uint8_t MAX_NODES = 127;
 const uint8_t LED_PIN = 2;
 const uint8_t US_PER_TICK = 25;
 #define TIMER1_INIT      0xFFF8
@@ -72,11 +72,10 @@ uint8_t     g_pattern_data_len = 0;
 // our node id
 uint8_t g_node_id = 0;
 
-
-// broadcast classes
-const uint8_t NUM_CLASSES = 16;
-const uint8_t NO_CLASS = 255;
-uint8_t g_classes[NUM_CLASSES];
+// broadcast groups
+const uint8_t NUM_GROUPS = 16;
+const uint8_t NO_GROUP = 255;
+uint8_t g_groups[NUM_GROUPS];
 
 // calibration values
 uint8_t  g_calibrate = 0; // stores the duration of the calibration in seconds
@@ -315,16 +314,17 @@ void enter_bootloader(void)
 
 void handle_packet(uint16_t len, uint8_t *packet)
 {
-    uint8_t    type, target;
+    uint8_t    type, target, i;
     uint8_t   *data;
 
     target = packet[0];
-    if (target >= MAX_NODES + 1)
+    if (target > MAX_NODES)
     {
-        uint8_t cls = target - (MAX_NODES + 1), i;
+        uint8_t group = target & 0x7F;
 
-        for(i = 0; i < NUM_CLASSES; i++)
-            if (g_classes[i] == cls)
+        dprintf("dest group: %d, target: %d\n", group, target);
+        for(i = 0; i < NUM_GROUPS; i++)
+            if (g_groups[i] == group)
             {
                 target = g_node_id;
                 break;
@@ -426,12 +426,14 @@ void handle_packet(uint16_t len, uint8_t *packet)
         {
             uint8_t i;
 
-            for(i = 0; i < NUM_CLASSES; i++)
-                g_classes[i] = NO_CLASS;
+            for(i = 0; i < NUM_GROUPS; i++)
+                g_groups[i] = NO_GROUP;
 
             for(i = 0; i < len - 2; i++)
-                g_classes[i] = data[i];
-
+            {  
+                dprintf("I am group %d\n", data[i]);
+                g_groups[i] = data[i];
+            }
             break;
         }
         case PACKET_CALIBRATE:
@@ -614,6 +616,8 @@ int main(void)
     set_brightness(1000);
     set_color(NULL);
 
+    dprintf("1\n");
+
     timer_cal = eeprom_read_dword((uint32_t *)ee_calibration_offset);
     if (timer_cal > 1 && timer_cal != 0xFFFF)
     {
@@ -628,6 +632,7 @@ int main(void)
         col.g = 0;
         col.b = 128;
     }
+    dprintf("2\n");
 
     g_node_id = eeprom_read_byte((uint8_t *)ee_id_offset);
     if (g_node_id == 0 || g_node_id >= MAX_NODES)
@@ -636,15 +641,18 @@ int main(void)
         col.g = 0;
         col.b = 0;
     }
+    dprintf("3\n");
 
     set_color(&col);
 
     g_ticks_per_frame = g_ticks_per_sec * g_delay / 1000;
     g_target = 0;
 
-    for(i = 0; i < NUM_CLASSES; i++)
-        g_classes[i] = NO_CLASS;
+    dprintf("4\n");
+    for(i = 0; i < NUM_GROUPS; i++)
+        g_groups[i] = NO_GROUP;
 
+    dprintf("5\n");
     // Tell the bootloader that init completed ok, if that flag isn't set.
     if (!eeprom_read_byte((uint8_t *)ee_init_ok_offset))
         eeprom_write_byte((uint8_t *)ee_init_ok_offset, 1);

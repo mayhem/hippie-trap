@@ -15,8 +15,8 @@ from time import sleep, time
 BAUD_RATE = 38400
 NUM_PIXELS = 4
 NUM_NODES = 30 
-MAX_NODES = 120 
-MAX_CLASSES = 16
+MAX_NODES = 101 
+MAX_GROUPS = 16
 MAX_PACKET_LEN = 230
 CALIBRATION_DURATION = 10
 NODE_ID_UNKNOWN = 255
@@ -33,7 +33,7 @@ PACKET_POSITION     = 9
 PACKET_DELAY        = 10 
 PACKET_ADDRR        = 11 
 PACKET_SPEED        = 12 
-PACKET_CLASSES      = 13 
+PACKET_GROUPS       = 13 
 PACKET_CALIBRATE    = 14
 PACKET_BRIGHTNESS   = 15
 PACKET_ANGLE        = 16
@@ -53,11 +53,10 @@ def crc16_update(crc, a):
             crc = (crc >> 1)
     return crc
 
-def mkcls(cls):
-    if cls >= MAX_CLASSES:
-        raise ValueError("Invalid class id %d. Max class id is %d." % (cls, MAX_CLASSES))
-    return cls + MAX_NODES + 1
-
+def group(grp):
+    if grp >= MAX_GROUPS:
+        raise ValueError("Invalid group id %d. Max group id is %d." % (grp, MAX_GROUPS))
+    return grp | 0x80
 
 
 class HippieTrap(object):
@@ -214,20 +213,20 @@ class HippieTrap(object):
     def set_brightness(self, dest, brightness):
         self._send_packet(dest, PACKET_BRIGHTNESS, bytearray(struct.pack("<B", brightness))) 
 
-    def set_classes(self, classes):
-        if not isinstance(classes, list):
-            raise TypeError("Second argument to set_classes must be a list of lists")
-        if len(classes) > MAX_CLASSES:
-            raise ValueError("Too many classes defined. Max %d allowed." % MAX_CLASSES)
+    def set_groups(self, groups):
+        if not isinstance(groups, list) and not isinstance(groups, tuple):
+            raise TypeError("Second argument to set_groups must be a list/tuple of lists/tuples")
+        if len(groups) > MAX_GROUPS:
+            raise ValueError("Too many groups defined. Max %d allowed." % MAX_GROUPS)
 
         nodes = [ [] for i in xrange(NUM_NODES+1) ]
-        for i, cls in enumerate(classes):
-            for node in cls:
+        for i, grp in enumerate(groups):
+            for node in grp:
                 nodes[node].append(i) 
 
-        for i, classes_per_node in enumerate(nodes):
-            if classes_per_node:
-                self._send_packet(i, PACKET_CLASSES, bytearray(classes_per_node))
+        for i, groups_per_node in enumerate(nodes):
+            if groups_per_node:
+                self._send_packet(i, PACKET_GROUPS, bytearray(groups_per_node))
 
     def calibrate_timers(self, dest):
         self._send_packet(dest, PACKET_CALIBRATE, bytearray((CALIBRATION_DURATION,))) 
