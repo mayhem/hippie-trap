@@ -56,6 +56,7 @@ with HippieTrap() as ch:
 
                 ch.stop_pattern(bottle)
                 ch.send_fade(bottle, PERIOD, array)
+                sleep(.01)
                 ch.start_pattern(bottle)
 
             color_offset += .01
