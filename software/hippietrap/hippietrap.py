@@ -39,6 +39,7 @@ PACKET_BRIGHTNESS   = 15
 PACKET_ANGLE        = 16
 PACKET_BOOTLOADER   = 17
 PACKET_RESET        = 18
+PACKET_RANDOM_COLOR = 19
 BROADCAST = 0
 
 # Can't find a good constant for ALT0 in GPIO
@@ -158,6 +159,9 @@ class HippieTrap(object):
 
     def set_single_led(self, dest, led, col):
         self._send_packet(dest, PACKET_SINGLE_LED, bytearray((led, col[0], col[1], col[2])))
+
+    def set_random_color(self, dest):
+        self._send_packet(dest, PACKET_RANDOM_COLOR, bytearray()) 
 
     def set_color_array(self, dest, colors):
         packet = bytearray()

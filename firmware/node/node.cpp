@@ -9,6 +9,7 @@
 #include "ws2812.h"
 #include "serial.h"
 #include "function.h"
+#include "colorspace.h"
 
 const uint8_t NODE_ID_UNKNOWN = 255;
 const uint8_t MAX_NODES = 127;
@@ -36,6 +37,7 @@ const uint8_t PACKET_CALIBRATE    = 14;
 const uint8_t PACKET_BRIGHTNESS   = 15;
 const uint8_t PACKET_BOOTLOADER   = 17;
 const uint8_t PACKET_RESET        = 18;
+const uint8_t PACKET_RANDOM_COLOR = 19;
 
 // where in EEPROM our node id is stored. The first 16 are reserved for the bootloader
 // Bootloader items
@@ -463,6 +465,14 @@ void handle_packet(uint16_t len, uint8_t *packet)
         case PACKET_RESET:
         {
             reset();
+        }
+        case PACKET_RANDOM_COLOR:
+        {
+            color_t col;
+
+            hsv_to_rgb(rand() % SCALE_FACTOR, SCALE_FACTOR, SCALE_FACTOR, &col);
+            set_color(&col);
+            break;
         }
         default:
             dprintf("invalid packet.\n");

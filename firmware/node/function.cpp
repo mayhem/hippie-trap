@@ -31,7 +31,7 @@ void p_error(int32_t t, uint8_t *data, uint8_t len)
 
 void p_fade_to(int32_t t, uint8_t *data, uint8_t len)
 {
-    static   color_t start_cols[NUM_LEDS];
+    static   color_t start_cols[NUM_LEDS], r_target;
     int32_t  delta_r, delta_g, delta_b;
     uint8_t  i;
     color_t  target, col, first_col;
@@ -43,6 +43,10 @@ void p_fade_to(int32_t t, uint8_t *data, uint8_t len)
     {
         for(i = 0; i < NUM_LEDS; i++)
             get_pixel_color(i, &start_cols[i]);
+
+        if (len == sizeof(uint16_t))
+            hsv_to_rgb(rand() % SCALE_FACTOR, SCALE_FACTOR, SCALE_FACTOR, &r_target);
+
         return;
     }
 
@@ -58,6 +62,9 @@ void p_fade_to(int32_t t, uint8_t *data, uint8_t len)
 
     for(i = 0; i < NUM_LEDS; i++)
     {
+        if (len == sizeof(uint16_t))
+            target = r_target;
+        else
         if ((i * 3) < (len - sizeof(uint16_t)))
         {
             target.r = *((uint8_t *)data);
