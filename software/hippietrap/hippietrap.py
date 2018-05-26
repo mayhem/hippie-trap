@@ -109,6 +109,22 @@ class HippieTrap(object):
             self.ser.write('M')
             sleep(.0005)
 
+    @staticmethod    
+    def power_on():
+        try:
+            check_call(["gpio", "-1", "write", "37", "1"])
+        except CalledProcessError as err:
+            print "Is wiringpi installed? error: ", err
+            sys.exit(-1)
+
+    @staticmethod    
+    def power_off():
+        try:
+            check_call(["gpio", "-1", "write", "37", "0"])
+        except CalledProcessError as err:
+            print "Is wiringpi installed? error: ", err
+            sys.exit(-1)
+
     def clear_cruft(self):
         for i in range(32):
             self.ser.write(chr(0))

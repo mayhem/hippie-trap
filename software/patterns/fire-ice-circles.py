@@ -12,7 +12,7 @@ from random import random
 PERIOD = 1500
 
 
-angle = .04
+angle = .08
 
 with HippieTrap() as ch:
     try:

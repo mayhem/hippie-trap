@@ -26,7 +26,7 @@ def flip(ch, col1, col2):
 with HippieTrap() as ch:
     try:
         while True:
-            col1 = Color(255, 255, 255)
+            col1 = Color(128, 20, 0)
 
             col2 = Color(255, 0, 0)
             flip(ch, col1, col2)
@@ -41,7 +41,7 @@ with HippieTrap() as ch:
             flip(ch, col1, col2)
 
             col2 = Color(0, 0, 255)
-            flip(ch, col1, col2)
+            flash(ch, col1, col2)
 
     except KeyboardInterrupt:
         ch.clear_cruft()
