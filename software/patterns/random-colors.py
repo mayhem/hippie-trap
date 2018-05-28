@@ -9,7 +9,7 @@ from hippietrap.color import Color
 from time import sleep, time
 from random import random
 
-PERIOD = 250
+PERIOD = 450
 
 with HippieTrap() as ch:
     ch.clear(BROADCAST)

@@ -18,36 +18,44 @@ class HippieTrapGeometry(object):
                 a.append(angle * bottle)
             self.angles.append(a)
 
-        print self.angles
-
         self.offsets = [ 1 ]
         for i, count in enumerate(BOTTLES_PER_RING[:-1]):
             self.offsets.append(self.offsets[i - 0] + count)
 
-        print self.offsets
 
-
-    def enumerate_all_bottles(self):
+    def enumerate_all_bottles(self, reverse=False):
 
         pairs = []
         for ring, angles in enumerate(self.angles):
             for i, angle in enumerate(angles):
                 pairs.append((self.offsets[ring] + i, angle))
 
-        return sorted(pairs, key=lambda angle:angle[1])
+        bottles = sorted(pairs, key=lambda angle:angle[1])
+        if reverse:
+            bottles.reverse()
+
+        return bottles
 
 
-    def enumerate_ring(self, ring):
+    def enumerate_ring(self, ring, reverse=False):
 
         if ring not in range(0, NUM_RINGS):
             return ()
 
-        return [ (self.offsets[ring]+bottle, angle) for bottle, angle in enumerate(self.angles[ring])]
+        bottles = [ (self.offsets[ring]+bottle, angle) for bottle, angle in enumerate(self.angles[ring])]
+        if reverse:
+            bottles.reverse()
+
+        return bottles
+
+    def get_ring_from_bottle(self, bottle):
+
+        for ring in range(NUM_RINGS):
+            if bottle < self.offsets[ring] + BOTTLES_PER_RING[ring]:
+                return ring
 
 
 if __name__ == "__main__":
     g = HippieTrapGeometry()
-    print g.enumerate_all_bottles()
-    print g.enumerate_ring(0)
-    print g.enumerate_ring(1)
-    print g.enumerate_ring(2)
+    for i in range(1, 101):
+        print i, g.get_ring_from_bottle(i)
