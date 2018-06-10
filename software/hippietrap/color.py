@@ -20,16 +20,22 @@ class Color(object):
     def __init__(self, r, g, b):
         self.color = [r, g, b]
 
-    def describe(self, level = 0):
-        #print "%s(%d, %d, %d)" % (self.__class__.__name__, self.color[0], self.color[1]. self.color[2]),
-        pass
-
     def __str__(self):
         return "Color(%d,%d,%d)" % (self.color[0], self.color[1], self.color[2])
 
     @abc.abstractmethod
     def __getitem__(self, i):
         return self.color[i]
+
+    def __eq__(self, other):
+        if isinstance(other, Color):
+            return (self.color[0] == other.color[0] and self.color[1] == other.color[1] and self.color[2] == other.color[2])
+        return NotImplemented
+
+    def __ne__(self, other):
+        if isinstance(other, Color):
+            return (self.color[0] != other.color[0] or self.color[1] != other.color[1] or self.color[2] != other.color[2])
+        return NotImplemented
 
 class ColorGenerator(object):
 

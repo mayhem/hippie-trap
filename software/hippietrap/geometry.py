@@ -54,8 +54,16 @@ class HippieTrapGeometry(object):
             if bottle < self.offsets[ring] + BOTTLES_PER_RING[ring]:
                 return ring
 
+    def get_near_bottles(self, angle, delta):
+        bottles = self.enumerate_all_bottles()
+        result = []
+        for bottle in bottles:
+            if math.fabs(angle - bottle[1]) <= delta:
+                result.append(bottle)
 
+        return sorted(result, key=lambda angle:angle[1])
+        
 if __name__ == "__main__":
     g = HippieTrapGeometry()
-    for i in range(1, 101):
-        print i, g.get_ring_from_bottle(i)
+    print g.enumerate_all_bottles()
+    print g.get_near_bottles(90, 15);
