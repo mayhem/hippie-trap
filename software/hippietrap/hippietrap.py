@@ -48,6 +48,8 @@ BROADCAST = 0
 # Can't find a good constant for ALT0 in GPIO
 ALT0 = 4
 
+POWER_GPIO_PINS = [ 35, 37, 38, 40 ]
+
 def crc16_update(crc, a):
     crc ^= a
     for i in xrange(0, 8):
@@ -74,6 +76,10 @@ class HippieTrap(object):
 
         try:
             check_call(["gpio", "-g", "mode", "14", "alt5"])
+
+            for pin in POWER_GPIO_PINS:
+                check_call(["gpio", "-1", "mode", "%d" % pin, "output"])
+
         except CalledProcessError as err:
             print "Is wiringpi installed? error: ", err
             sys.exit(-1)
@@ -116,7 +122,10 @@ class HippieTrap(object):
     @staticmethod    
     def power_on():
         try:
-            check_call(["gpio", "-1", "write", "37", "1"])
+            for pin in POWER_GPIO_PINS:
+                check_call(["gpio", "-1", "write", "%d" % pin, "1"])
+                sleep(.1)
+
         except CalledProcessError as err:
             print "Is wiringpi installed? error: ", err
             sys.exit(-1)
@@ -124,7 +133,9 @@ class HippieTrap(object):
     @staticmethod    
     def power_off():
         try:
-            check_call(["gpio", "-1", "write", "37", "0"])
+            for pin in POWER_GPIO_PINS:
+                check_call(["gpio", "-1", "write", "%d" % pin, "0"])
+
         except CalledProcessError as err:
             print "Is wiringpi installed? error: ", err
             sys.exit(-1)
