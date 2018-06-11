@@ -20,12 +20,33 @@ class Color(object):
     def __init__(self, r, g, b):
         self.color = [r, g, b]
 
-    def __str__(self):
+    def __repr__(self):
         return "Color(%d,%d,%d)" % (self.color[0], self.color[1], self.color[2])
+
+    @property
+    def red(self):
+        return self.color[0]
+
+    @property
+    def green(self):
+        return self.color[1]
+
+    @property
+    def blue(self):
+        return self.color[2]
 
     @abc.abstractmethod
     def __getitem__(self, i):
         return self.color[i]
+
+    def __iadd__(self, other):
+        print self, other
+        self.color[0] = min(255, self.color[0] + other.color[0])
+        self.color[1] = min(255, self.color[1] + other.color[1])
+        self.color[2] = min(255, self.color[2] + other.color[2])
+        print self
+
+        return self
 
     def __eq__(self, other):
         if isinstance(other, Color):

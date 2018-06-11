@@ -14,7 +14,7 @@ class FrameBuffer(object):
 
 
     def _clear(self):
-        self.current_bottles = [ { 'colors' : [ Color(0,0,0) ], 'dirty' : False } for i in range(30) ]
+        self.current_bottles = [ { 'colors' : [ Color(0,0,0) ] * 4, 'dirty' : False } for i in range(30) ]
 
 
     def clear(self, mark_dirty = True):
@@ -22,10 +22,12 @@ class FrameBuffer(object):
             self._clear()
             return
 
-        for bottle in self.current_bottles:
-            if len(bottle['colors']) > 1 or bottle['colors'][0] != Color(0,0,0):
-                bottle['dirty'] = True
-                bottle['colors'] = [ Color(0,0,0) ]
+        for i, bottle in enumerate(self.current_bottles):
+            for color in bottle['colors']:
+                if color != Color(0,0,0):
+                    bottle['dirty'] = True
+                    bottle['colors'] = [ Color(0,0,0) ] * 4
+                    break
 
 
     def set_color(self, bottles, colors):
@@ -33,11 +35,18 @@ class FrameBuffer(object):
             bottles = [ bottles ]
 
         if isinstance(colors, Color):
-            colors = [ colors ]
+            colors = [ colors ] * 4 
+        else:
+            if type(colors) not in [tuple, list] or len(colors) != 4:
+                raise ValueError("Must pass a Color or array of 4 Colors to set_color()")
 
         for bottle in bottles:
             self.current_bottles[bottle - 1]['colors'] = colors
             self.current_bottles[bottle - 1]['dirty'] = True
+
+
+    def get_color(self, bottle):
+        return self.current_bottles[bottle - 1]['colors']
 
 
     def apply(self):
