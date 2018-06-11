@@ -1,5 +1,5 @@
 #!/usr/bin/python
-from color import Color, hueToColor
+from color import Color
 import common
 
 class Function(object):

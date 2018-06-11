@@ -3,47 +3,109 @@
 import os
 import sys
 import math
-from colorsys import hsv_to_rgb
+import random
+import abc
+from threading import Thread
 from hippietrap.hippietrap import HippieTrap, BROADCAST, NUM_NODES
-from hippietrap.color import Color
+from hippietrap.color import Color, random_color
 from time import sleep, time
 
-def flash(ch, col1, col2):
-    ch.set_color_array(BROADCAST, (col1, col2, col1, col2))
-    sleep(.250)
-    ch.set_color_array(BROADCAST, (col2, col1, col2, col1))
-    sleep(.250)
+DELAY = .50
 
-def flip(ch, col1, col2):
-    ch.send_fade(BROADCAST, 250, (col1, col2, col1, col2))
-    ch.start_pattern(BROADCAST)
-    sleep(.250)
+class PatternBase(Thread):
 
-    ch.send_fade(BROADCAST, 250, (col2, col1, col2, col1))
-    ch.start_pattern(BROADCAST)
-    sleep(.250)
+    def __init__(self, trap):
+        Thread.__init__(self)
+        self.trap = trap
+        self.stop_thread = False
 
-with HippieTrap() as ch:
-    try:
-        while True:
-            col1 = Color(128, 20, 0)
 
-            col2 = Color(255, 0, 0)
-            flip(ch, col1, col2)
+    def stop(self):
+        self.stop_thread = True
 
-            col2 = Color(255, 255, 0)
-            flip(ch, col1, col2)
 
-            col2 = Color(0, 255, 0)
-            flip(ch, col1, col2)
+    @abc.abstractmethod
+    def pattern(self):
+        pass
 
-            col2 = Color(0, 255, 255)
-            flip(ch, col1, col2)
 
-            col2 = Color(0, 0, 255)
-            flash(ch, col1, col2)
+    def run(self):
+        while not self.stop_thread:
+            self.pattern()
 
-    except KeyboardInterrupt:
-        ch.clear_cruft()
-        ch.clear(BROADCAST)
-        ch.clear(BROADCAST)
+        sleep(.1)
+
+
+class PatternFlashies(PatternBase):
+
+    def flash(self, ch, col1, col2):
+        self.trap.set_color_array(BROADCAST, (col1, col2, col1, col2))
+        sleep(DELAY)
+        self.trap.set_color_array(BROADCAST, (col2, col1, col2, col1))
+        sleep(DELAY)
+
+    def flip(self, ch, col1, col2):
+        self.trap.send_fade(BROADCAST, 250, (col1, col2, col1, col2))
+        self.trap.start_pattern(BROADCAST)
+        sleep(DELAY)
+
+        self.trap.send_fade(BROADCAST, 250, (col2, col1, col2, col1))
+        self.trap.start_pattern(BROADCAST)
+        sleep(DELAY)
+
+    def pattern(self):
+
+        col1 = random_color()
+
+        col2 = random_color()
+        self.flip(ch, col1, col2)
+        if self.stop: 
+            return
+
+        col2 = Color(255, 255, 0)
+        col2 = random_color()
+        self.flip(ch, col1, col2)
+        if self.stop: 
+            return
+
+        col2 = Color(0, 255, 0)
+        col2 = random_color()
+        self.flip(ch, col1, col2)
+        if self.stop: 
+            return
+
+        col2 = Color(0, 255, 255)
+        col2 = random_color()
+        self.flip(ch, col1, col2)
+        if self.stop: 
+            return
+
+        col2 = Color(0, 0, 255)
+        col2 = random_color()
+        self.flip(ch, col1, col2)
+        if self.stop: 
+            return
+
+        col2 = Color(255, 0, 255)
+        col2 = random_color()
+        self.flip(ch, col1, col2)
+
+
+if __name__ == "__main__":
+    with HippieTrap() as ch:
+        r = PatternFlashies(ch)
+        r.start()
+        try:
+            while True:
+                sleep(100)
+        except KeyboardInterrupt:
+            print "[ waiting for pattern to stop ]"
+            r.stop()
+            r.join()
+
+            bottles = [ i for i in range(1, NUM_NODES + 1) ]
+            random.shuffle(bottles)
+            print bottles
+            for bottle in bottles:
+                ch.clear(bottle)
+                sleep(.01)

@@ -7,11 +7,11 @@ from random import random, seed
 
 seed()
 
-def hueToColor(hue):
+def hue_to_color(hue):
     col = colorsys.hsv_to_rgb(hue, 1, 1)
     return Color(int(col[0] * 255), int(col[1] * 255), int(col[2] * 255))
 
-def randomSaturatedColor():
+def random_color():
     col = colorsys.hsv_to_rgb(random(), 1, 1)
     return Color(int(col[0] * 255), int(col[1] * 255), int(col[2] * 255))
 

@@ -15,7 +15,7 @@ from time import sleep, time
 SECONDS_COLOR = Color(255, 125, 25)
 MINUTES_COLOR = Color(86, 0, 255)
 HOURS_COLOR = Color(20, 204, 50)
-ANGLE_DELTA = 20
+ANGLE_DELTA = 25
 FADE_DIVISOR = 10
 
 def dim_color_with_arc_distance(angle0, angle1, color):
