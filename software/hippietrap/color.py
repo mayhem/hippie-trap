@@ -18,7 +18,7 @@ def randomSaturatedColor():
 class Color(object):
 
     def __init__(self, r, g, b):
-        self.color = [r, g, b]
+        self.color = [int(r), int(g), int(b)]
 
     def __repr__(self):
         return "Color(%d,%d,%d)" % (self.color[0], self.color[1], self.color[2])
@@ -40,11 +40,9 @@ class Color(object):
         return self.color[i]
 
     def __iadd__(self, other):
-        print self, other
         self.color[0] = min(255, self.color[0] + other.color[0])
         self.color[1] = min(255, self.color[1] + other.color[1])
         self.color[2] = min(255, self.color[2] + other.color[2])
-        print self
 
         return self
 
@@ -88,3 +86,9 @@ class ColorGenerator(object):
 
         return (Color(int(255 * rgb[0]), int(255 * rgb[1]), int(255 * rgb[2])), 
                 Color(int(255 * rgb2[0]), int(255 * rgb2[1]), int(255 * rgb2[2])))
+
+if __name__ == "__main__":
+    c1 = Color(1,1,128)
+    c2 = Color(2,2,128)
+    c1 += c2
+    print c1.red, c1.green, c1.blue
