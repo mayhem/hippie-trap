@@ -28,6 +28,7 @@ quit = False
 
 with HippieTrap() as ch:
 
+    ch.clear(BROADCAST)
     try:
         fb = FrameBuffer(ch)
         while True:
