@@ -592,6 +592,8 @@ void loop()
     }
 }
 
+int16_t sin16_avr( uint16_t theta );
+
 #define MAX_BL_FORCE_COUNT 5
 int main(void)
 { 
@@ -656,6 +658,13 @@ int main(void)
     // Tell the bootloader that init completed ok, if that flag isn't set.
     if (!eeprom_read_byte((uint8_t *)ee_init_ok_offset))
         eeprom_write_byte((uint8_t *)ee_init_ok_offset, 1);
+
+    for(int32_t t = 0; i < 65535; i += 128)
+    {
+        int32_t y = (sin16_avr(i) + 32767) / 256;
+        set_color_rgb(y, 0, 0);
+        _delay_ms(25);
+    }
 
     for(;;)
         loop();
