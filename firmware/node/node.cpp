@@ -130,9 +130,12 @@ void set_pixel_color(uint8_t index, color_t *col)
     else
     {
         // Adjust brightness
-        temp.r = ((int16_t)col->r * (int16_t)g_brightness) / 100;
-        temp.g = ((int16_t)col->g * (int16_t)g_brightness) / 100;
-        temp.b = ((int16_t)col->b * (int16_t)g_brightness) / 100;
+//        temp.r = ((int16_t)col->r * (int16_t)g_brightness) / 100;
+//        temp.g = ((int16_t)col->g * (int16_t)g_brightness) / 100;
+//        temp.b = ((int16_t)col->b * (int16_t)g_brightness) / 100;
+        temp.r = col->r;
+        temp.g = col->g;
+        temp.b = col->b;
     } 
 
     g_led_buffer[(index * 3)] = temp.g;
