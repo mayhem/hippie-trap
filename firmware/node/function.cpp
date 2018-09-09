@@ -221,8 +221,7 @@ void p_sine(int32_t t, uint8_t *data, uint8_t len)
         }
     }
 
-//    intensity = sin(t * period / SCALE_FACTOR + phase) * amplitude / SCALE_FACTOR + offset;
-    int32_t intensity = sin(t);
+    int32_t intensity = sin((t * period) / SCALE_FACTOR + phase) * (amplitude / SCALE_FACTOR) + offset;
     intensity /= 64;
     for(i = 0; i < NUM_LEDS; i++)
     {

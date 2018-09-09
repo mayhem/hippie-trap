@@ -212,6 +212,10 @@ class HippieTrap(object):
         packet = bytearray(struct.pack("<BB", 2, divisor))
         self._send_packet(dest, PACKET_PATTERN, packet)
 
+    def send_sin(self, dest, period, phase, amplitude, offset):
+        packet = bytearray(struct.pack("<Bllll", 3, period, phase, amplitude, offset))
+        self._send_packet(dest, PACKET_PATTERN, packet)
+
     def start_pattern(self, dest):
         self._send_packet(dest, PACKET_START, bytearray())
 
