@@ -10,7 +10,7 @@ from time import sleep, time
 from random import random
 
 with HippieTrap() as ch:
-    ch.set_brightness(BROADCAST, 100)
+    ch.begin()
     ch.set_color(BROADCAST, Color(0, 0, 0))
     try:
         while True:

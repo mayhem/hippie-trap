@@ -12,8 +12,7 @@ from random import random
 STEPS = 5000
 
 with HippieTrap() as ch:
-    ch.set_brightness(BROADCAST, 100)
-    ch.clear(BROADCAST)
+    ch.begin()
     ch.send_entropy()
     ch.send_rainbow(BROADCAST, 4)
     ch.start_pattern(BROADCAST)

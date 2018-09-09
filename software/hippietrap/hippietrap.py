@@ -144,6 +144,12 @@ class HippieTrap(object):
         for i in range(32):
             self.ser.write(chr(0))
 
+    def begin(self):
+        self.set_brightness(BROADCAST, 100)
+        self.stop_pattern(BROADCAST)
+        self.clear(BROADCAST)
+        sleep(.1)
+
     def _send_packet(self, dest, type, data):
         if not self.ser:
             return

@@ -93,7 +93,7 @@ class PatternFlashies(PatternBase):
 
 if __name__ == "__main__":
     with HippieTrap() as ch:
-        ch.set_brightness(BROADCAST, 100)
+        ch.begin()
         r = PatternFlashies(ch)
         r.start()
         try:

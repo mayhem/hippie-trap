@@ -7,6 +7,7 @@ from hippietrap.hippietrap import HippieTrap, BROADCAST
 from time import sleep, time
 
 with HippieTrap() as ch:
+    ch.begin()
     ch.clear(BROADCAST)
     ch.clear(BROADCAST)
     ch.calibrate_timers(BROADCAST)

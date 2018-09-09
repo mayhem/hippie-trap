@@ -10,9 +10,10 @@ from hippietrap.color import Color
 from hippietrap.geometry import HippieTrapGeometry
 from time import sleep, time
 
-if len(sys.argv) != 4:
-    print "Usage: %s red green blue" % sys.argv[0]
-    sys.exit(-1)
+col = Color(255, 210, 70)
+if len(sys.argv) == 4:
+    col = Color(int(sys.argv[1]), int(sys.argv[2]), int(sys.argv[3]))
 
 with HippieTrap() as ch:
-    ch.set_color(BROADCAST, Color(int(sys.argv[1]), int(sys.argv[2]), int(sys.argv[3])))
+    ch.begin()
+    ch.set_color(BROADCAST, col)

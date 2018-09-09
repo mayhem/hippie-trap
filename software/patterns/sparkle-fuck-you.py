@@ -12,7 +12,7 @@ from time import sleep, time
 STEPS = 500
 
 with HippieTrap() as ch:
-    ch.set_brightness(BROADCAST, 100)
+    ch.begin()
     try:
         ch.start_pattern(BROADCAST)
         while True:

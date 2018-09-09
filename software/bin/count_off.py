@@ -10,7 +10,7 @@ from hippietrap.hippietrap import HippieTrap, BROADCAST, NUM_NODES
 from hippietrap.color import Color
 
 with HippieTrap() as ch:
-    ch.clear(BROADCAST)
+    ch.begin()
 
     start = int(sys.argv[1])
 

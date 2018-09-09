@@ -16,7 +16,7 @@ geo = HippieTrapGeometry()
 cg = ColorGenerator()
 
 with HippieTrap() as ch:
-    ch.set_brightness(BROADCAST, 100)
+    ch.begin()
     try:
         while True:
             for i, ring in enumerate(range(NUM_RINGS)):

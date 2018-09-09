@@ -30,9 +30,10 @@ def pattern(ch):
         index += 1
         hue_offset = math.fmod(hue_offset + .01, 1.0)
 
+
 if __name__ == "__main__":
     with HippieTrap() as ch:
-        ch.set_brightness(BROADCAST, 100)
+        ch.begin()
         try:
             pattern(ch)
         except KeyboardInterrupt:

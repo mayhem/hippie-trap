@@ -5,19 +5,19 @@ import sys
 import math
 from colorsys import hsv_to_rgb
 from hippietrap.hippietrap import HippieTrap, BROADCAST, NUM_NODES
-from hippietrap.color import Color
+from hippietrap.color import Color, hue_to_color
 from time import sleep, time
 
 STEPS = 500
 
 with HippieTrap() as ch:
-    ch.set_brightness(BROADCAST, 100)
+    ch.begin()
     try:
         while True:
             for i in range(STEPS):
-                rgb = hsv_to_rgb(i / float(STEPS), 1.0, 1.0)
-                ch.set_color(BROADCAST, Color(int(255 * rgb[0]), int(255 * rgb[1]), int(255 * rgb[2])))
+                ch.set_color(BROADCAST, hue_to_color(i / float(STEPS)))
                 sleep(.02)
+
     except KeyboardInterrupt:
         ch.clear_cruft()
         ch.clear(BROADCAST)

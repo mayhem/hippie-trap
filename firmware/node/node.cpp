@@ -399,7 +399,6 @@ void handle_packet(uint16_t len, uint8_t *packet)
         case PACKET_CLEAR:
             {
                 stop_pattern();
-                set_brightness(1000);
                 set_color(NULL);
             }
             break;
