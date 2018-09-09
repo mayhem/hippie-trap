@@ -24,7 +24,7 @@ def dim_color_with_arc_distance(angle0, angle1, color):
     dim = max(0.0, 1.0 - (delta / FADE_DIVISOR))
     return Color(color.red * dim, color.green * dim, color.blue * dim)
 
-class Clock(PatternBase):
+class Pattern(PatternBase):
 
     geo = HippieTrapGeometry()
     cg = ColorGenerator()
@@ -94,8 +94,8 @@ class Clock(PatternBase):
 if __name__ == "__main__":
     with HippieTrap() as trap:
         trap.begin()
-        run_pattern(trap, Clock, clear=True)
+        run_pattern(trap, Pattern, clear=True)
 
-        for bottle, angle in Clock.geo.enumerate_all_bottles():
+        for bottle, angle in Pattern.geo.enumerate_all_bottles():
             trap.set_color(bottle, Color(0,0,0))
             sleep(.02)

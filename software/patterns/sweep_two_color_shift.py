@@ -12,7 +12,7 @@ from hippietrap.pattern import PatternBase, run_pattern
 from time import sleep, time
 
 
-class SweepTwoColor(PatternBase):
+class Pattern(PatternBase):
 
     geo = HippieTrapGeometry()
     cg = ColorGenerator()
@@ -41,5 +41,5 @@ class SweepTwoColor(PatternBase):
 if __name__ == "__main__":
     with HippieTrap() as trap:
         trap.begin()
-        run_pattern(trap, SweepTwoColor, clear=True)
+        run_pattern(trap, Pattern, clear=True)
         trap.clear(ALL)

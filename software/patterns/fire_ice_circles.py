@@ -10,7 +10,7 @@ from hippietrap.pattern import PatternBase, run_pattern
 from time import sleep, time
 from random import random
 
-class FireIceCircles(PatternBase):
+class Pattern(PatternBase):
 
     PERIOD = 1500
     angle = .08
@@ -61,5 +61,5 @@ class FireIceCircles(PatternBase):
 if __name__ == "__main__":
     with HippieTrap() as trap:
         trap.begin()
-        run_pattern(trap, FireIceCircles)
+        run_pattern(trap, Pattern)
         trap.clear(ALL)

@@ -10,17 +10,17 @@ from time import sleep, time
 from random import random
 
 
-class RandomColors(PatternBase):
+class Pattern(PatternBase):
 
     PERIOD = 450
 
     def pattern(self):
-        trap.send_entropy()
+        self.trap.send_entropy()
         while True:
-            trap.send_fade(ALL, self.PERIOD, ())
-            trap.start_pattern(ALL)
+            self.trap.send_fade(ALL, self.PERIOD, ())
+            self.trap.start_pattern(ALL)
             sleep(self.PERIOD / 1000.0)
-            trap.stop_pattern(ALL)
+            self.trap.stop_pattern(ALL)
 
             if self.stop_thread:
                 return 
@@ -29,5 +29,5 @@ class RandomColors(PatternBase):
 if __name__ == "__main__":
     with HippieTrap() as trap:
         trap.begin()
-        run_pattern(trap, RandomColors)
+        run_pattern(trap, Pattern)
         trap.clear(ALL)

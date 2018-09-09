@@ -11,11 +11,11 @@ from hippietrap.color import Color, random_color
 from hippietrap.pattern import PatternBase, run_pattern
 from time import sleep, time
 
-class Flashies(PatternBase):
+class Pattern(PatternBase):
 
     DELAY = .50
 
-    def flip(self, ch, col1, col2):
+    def flip(self, col1, col2):
         self.trap.send_fade(BROADCAST, 250, (col1, col2, col1, col2))
         self.trap.start_pattern(BROADCAST)
         sleep(self.DELAY)
@@ -29,46 +29,46 @@ class Flashies(PatternBase):
         col1 = random_color()
 
         col2 = random_color()
-        self.flip(ch, col1, col2)
+        self.flip(col1, col2)
         if self.stop_thread: 
             return
 
         col2 = Color(255, 255, 0)
         col2 = random_color()
-        self.flip(ch, col1, col2)
+        self.flip(col1, col2)
         if self.stop_thread: 
             return
 
         col2 = Color(0, 255, 0)
         col2 = random_color()
-        self.flip(ch, col1, col2)
+        self.flip(col1, col2)
         if self.stop_thread: 
             return
 
         col2 = Color(0, 255, 255)
         col2 = random_color()
-        self.flip(ch, col1, col2)
+        self.flip(col1, col2)
         if self.stop_thread: 
             return
 
         col2 = Color(0, 0, 255)
         col2 = random_color()
-        self.flip(ch, col1, col2)
+        self.flip(col1, col2)
         if self.stop_thread: 
             return
 
         col2 = Color(255, 0, 255)
         col2 = random_color()
-        self.flip(ch, col1, col2)
+        self.flip(col1, col2)
 
 
 if __name__ == "__main__":
     with HippieTrap() as trap:
         trap.begin()
-        run_pattern(trap, Flashies)
+        run_pattern(trap, Pattern)
 
         bottles = [ i for i in range(1, NUM_NODES + 1) ]
         random.shuffle(bottles)
         for bottle in bottles:
-            ch.clear(bottle)
+            trap.clear(bottle)
             sleep(.01)

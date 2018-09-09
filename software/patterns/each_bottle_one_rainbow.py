@@ -7,7 +7,7 @@ from hippietrap.hippietrap import HippieTrap, ALL
 from hippietrap.pattern import PatternBase, run_pattern
 
 
-class EachOneRainbow(PatternBase):
+class Pattern(PatternBase):
 
     def pattern(self):
 
@@ -22,5 +22,5 @@ class EachOneRainbow(PatternBase):
 if __name__ == "__main__":
     with HippieTrap() as trap:
         trap.begin()
-        run_pattern(trap, EachOneRainbow)
+        run_pattern(trap, Pattern)
         trap.clear(ALL)

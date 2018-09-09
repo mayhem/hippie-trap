@@ -9,18 +9,18 @@ from hippietrap.pattern import PatternBase, run_pattern
 from hippietrap.color import hue_to_color
 from time import sleep, time
 
-class Sparkle(PatternBase):
+class Pattern(PatternBase):
 
     def pattern(self):
 
-        trap.start_pattern(ALL)
+        self.trap.start_pattern(ALL)
         while True:
             for i in range(15):
                 bottle = randint(1, NUM_NODES)
                 led = randint(1, 4)
-                trap.set_color(bottle, hue_to_color(random()))
+                self.trap.set_color(bottle, hue_to_color(random()))
 
-            trap.send_decay(ALL, 4)
+            self.trap.send_decay(ALL, 4)
             sleep(.3)
 
             if self.stop_thread:
@@ -29,5 +29,5 @@ class Sparkle(PatternBase):
 if __name__ == "__main__":
     with HippieTrap() as trap:
         trap.begin()
-        run_pattern(trap, Sparkle)
+        run_pattern(trap, Pattern)
         trap.clear(ALL)

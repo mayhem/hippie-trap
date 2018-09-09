@@ -12,7 +12,7 @@ from hippietrap.pattern import PatternBase, run_pattern
 from time import sleep, time
 
 
-class SweepOneColor(PatternBase):
+class Pattern(PatternBase):
 
     geo = HippieTrapGeometry()
     cg = ColorGenerator()
@@ -22,14 +22,14 @@ class SweepOneColor(PatternBase):
             for i, ring in enumerate(range(NUM_RINGS)):
                 color = self.cg.random_color()
                 for bottle, angle in self.geo.enumerate_ring(ring, i % 2):
-                    ch.set_color(bottle, color)
+                    self.trap.set_color(bottle, color)
                     sleep(.04)
                     if self.stop_thread:
                         return
 
 
 if __name__ == "__main__":
-    with HippieTrap() as ch:
-        ch.begin()
-        run_pattern(ch, SweepOneColor)
-        ch.clear(ALL)
+    with HippieTrap() as trap:
+        trap.begin()
+        run_pattern(trap, Pattern)
+        trap.clear(ALL)
