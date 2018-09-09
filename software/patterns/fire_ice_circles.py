@@ -9,16 +9,19 @@ from hippietrap.color import hue_to_color
 from hippietrap.pattern import PatternBase, run_pattern
 from time import sleep, time
 from random import random
+from hippietrap.transition import transition_sweep_out
 
 class Pattern(PatternBase):
 
     PERIOD = 1500
-    angle = .08
+    angle = .02
+    name = "fire ice circles"
 
     def pattern(self):
 
         color_offset = 0.0
-        while True:
+        stop = False
+        while not stop:
             for bottle in range(1, 14):
                 array = []
 
@@ -35,7 +38,8 @@ class Pattern(PatternBase):
                 self.trap.start_pattern(bottle)
 
                 if self.stop_thread:
-                    return
+                    stop = True
+                    break
 
             for bottle in range(14, 31):
                 array = []
@@ -52,10 +56,15 @@ class Pattern(PatternBase):
                 self.trap.start_pattern(bottle)
             
                 if self.stop_thread:
-                    return
+                    stop = True
+                    break
 
-            color_offset += .01
+            color_offset += .2
 
+        self.trap.stop_pattern(ALL)
+        if self.transition:
+            sleep(.02)
+            transition_sweep_out(self.trap)
 
 
 if __name__ == "__main__":

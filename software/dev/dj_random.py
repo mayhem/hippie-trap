@@ -10,15 +10,22 @@ from threading import Thread
 from hippietrap.hippietrap import HippieTrap, ALL, NUM_NODES
 from hippietrap.color import Color, random_color
 from hippietrap.pattern import PatternBase, run_pattern
+from hippietrap.geometry import HippieTrapGeometry
 from time import sleep, time
 
-def transition_1(trap):
+geo = HippieTrapGeometry()
+
+def transition_drop_out(trap):
     bottles = [ i for i in range(1, NUM_NODES + 1) ]
     random.shuffle(bottles)
     for bottle in bottles:
         trap.clear(bottle)
         sleep(.01)
 
+def transition_sweep_clear(trap):
+    for bottle, angle in geo.enumerate_all_bottles():
+        trap.set_color(bottle, Color(0,0,0))
+        sleep(.02)
 
 def load_patterns(path):
 
@@ -41,7 +48,7 @@ def load_patterns(path):
     return ret
 
 
-def main():
+def main(transitions = True):
 
     with HippieTrap() as trap:
         trap.begin()
@@ -52,20 +59,18 @@ def main():
             random.shuffle(patterns)
             for pattern_class in patterns:
                 pattern = pattern_class(trap)
+                print pattern.name
                 pattern.start()
                 try:
-                    sleep(5)
+                    sleep(15)
                 except KeyboardInterrupt:
                     pattern.stop()
                     pattern.join()
                     trap.clear(ALL)
                     return
 
-                pattern.stop()
+                pattern.stop(transition=transitions)
                 pattern.join()
-
-                transition_1(trap)
-
 
 
 if __name__ == "__main__":

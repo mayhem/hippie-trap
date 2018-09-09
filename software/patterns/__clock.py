@@ -28,6 +28,7 @@ class Pattern(PatternBase):
 
     geo = HippieTrapGeometry()
     cg = ColorGenerator()
+    name = "clock"
 
     def pattern(self):
 
