@@ -6,7 +6,7 @@ import math
 import random
 import abc
 from threading import Thread
-from hippietrap.hippietrap import HippieTrap, BROADCAST, NUM_NODES
+from hippietrap.hippietrap import HippieTrap, ALL, NUM_NODES
 from hippietrap.color import Color, random_color
 from hippietrap.pattern import PatternBase, run_pattern
 from time import sleep, time
@@ -18,12 +18,12 @@ class Pattern(PatternBase):
     name = "swappies"
 
     def flip(self, col1, col2):
-        self.trap.send_fade(BROADCAST, 250, (col1, col2, col1, col2))
-        self.trap.start_pattern(BROADCAST)
+        self.trap.send_fade(ALL, 250, (col1, col2, col1, col2))
+        self.trap.start_pattern(ALL)
         sleep(self.DELAY)
 
-        self.trap.send_fade(BROADCAST, 250, (col2, col1, col2, col1))
-        self.trap.start_pattern(BROADCAST)
+        self.trap.send_fade(ALL, 250, (col2, col1, col2, col1))
+        self.trap.start_pattern(ALL)
         sleep(self.DELAY)
 
         if self.stop_thread:
@@ -65,6 +65,10 @@ class Pattern(PatternBase):
             if self.flip(col1, col2):
                 break
 
+        self.trap.stop_pattern(ALL)
+        if self.transition:
+            sleep(.05)
+            transition_drop_out(self.trap)
 
 if __name__ == "__main__":
     with HippieTrap() as trap:
