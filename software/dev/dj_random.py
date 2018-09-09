@@ -33,8 +33,6 @@ def load_patterns(path):
         if f.endswith(".py") and not f.startswith("__"):
             patterns.append(f[:-3])
 
-    print patterns
-
     ret = []
     for p in patterns:
         mod = importlib.import_module("hippietrap.patterns.%s" % p)
@@ -46,24 +44,28 @@ def load_patterns(path):
 def main():
 
     with HippieTrap() as trap:
-        try:
-            trap.begin()
+        trap.begin()
 
-            patterns = load_patterns("../patterns")
+        patterns = load_patterns("../patterns")
 
-            while True:
-                random.shuffle(patterns)
-                for pattern_class in patterns:
-                    pattern = pattern_class(trap)
-                    pattern.start()
-                    sleep(15)
+        while True:
+            random.shuffle(patterns)
+            for pattern_class in patterns:
+                pattern = pattern_class(trap)
+                pattern.start()
+                try:
+                    sleep(5)
+                except KeyboardInterrupt:
                     pattern.stop()
                     pattern.join()
+                    trap.clear(ALL)
+                    return
 
-                    transition_1(trap)
+                pattern.stop()
+                pattern.join()
 
-        except KeyboardInterrupt:
-            trap.clear(ALL)
+                transition_1(trap)
+
 
 
 if __name__ == "__main__":
