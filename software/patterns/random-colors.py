@@ -12,6 +12,7 @@ from random import random
 PERIOD = 450
 
 with HippieTrap() as ch:
+    ch.set_brightness(BROADCAST, 100)
     ch.clear(BROADCAST)
     ch.send_entropy()
 

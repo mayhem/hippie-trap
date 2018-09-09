@@ -15,6 +15,7 @@ PERIOD = 1500
 angle = .08
 
 with HippieTrap() as ch:
+    ch.set_brightness(BROADCAST, 100)
     try:
         color_offset = 0.0
         while True:

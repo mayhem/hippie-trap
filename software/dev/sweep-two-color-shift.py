@@ -32,6 +32,7 @@ def pattern(ch):
 
 if __name__ == "__main__":
     with HippieTrap() as ch:
+        ch.set_brightness(BROADCAST, 100)
         try:
             pattern(ch)
         except KeyboardInterrupt:

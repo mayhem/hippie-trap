@@ -11,6 +11,7 @@ from time import sleep, time
 STEPS = 500
 
 with HippieTrap() as ch:
+    ch.set_brightness(BROADCAST, 100)
     try:
         while True:
             for i in range(STEPS):

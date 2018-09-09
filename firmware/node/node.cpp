@@ -52,7 +52,7 @@ const uint8_t ee_calibration_offset         = 17;
 uint8_t    g_error = ERR_OK;
 
 // time keeping
-uint8_t    g_delay = 10;
+uint8_t    g_delay = 20;
 uint32_t   g_speed = SCALE_FACTOR;
 uint32_t   g_ticks_per_sec = (int32_t)1000000 / US_PER_TICK;
 uint32_t   g_ticks_per_frame; // setup later
@@ -130,12 +130,9 @@ void set_pixel_color(uint8_t index, color_t *col)
     else
     {
         // Adjust brightness
-//        temp.r = ((int16_t)col->r * (int16_t)g_brightness) / 100;
-//        temp.g = ((int16_t)col->g * (int16_t)g_brightness) / 100;
-//        temp.b = ((int16_t)col->b * (int16_t)g_brightness) / 100;
-        temp.r = col->r;
-        temp.g = col->g;
-        temp.b = col->b;
+        temp.r = ((int32_t)col->r * (int32_t)g_brightness) / 100;
+        temp.g = ((int32_t)col->g * (int32_t)g_brightness) / 100;
+        temp.b = ((int32_t)col->b * (int32_t)g_brightness) / 100;
     } 
 
     g_led_buffer[(index * 3)] = temp.g;

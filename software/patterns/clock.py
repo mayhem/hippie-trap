@@ -27,7 +27,7 @@ geo = HippieTrapGeometry()
 quit = False
 
 with HippieTrap() as ch:
-
+    ch.set_brightness(BROADCAST, 100)
     ch.clear(BROADCAST)
     try:
         fb = FrameBuffer(ch)
