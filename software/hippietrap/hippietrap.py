@@ -43,7 +43,10 @@ PACKET_ANGLE        = 16
 PACKET_BOOTLOADER   = 17
 PACKET_RESET        = 18
 PACKET_RANDOM_COLOR = 19
+
+# Broadcast IDs
 BROADCAST = 0
+ALL = BROADCAST           # is shorter!
 
 # Can't find a good constant for ALT0 in GPIO
 ALT0 = 4

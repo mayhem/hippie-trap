@@ -5,29 +5,31 @@ import sys
 import math
 from colorsys import hsv_to_rgb
 from random import random
-from hippietrap.hippietrap import HippieTrap, BROADCAST, NUM_NODES, NUM_RINGS
+from hippietrap.hippietrap import HippieTrap, ALL, NUM_NODES, NUM_RINGS
 from hippietrap.color import Color, ColorGenerator
 from hippietrap.geometry import HippieTrapGeometry
+from hippietrap.pattern import PatternBase, run_pattern
 from time import sleep, time
 
-STEPS = 500
 
-geo = HippieTrapGeometry()
-cg = ColorGenerator()
+class SweepOneColor(PatternBase):
 
-with HippieTrap() as ch:
-    ch.begin()
-    try:
+    geo = HippieTrapGeometry()
+    cg = ColorGenerator()
+
+    def pattern(self):
         while True:
             for i, ring in enumerate(range(NUM_RINGS)):
-                color = cg.random_color()
-                for bottle, angle in geo.enumerate_ring(ring, i % 2):
+                color = self.cg.random_color()
+                for bottle, angle in self.geo.enumerate_ring(ring, i % 2):
                     ch.set_color(bottle, color)
                     sleep(.04)
+                    if self.stop_thread:
+                        return
 
-    except KeyboardInterrupt:
-        ch.clear_cruft()
-        ch.clear_cruft()
-        for bottle, angle in geo.enumerate_all_bottles():
-            ch.set_color(bottle, Color(0,0,0))
-            sleep(.02)
+
+if __name__ == "__main__":
+    with HippieTrap() as ch:
+        ch.begin()
+        run_pattern(ch, SweepOneColor)
+        ch.clear(ALL)

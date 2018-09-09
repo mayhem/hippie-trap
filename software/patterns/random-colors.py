@@ -4,24 +4,30 @@ import os
 import sys
 import math
 from colorsys import hsv_to_rgb
-from hippietrap.hippietrap import HippieTrap, BROADCAST, NUM_NODES
-from hippietrap.color import Color
+from hippietrap.hippietrap import HippieTrap, ALL, NUM_NODES
+from hippietrap.pattern import PatternBase, run_pattern
 from time import sleep, time
 from random import random
 
-PERIOD = 450
 
-with HippieTrap() as ch:
-    ch.begin()
-    ch.send_entropy()
+class RandomColors(PatternBase):
 
-    try:
+    PERIOD = 450
+
+    def pattern(self):
+        trap.send_entropy()
         while True:
-            ch.send_fade(BROADCAST, PERIOD, ())
-            ch.start_pattern(BROADCAST)
-            sleep(PERIOD / 1000.0)
-            ch.stop_pattern(BROADCAST)
+            trap.send_fade(ALL, self.PERIOD, ())
+            trap.start_pattern(ALL)
+            sleep(self.PERIOD / 1000.0)
+            trap.stop_pattern(ALL)
 
-    except KeyboardInterrupt:
-        ch.stop_pattern(BROADCAST)
-        ch.clear(BROADCAST)
+            if self.stop_thread:
+                return 
+
+
+if __name__ == "__main__":
+    with HippieTrap() as trap:
+        trap.begin()
+        run_pattern(trap, RandomColors)
+        trap.clear(ALL)

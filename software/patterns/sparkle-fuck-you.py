@@ -4,28 +4,30 @@ import os
 import sys
 import math
 from random import random, randint
-from colorsys import hsv_to_rgb
-from hippietrap.hippietrap import HippieTrap, BROADCAST, NUM_NODES
-from hippietrap.color import Color
+from hippietrap.hippietrap import HippieTrap, ALL, NUM_NODES
+from hippietrap.pattern import PatternBase, run_pattern
+from hippietrap.color import hue_to_color
 from time import sleep, time
 
-STEPS = 500
+class Sparkle(PatternBase):
 
-with HippieTrap() as ch:
-    ch.begin()
-    try:
-        ch.start_pattern(BROADCAST)
+    def pattern(self):
+
+        trap.start_pattern(ALL)
         while True:
             for i in range(15):
                 bottle = randint(1, NUM_NODES)
                 led = randint(1, 4)
-                hue = random()
-                rgb = hsv_to_rgb(hue, 1.0, 1.0)
-                ch.set_color(bottle, Color(int(255 * rgb[0]), int(255 * rgb[1]), int(255 * rgb[2])))
+                trap.set_color(bottle, hue_to_color(random()))
 
-            ch.send_decay(BROADCAST, 4)
+            trap.send_decay(ALL, 4)
             sleep(.3)
 
-    except KeyboardInterrupt:
-        ch.stop_pattern(BROADCAST)
-        ch.clear(BROADCAST)
+            if self.stop_thread:
+                return
+
+if __name__ == "__main__":
+    with HippieTrap() as trap:
+        trap.begin()
+        run_pattern(trap, Sparkle)
+        trap.clear(ALL)

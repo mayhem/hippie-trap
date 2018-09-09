@@ -4,66 +4,62 @@ import os
 import sys
 import math
 from colorsys import hsv_to_rgb
-from hippietrap.hippietrap import HippieTrap, BROADCAST, NUM_NODES
-from hippietrap.color import Color
+from hippietrap.hippietrap import HippieTrap, NUM_NODES, ALL
+from hippietrap.color import hue_to_color
+from hippietrap.pattern import PatternBase, run_pattern
 from time import sleep, time
 from random import random
 
-PERIOD = 1500
+class FireIceCircles(PatternBase):
 
+    PERIOD = 1500
+    angle = .08
 
-angle = .08
+    def pattern(self):
 
-with HippieTrap() as ch:
-    ch.begin()
-    try:
         color_offset = 0.0
         while True:
             for bottle in range(1, 14):
                 array = []
 
+                # refactor this copypasta!
                 hue = (random() / 5) + color_offset
-                rgb = hsv_to_rgb(min(1.0, math.fmod(hue, 1.0)), 1, 1)
-                array.append(Color(int(255 * rgb[0]), int(255 * rgb[1]), int(255 * rgb[2])))
+                array.append(hue_to_color(min(1.0, math.fmod(hue, 1.0))))
+                array.append(hue_to_color(min(1.0, math.fmod(hue + self.angle, 1.0))))
+                array.append(hue_to_color(min(1.0, math.fmod(hue + (self.angle * 2), 1.0))))
+                array.append(hue_to_color(min(1.0, math.fmod(hue + (self.angle * 3), 1.0))))
 
-                rgb = hsv_to_rgb(min(1.0, math.fmod(hue + angle, 1.0)), 1, 1)
-                array.append(Color(int(255 * rgb[0]), int(255 * rgb[1]), int(255 * rgb[2])))
-
-                rgb = hsv_to_rgb(min(1.0, math.fmod(hue + (angle * 2), 1.0)), 1, 1)
-                array.append(Color(int(255 * rgb[0]), int(255 * rgb[1]), int(255 * rgb[2])))
-
-                rgb = hsv_to_rgb(min(1.0, math.fmod(hue + (angle * 3), 1.0)), 1, 1)
-                array.append(Color(int(255 * rgb[0]), int(255 * rgb[1]), int(255 * rgb[2])))
-
-                ch.stop_pattern(bottle)
-                ch.send_fade(bottle, PERIOD, array)
+                self.trap.stop_pattern(bottle)
+                self.trap.send_fade(bottle, self.PERIOD, array)
                 sleep(.035)
-                ch.start_pattern(bottle)
+                self.trap.start_pattern(bottle)
+
+                if self.stop_thread:
+                    return
 
             for bottle in range(14, 31):
                 array = []
 
                 hue = (random() / 5) + color_offset + .5
-                rgb = hsv_to_rgb(min(1.0, math.fmod(hue, 1.0)), 1, 1)
-                array.append(Color(int(255 * rgb[0]), int(255 * rgb[1]), int(255 * rgb[2])))
+                array.append(hue_to_color(min(1.0, math.fmod(hue, 1.0))))
+                array.append(hue_to_color(min(1.0, math.fmod(hue + self.angle, 1.0))))
+                array.append(hue_to_color(min(1.0, math.fmod(hue + (self.angle * 2), 1.0))))
+                array.append(hue_to_color(min(1.0, math.fmod(hue + (self.angle * 3), 1.0))))
 
-                rgb = hsv_to_rgb(min(1.0, math.fmod(hue + angle, 1.0)), 1, 1)
-                array.append(Color(int(255 * rgb[0]), int(255 * rgb[1]), int(255 * rgb[2])))
-
-                rgb = hsv_to_rgb(min(1.0, math.fmod(hue + (angle * 2), 1.0)), 1, 1)
-                array.append(Color(int(255 * rgb[0]), int(255 * rgb[1]), int(255 * rgb[2])))
-
-                rgb = hsv_to_rgb(min(1.0, math.fmod(hue + (angle * 3), 1.0)), 1, 1)
-                array.append(Color(int(255 * rgb[0]), int(255 * rgb[1]), int(255 * rgb[2])))
-
-                ch.stop_pattern(bottle)
-                ch.send_fade(bottle, PERIOD, array)
+                self.trap.stop_pattern(bottle)
+                self.trap.send_fade(bottle, self.PERIOD, array)
                 sleep(.035)
-                ch.start_pattern(bottle)
+                self.trap.start_pattern(bottle)
+            
+                if self.stop_thread:
+                    return
 
             color_offset += .01
 
-    except KeyboardInterrupt:
-        ch.clear_cruft()
-        ch.stop_pattern(BROADCAST)
-        ch.clear(BROADCAST)
+
+
+if __name__ == "__main__":
+    with HippieTrap() as trap:
+        trap.begin()
+        run_pattern(trap, FireIceCircles)
+        trap.clear(ALL)

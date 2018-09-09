@@ -9,6 +9,7 @@ from random import random
 from hippietrap.hippietrap import HippieTrap, BROADCAST, NUM_NODES, NUM_RINGS
 from hippietrap.color import Color, ColorGenerator
 from hippietrap.geometry import HippieTrapGeometry
+from hippietrap.pattern import PatternBase, run_pattern
 from hippietrap.framebuffer import FrameBuffer
 from time import sleep, time
 
@@ -23,13 +24,14 @@ def dim_color_with_arc_distance(angle0, angle1, color):
     dim = max(0.0, 1.0 - (delta / FADE_DIVISOR))
     return Color(color.red * dim, color.green * dim, color.blue * dim)
 
-geo = HippieTrapGeometry()
-quit = False
+class Clock(PatternBase):
 
-with HippieTrap() as ch:
-    ch.begin()
-    try:
-        fb = FrameBuffer(ch)
+    geo = HippieTrapGeometry()
+    cg = ColorGenerator()
+
+    def pattern(self):
+
+        fb = FrameBuffer(self.trap)
         while True:
             dt = datetime.datetime.now()
 
@@ -37,30 +39,30 @@ with HippieTrap() as ch:
             t = float(dt.second) + (float(dt.microsecond) / 1000000)
             angle = (t / 60.0) * 180
 
-            for index, bottle_angle in geo.get_near_bottles_for_ring(1, angle + 180, ANGLE_DELTA):
+            for index, bottle_angle in self.geo.get_near_bottles_for_ring(1, angle + 180, ANGLE_DELTA):
                 fb.set_color(index, dim_color_with_arc_distance(angle + 180, bottle_angle, SECONDS_COLOR))
 
-            for index, bottle_angle in geo.get_near_bottles_for_ring(1, angle, ANGLE_DELTA):
+            for index, bottle_angle in self.geo.get_near_bottles_for_ring(1, angle, ANGLE_DELTA):
                 fb.set_color(index, dim_color_with_arc_distance(angle, bottle_angle, SECONDS_COLOR))
 
-            for index, bottle_angle in geo.get_near_bottles_for_ring(1, angle - 180, ANGLE_DELTA):
+            for index, bottle_angle in self.geo.get_near_bottles_for_ring(1, angle - 180, ANGLE_DELTA):
                 fb.set_color(index, dim_color_with_arc_distance(angle - 180, bottle_angle, SECONDS_COLOR))
 
 
             # calculate minutes
             angle = (float(dt.minute) / 60.0) * 180
 
-            for index, bottle_angle in geo.get_near_bottles_for_ring(1, angle + 180, ANGLE_DELTA):
+            for index, bottle_angle in self.geo.get_near_bottles_for_ring(1, angle + 180, ANGLE_DELTA):
                 colors = fb.get_color(index)
                 for i in range(4):
                     colors[i] += dim_color_with_arc_distance(angle + 180, bottle_angle, MINUTES_COLOR)
                 fb.set_color(index, colors)
-            for index, bottle_angle in geo.get_near_bottles_for_ring(1, angle, ANGLE_DELTA):
+            for index, bottle_angle in self.geo.get_near_bottles_for_ring(1, angle, ANGLE_DELTA):
                 colors = fb.get_color(index)
                 for i in range(4):
                     colors[i] += dim_color_with_arc_distance(angle, bottle_angle, MINUTES_COLOR)
                 fb.set_color(index, colors)
-            for index, bottle_angle in geo.get_near_bottles_for_ring(1, angle - 180, ANGLE_DELTA):
+            for index, bottle_angle in self.geo.get_near_bottles_for_ring(1, angle - 180, ANGLE_DELTA):
                 colors = fb.get_color(index)
                 for i in range(4):
                     colors[i] += dim_color_with_arc_distance(angle - 180, bottle_angle, MINUTES_COLOR)
@@ -70,13 +72,13 @@ with HippieTrap() as ch:
             # calculate hours
             angle = (float(dt.hour) / 24.0) * 180
 
-            bottles = geo.get_near_bottles_for_ring(0, angle + 180, ANGLE_DELTA)
+            bottles = self.geo.get_near_bottles_for_ring(0, angle + 180, ANGLE_DELTA)
             for index, bottle_angle in bottles:
                 fb.set_color(index, dim_color_with_arc_distance(angle + 180, bottle_angle, HOURS_COLOR))
-            bottles = geo.get_near_bottles_for_ring(0, angle, ANGLE_DELTA)
+            bottles = self.geo.get_near_bottles_for_ring(0, angle, ANGLE_DELTA)
             for index, bottle_angle in bottles:
                 fb.set_color(index, dim_color_with_arc_distance(angle, bottle_angle, HOURS_COLOR))
-            bottles = geo.get_near_bottles_for_ring(0, angle - 180, ANGLE_DELTA)
+            bottles = self.geo.get_near_bottles_for_ring(0, angle - 180, ANGLE_DELTA)
             for index, bottle_angle in bottles:
                 fb.set_color(index, dim_color_with_arc_distance(angle - 180, bottle_angle, HOURS_COLOR))
 
@@ -84,9 +86,16 @@ with HippieTrap() as ch:
             fb.clear()
             sleep(.01)
 
-    except KeyboardInterrupt:
-        ch.clear_cruft()
-        ch.clear_cruft()
-        for bottle, angle in geo.enumerate_all_bottles():
-            ch.set_color(bottle, Color(0,0,0))
+            if self.stop_thread:
+                return
+
+
+
+if __name__ == "__main__":
+    with HippieTrap() as trap:
+        trap.begin()
+        run_pattern(trap, Clock, clear=True)
+
+        for bottle, angle in Clock.geo.enumerate_all_bottles():
+            trap.set_color(bottle, Color(0,0,0))
             sleep(.02)
