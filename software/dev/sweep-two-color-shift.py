@@ -14,7 +14,7 @@ geo = HippieTrapGeometry()
 cg = ColorGenerator()
 
 def pattern(ch):
-    ch.send_decay(BROADCAST, 8)
+    ch.send_decay(BROADCAST, 10)
     ch.start_pattern(BROADCAST)
 
     index = 0
