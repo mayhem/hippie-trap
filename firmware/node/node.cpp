@@ -130,12 +130,9 @@ void set_pixel_color(uint8_t index, color_t *col)
     else
     {
         // Adjust brightness
-//        temp.r = (int16_t)col->r * g_brightness / 100;
-//        temp.g = (int16_t)col->g * g_brightness / 100;
-//        temp.b = (int16_t)col->b * g_brightness / 100;
-        temp.r = col->r;
-        temp.g = col->g;
-        temp.b = col->b;
+        temp.r = ((int16_t)col->r * (int16_t)g_brightness) / 100;
+        temp.g = ((int16_t)col->g * (int16_t)g_brightness) / 100;
+        temp.b = ((int16_t)col->b * (int16_t)g_brightness) / 100;
     } 
 
     g_led_buffer[(index * 3)] = temp.g;
@@ -621,7 +618,7 @@ int main(void)
 
     dprintf("hippie trap node!\n\n");
 
-    set_brightness(1000);
+    set_brightness(100);
     set_color(NULL);
 
     timer_cal = eeprom_read_dword((uint32_t *)ee_calibration_offset);
@@ -659,12 +656,17 @@ int main(void)
     if (!eeprom_read_byte((uint8_t *)ee_init_ok_offset))
         eeprom_write_byte((uint8_t *)ee_init_ok_offset, 1);
 
-    for(int32_t t = 0; i < 65535; i += 128)
-    {
-        int32_t y = (sin16_avr(i) + 32767) / 256;
-        set_color_rgb(y, 0, 0);
-        _delay_ms(25);
-    }
+//    dprintf("gtpf: %ld\n", g_ticks_per_frame);
+//    dprintf("gtps: %ld\n", g_ticks_per_sec);
+//    dprintf("bright: %d\n", g_brightness);
+
+//    for(int16_t i = 0;; i += 1024)
+//    {
+//        int32_t y = sin16_avr(i) / 257 + 127;
+//        dprintf("%d - %ld\n", i, y);
+//        set_color_rgb(y % 255, 0, 0);
+//        _delay_ms(25);
+//    }
 
     for(;;)
         loop();

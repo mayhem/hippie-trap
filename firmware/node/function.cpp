@@ -106,20 +106,21 @@ void p_rainbow(int32_t t, uint8_t *data, uint8_t len)
     }
 }
 
+#define mx(a,b) ((a) > (b) ? (a) : (b))
+
 void p_decay(int32_t t, uint8_t *data, uint8_t len)
 {
-    int8_t divisor = *data, i;
+    int8_t decr = *data, i;
     color_t col;
 
-    if (t % divisor == 0)
-        for(i = 0; i < NUM_LEDS; i++)
-        {
-            get_pixel_color(i, &col);
-            col.r >>= 1;
-            col.g >>= 1;
-            col.b >>= 1;
-            set_pixel_color(i, &col);
-        }
+    for(i = 0; i < NUM_LEDS; i++)
+    {
+        get_pixel_color(i, &col);
+        col.r = mx(0, col.r - decr);
+        col.g = mx(0, col.g - decr);
+        col.b = mx(0, col.b - decr);
+        set_pixel_color(i, &col);
+    }
 }
 
 /// Fast 16-bit approximation of sin(x). This approximation never varies more than
