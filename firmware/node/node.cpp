@@ -471,7 +471,6 @@ void handle_packet(uint16_t len, uint8_t *packet)
             break;
         }
         default:
-//            dprintf("invalid packet.\n");
             return;
     }
 }
@@ -569,15 +568,9 @@ void loop()
                     {            
                         pcrc = (uint16_t *)(g_packet + len - 2);
                         if (crc == *pcrc)
-                        {
-                            set_color_rgb(128, 0, 0);
                             handle_packet(len - 2, g_packet);
-                        }
                         else
-                        {  
-//                            dprintf("crc fail\n");
                             error_animation();
-                        }
                     }
 
                     len = 0;
@@ -614,11 +607,8 @@ int main(void)
     panic_count = startup_animation();
     if (panic_count > MAX_BL_FORCE_COUNT)
     {
-//        dprintf("force to bl!\n\n");
         enter_bootloader();
     }
-
-//    dprintf("hippie trap node!\n\n");
 
     set_brightness(100);
     set_color(NULL);
