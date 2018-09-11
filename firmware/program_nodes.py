@@ -14,7 +14,7 @@ from time import sleep
 
 NODE_ID_FILE = "/tmp/node.raw"
 BOOT_CALL = ["make", "-C", "bootloader"]
-FUSES_CALL = ["make", "-C", "fuses"]
+FUSES_CALL = ["make", "-C", "bootloader", "fuses"]
 ID_CALL = ["sudo", "avrdude", "-p", "m328p", "-P", "usb", "-c", "avrispmkII", "-U", "eeprom:w:" + NODE_ID_FILE + ":r"]
 
 def write_node_id(file_name, id):

@@ -27,11 +27,11 @@ class Pattern(PatternBase):
         hue_offset = 0.0
         stop = False
 
-        color_rings = [ random_color(), random_color(), random_color() ]
+        color_rings = [ random_color(), random_color(), random_color() , random_color() ]
         while not stop:
             for bottle, angle in self.geo.enumerate_all_bottles(index % 2 == 0):
                 self.trap.set_color(bottle, color_rings[self.geo.get_ring_from_bottle(bottle)])
-                sleep(.02)
+                sleep(.01)
                 if self.stop_thread:
                     stop = True
                     break
