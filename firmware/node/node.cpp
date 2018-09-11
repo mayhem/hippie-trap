@@ -471,7 +471,7 @@ void handle_packet(uint16_t len, uint8_t *packet)
             break;
         }
         default:
-            dprintf("invalid packet.\n");
+//            dprintf("invalid packet.\n");
             return;
     }
 }
@@ -575,7 +575,7 @@ void loop()
                         }
                         else
                         {  
-                            dprintf("crc fail\n");
+//                            dprintf("crc fail\n");
                             error_animation();
                         }
                     }
@@ -595,6 +595,7 @@ int16_t sin16_avr( uint16_t theta );
 int main(void)
 { 
     uint32_t timer_cal;
+    uint32_t panic_count;
     color_t col;
     uint8_t i;
 
@@ -610,13 +611,14 @@ int main(void)
     sei();
 
     set_output(DDRD, LED_PIN);
-    if (startup_animation() > MAX_BL_FORCE_COUNT)
+    panic_count = startup_animation();
+    if (panic_count > MAX_BL_FORCE_COUNT)
     {
-        dprintf("force to bl!\n\n");
+//        dprintf("force to bl!\n\n");
         enter_bootloader();
     }
 
-    dprintf("hippie trap node!\n\n");
+//    dprintf("hippie trap node!\n\n");
 
     set_brightness(100);
     set_color(NULL);
@@ -636,6 +638,7 @@ int main(void)
         col.b = 128;
     }
 
+
     g_node_id = eeprom_read_byte((uint8_t *)ee_id_offset);
     if (g_node_id == 0 || g_node_id >= MAX_NODES)
     {
@@ -645,6 +648,13 @@ int main(void)
     }
 
     set_color(&col);
+
+    // If we received panic counts, show purple for one second.
+    if (panic_count)
+    {
+        _delay_ms(1000);
+        set_color_rgb(255, 0, 255);
+    }
 
     g_ticks_per_frame = g_ticks_per_sec * g_delay / 1000;
     g_target = 0;
@@ -656,19 +666,6 @@ int main(void)
     if (!eeprom_read_byte((uint8_t *)ee_init_ok_offset))
         eeprom_write_byte((uint8_t *)ee_init_ok_offset, 1);
 
-    set_color_rgb(128, 128, 128);
-
-//    dprintf("gtpf: %ld\n", g_ticks_per_frame);
-//    dprintf("gtps: %ld\n", g_ticks_per_sec);
-//    dprintf("bright: %d\n", g_brightness);
-
-//    for(int16_t i = 0;; i += 1024)
-//    {
-//        int32_t y = sin16_avr(i) / 257 + 127;
-//        dprintf("%d - %ld\n", i, y);
-//        set_color_rgb(y % 255, 0, 0);
-//        _delay_ms(25);
-//    }
 
     for(;;)
         loop();

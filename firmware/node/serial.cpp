@@ -87,7 +87,7 @@ uint8_t serial_rx(void)
     return ch;
 }
 
-#if 0
+#if 1
 void dprintf(const char *fmt, ...)
 {
 }
