@@ -570,6 +570,7 @@ void loop()
                         pcrc = (uint16_t *)(g_packet + len - 2);
                         if (crc == *pcrc)
                         {
+                            set_color_rgb(128, 0, 0);
                             handle_packet(len - 2, g_packet);
                         }
                         else
@@ -654,6 +655,8 @@ int main(void)
     // Tell the bootloader that init completed ok, if that flag isn't set.
     if (!eeprom_read_byte((uint8_t *)ee_init_ok_offset))
         eeprom_write_byte((uint8_t *)ee_init_ok_offset, 1);
+
+    set_color_rgb(128, 128, 128);
 
 //    dprintf("gtpf: %ld\n", g_ticks_per_frame);
 //    dprintf("gtps: %ld\n", g_ticks_per_sec);

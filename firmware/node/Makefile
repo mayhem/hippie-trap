@@ -12,6 +12,10 @@ program: $(TARGET).hex
 fuses:
 	sudo avrdude -p m328p -P usb -c avrispmkII -B 8 -U lfuse:w:0xe2:m -U hfuse:w:0xd7:m -U efuse:w:0xff:m -U lock:w:0xff:m
 
+clear:
+	sudo avrdude -p m328p -P usb -c avrispmkII -B 8 -U lfuse:w:0xe2:m -U hfuse:w:0xdf:m -U efuse:w:0xff:m -U lock:w:0xff:m
+	program
+
 $(TARGET).o: $(TARGET).cpp defs.h
 	$(CC) $(CFLAGS) -c $(TARGET).cpp 
 

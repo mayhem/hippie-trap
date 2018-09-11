@@ -127,11 +127,13 @@ class HippieTrap(object):
         try:
             for pin in POWER_GPIO_PINS:
                 check_call(["gpio", "-1", "write", "%d" % pin, "1"])
-                sleep(.1)
+                sleep(.25)
 
         except CalledProcessError as err:
             print "Is wiringpi installed? error: ", err
             sys.exit(-1)
+
+        sleep(2)
 
     @staticmethod    
     def power_off():
