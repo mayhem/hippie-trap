@@ -14,7 +14,7 @@ from hippietrap.transition import transition_drop_out
 
 class Pattern(PatternBase):
 
-    DELAY = .50
+    DELAY = .550
     name = "swappies"
 
     def flip(self, col1, col2):

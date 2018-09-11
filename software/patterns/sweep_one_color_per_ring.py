@@ -12,6 +12,9 @@ from hippietrap.pattern import PatternBase, run_pattern
 from hippietrap.transition import transition_sweep_out
 from time import sleep, time
 
+# TODO: ALternating rings come towards each other. 
+# TODO: Never exit until full cycle is complete
+
 
 class Pattern(PatternBase):
 
@@ -29,9 +32,9 @@ class Pattern(PatternBase):
                 for bottle, angle in self.geo.enumerate_ring(ring, i % 2):
                     self.trap.set_color(bottle, color)
                     sleep(.04)
-                    if self.stop_thread:
-                        stop = True
-                        break
+                if self.stop_thread:
+                    stop = True
+                    break
 
         self.trap.stop_pattern(ALL)
         if self.transition:

@@ -52,6 +52,7 @@ def main(transitions = True):
 
     with HippieTrap() as trap:
         trap.begin()
+        trap.set_brightness(ALL, 30)
 
         patterns = load_patterns("../patterns")
 

@@ -21,7 +21,7 @@ class Pattern(PatternBase):
         while True:
             self.trap.send_fade(ALL, self.PERIOD, ())
             self.trap.start_pattern(ALL)
-            sleep(self.PERIOD / 1000.0)
+            sleep(self.PERIOD / 2000.0)
             self.trap.stop_pattern(ALL)
 
             if self.stop_thread:

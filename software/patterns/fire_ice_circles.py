@@ -27,7 +27,7 @@ class Pattern(PatternBase):
             if i == len(BOTTLES_PER_RING):
                 break
 
-            for bottle in range(bottle_base, bottle_base + BOTTLES_PER_RING[i] - 1):
+            for bottle in range(bottle_base, bottle_base + BOTTLES_PER_RING[i]):
                 array = []
 
                 hue = (random() / 5) + color_offset + (i * .5)
