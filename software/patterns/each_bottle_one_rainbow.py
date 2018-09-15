@@ -19,7 +19,6 @@ class Pattern(PatternBase):
 
     def pattern(self):
 
-        self.trap.set_brightness(ALL, 20)
         self.trap.send_entropy()
         self.trap.send_rainbow(ALL, 4)
         self.trap.start_pattern(ALL)
