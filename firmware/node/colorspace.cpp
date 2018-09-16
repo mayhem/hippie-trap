@@ -1,8 +1,6 @@
 #include <stdlib.h>
 #include "colorspace.h"
 
-#define min(a,b) ((a) < (b) ? (a) : (b))
-#define max(a,b) ((a) > (b) ? (a) : (b))
 
 #if 0
 void print_col(color_t *c)

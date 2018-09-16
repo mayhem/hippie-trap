@@ -35,5 +35,7 @@ const uint8_t ERR_PARSE_FAILURE    = 5;
 const uint8_t ERR_CRC_FAIL         = 6;
 
 void  dprintf(const char *fmt, ...);
+#define min(a,b) ((a) < (b) ? (a) : (b))
+#define max(a,b) ((a) > (b) ? (a) : (b))
 
 #endif

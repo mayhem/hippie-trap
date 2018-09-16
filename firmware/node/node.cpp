@@ -58,7 +58,9 @@ uint32_t   g_ticks_per_sec = (int32_t)1000000 / US_PER_TICK;
 uint32_t   g_ticks_per_frame; // setup later
 uint32_t   g_target = 0;
 
-// led buffer
+// led/scaled color buffer
+uint8_t    COLOR_SHIFT = 8;
+uint32_t   g_color_buffer[3 * NUM_LEDS];
 uint8_t    g_led_buffer[3 * NUM_LEDS];
 uint8_t    g_brightness = 100;
 
@@ -117,62 +119,98 @@ uint32_t ticks_to_ms(uint32_t ticks)
     return ticks * SCALE_FACTOR / g_ticks_per_sec;
 }
 
-void set_pixel_color(uint8_t index, color_t *col)
+void update_leds(void)
 {
-    color_t temp;
-
-    if (!col)
-    {
-        temp.r = 0;
-        temp.g = 0;
-        temp.b = 0;
-    }
-    else
-    {
-        // Adjust brightness
-        temp.r = ((int32_t)col->r * (int32_t)g_brightness) / 100;
-        temp.g = ((int32_t)col->g * (int32_t)g_brightness) / 100;
-        temp.b = ((int32_t)col->b * (int32_t)g_brightness) / 100;
-    } 
-
-    g_led_buffer[(index * 3)] = temp.g;
-    g_led_buffer[(index * 3) + 1] = temp.r;
-    g_led_buffer[(index * 3) + 2] = temp.b;
+    ws2812_sendarray(g_led_buffer, 3 * NUM_LEDS);
 }
 
-void set_pixel_color_rgb(uint8_t index, uint8_t r, uint8_t g, uint8_t b)
+void clear_led(uint8_t index)
 {
-    color_t temp;
-
-    temp.r = r;
-    temp.g = g;
-    temp.b = b;
-    set_pixel_color(index, &temp);
+    g_color_buffer[index * 3] = 0;
+    g_led_buffer[index * 3] = 0;
+    g_color_buffer[(index * 3) + 1] = 0;
+    g_led_buffer[(index * 3) + 1] = 0;
+    g_color_buffer[(index * 3) + 2] = 0;
+    g_led_buffer[(index * 3) + 2] = 0;
 }
 
-void get_pixel_color(uint8_t index, color_t *col)
+void get_led(uint8_t index, color_t *col)
 {
     col->r = g_led_buffer[(index * 3) + 1];
     col->g = g_led_buffer[(index * 3)];
     col->b = g_led_buffer[(index * 3) + 2];
 }
 
-void update_leds(void)
+void set_led(uint8_t index, color_t *col)
 {
-    ws2812_sendarray(g_led_buffer, 3 * NUM_LEDS);
+    uint32_t *c_ptr;
+    uint8_t *l_ptr;
+
+    c_ptr = (uint32_t *)&g_color_buffer[index * 3];
+    l_ptr = (uint8_t *)&g_led_buffer[index * 3];
+
+    *c_ptr = (int32_t)col->g << COLOR_SHIFT;
+    *l_ptr = (uint8_t)(((int32_t)col->g * (uint32_t)g_brightness) / (uint32_t)100);
+    c_ptr++; l_ptr++;
+
+    *c_ptr = (int32_t)col->r << COLOR_SHIFT;
+    *l_ptr = (uint8_t)(((int32_t)col->r * (uint32_t)g_brightness) / (uint32_t)100);
+    c_ptr++; l_ptr++;
+
+    *c_ptr = (int32_t)col->b << COLOR_SHIFT;
+    *l_ptr = (uint8_t)(((int32_t)col->b * (uint32_t)g_brightness) / (uint32_t)100);
 }
 
-void clear_leds(void)
+void set_led_rgb(uint8_t index, uint8_t r, uint8_t g, uint8_t b)
 {
-    memset(g_led_buffer, 0, sizeof(g_led_buffer));
+    color_t temp;
+
+    temp.r = r;
+    temp.g = g;
+    temp.b = b;
+    set_led(index, &temp);
+}
+
+void set_brightness(int32_t brightness)
+{
+    g_brightness = brightness;
+}
+
+// Delta is a % of change. 0 = off, 50% half brightness, 100 no change, 200 twice is bright.
+void adjust_led_brightness(uint8_t index, uint8_t delta)
+{
+    uint32_t *c_ptr;
+    uint8_t *l_ptr, j;
+
+    c_ptr = (uint32_t *)&g_color_buffer[index * 3];
+    l_ptr = (uint8_t *)&g_led_buffer[index * 3];
+    for(j = 0; j < NUM_LEDS; j++)
+    {
+        *c_ptr = (uint32_t)(((int32_t)(*c_ptr) * (uint32_t)delta) / (uint32_t)100);
+        *l_ptr = max(255, *c_ptr >> COLOR_SHIFT);
+//        *l_ptr = *l_ptr >> 1;
+        c_ptr++; 
+        l_ptr++;
+    }
+    update_leds();
 }
 
 void set_color(color_t *col)
 {
     uint8_t j;
-   
+
     for(j = 0; j < NUM_LEDS; j++)
-        set_pixel_color(j, col);
+        set_led(j, col);
+
+    update_leds();
+}
+
+void clear_color(void)
+{
+    uint8_t j;
+
+    for(j = 0; j < NUM_LEDS; j++)
+        clear_led(j);
 
     update_leds();
 }
@@ -187,7 +225,7 @@ void set_color_rgb(uint8_t r, uint8_t g, uint8_t b)
     col.b = b;
    
     for(j = 0; j < NUM_LEDS; j++)
-        set_pixel_color(j, &col);
+        set_led(j, &col);
 
     update_leds();
 }
@@ -204,16 +242,16 @@ uint16_t flash_animation(color_t *col1, color_t *col2)
             if (i % 2 == 0)
             {
                 if (j % 2 == 1)
-                    set_pixel_color(j, col1);
+                    set_led(j, col1);
                 else
-                    set_pixel_color(j, NULL);
+                    clear_led(j);
             }
             else
             {
                 if (j % 2 == 0)
-                    set_pixel_color(j, col2);
+                    set_led(j, col2);
                 else
-                    set_pixel_color(j, NULL);  
+                    clear_led(j);  
             }
         }   
 
@@ -227,7 +265,7 @@ uint16_t flash_animation(color_t *col1, color_t *col2)
             _delay_ms(1);
         }
     }
-    set_color(NULL);
+    clear_color();
 
     return force_bl_count;
 }
@@ -256,11 +294,6 @@ uint16_t error_animation(void)
     col2.g = 128;
     col2.b = 128;
     return flash_animation(&col1, &col2);
-}
-
-void set_brightness(int32_t brightness)
-{
-    g_brightness = brightness;
 }
 
 void update_pattern(void)
@@ -306,7 +339,7 @@ void enter_bootloader(void)
 
     set_color_rgb(255, 0, 0);
     _delay_ms(1000);
-    set_color(NULL);
+    clear_color();
     reset();
 }
 
@@ -358,7 +391,7 @@ void handle_packet(uint16_t len, uint8_t *packet)
                 col.g = data[2];
                 col.b = data[3];
 
-                set_pixel_color(led, &col);
+                set_led(led, &col);
                 break;
             } 
 
@@ -371,7 +404,7 @@ void handle_packet(uint16_t len, uint8_t *packet)
                     col.r = data[0];
                     col.g = data[1];
                     col.b = data[2];
-                    set_pixel_color(j, &col);
+                    set_led(j, &col);
                 }
                 update_leds();
                 break;  
@@ -399,7 +432,7 @@ void handle_packet(uint16_t len, uint8_t *packet)
         case PACKET_CLEAR:
             {
                 stop_pattern();
-                set_color(NULL);
+                clear_color();
             }
             break;
             
@@ -504,7 +537,7 @@ void loop()
              done = (int32_t)g_time;
              sei();
              
-             set_color(NULL);
+             clear_color();
 
              g_ticks_per_sec = (done - g_calibrate_start) / g_calibrate;
              g_ticks_per_frame = g_ticks_per_sec * g_delay / 1000;
@@ -609,9 +642,11 @@ int main(void)
     {
         enter_bootloader();
     }
+    _delay_ms(1000);
+    set_color_rgb(128, 28, 0);
 
     set_brightness(100);
-    set_color(NULL);
+    clear_color();
 
     timer_cal = eeprom_read_dword((uint32_t *)ee_calibration_offset);
     if (timer_cal > 1 && timer_cal != 0xFFFF)
@@ -642,8 +677,8 @@ int main(void)
     // If we received panic counts, show purple for one second.
     if (panic_count)
     {
-        _delay_ms(1000);
         set_color_rgb(255, 0, 255);
+        _delay_ms(1000);
     }
 
     g_ticks_per_frame = g_ticks_per_sec * g_delay / 1000;

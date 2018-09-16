@@ -63,7 +63,7 @@ def main(transitions = True):
                 print pattern.name
                 pattern.start()
                 try:
-                    sleep(15)
+                    sleep(3)
                 except KeyboardInterrupt:
                     pattern.stop()
                     pattern.join()

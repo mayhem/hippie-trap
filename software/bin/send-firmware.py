@@ -9,6 +9,7 @@ import click
 from time import sleep
 
 BAUD_RATE = 38400
+MAX_SIZE = 0x7000
 
 @click.command()
 @click.argument('filename')
@@ -23,8 +24,8 @@ def send_firmware(filename):
             print("Error loading hex file: %s" % err)
             return
 
-        print("filesize: %d (%x) bytes" % (filesize, filesize));
-        if filesize >= 0x7000:
+        print("filesize: %d bytes of max %d bytes" % (filesize, MAX_SIZE));
+        if filesize >= MAX_SIZE:
             print("hex file too large. Can't upload.");
             return
 

@@ -8,8 +8,9 @@ extern uint32_t  g_target;
 extern uint32_t  g_global;
 extern uint32_t  g_ticks_per_frame;
 extern uint32_t  g_random_seed;
-void set_pixel_color(uint8_t index, color_t *col);
-void get_pixel_color(uint8_t index, color_t *col);
+void set_led(uint8_t index, color_t *col);
+void get_led(uint8_t index, color_t *col);
+void adjust_led_brightness(uint8_t index, uint8_t delta);
 
 void p_error(int32_t t, uint8_t *data, uint8_t len)
 {
@@ -19,13 +20,13 @@ void p_error(int32_t t, uint8_t *data, uint8_t len)
     if ((t / 2) % 2 == 0)
     {
         col.r = 128;
-        set_pixel_color(1, &col);
-        set_pixel_color(2, &col);
+        set_led(1, &col);
+        set_led(2, &col);
     }
     else
     {
-        set_pixel_color(1, &col);
-        set_pixel_color(2, &col);
+        set_led(1, &col);
+        set_led(2, &col);
     }
 }
 
@@ -42,7 +43,7 @@ void p_fade_to(int32_t t, uint8_t *data, uint8_t len)
     if (t == 0)
     {
         for(i = 0; i < NUM_LEDS; i++)
-            get_pixel_color(i, &start_cols[i]);
+            get_led(i, &start_cols[i]);
 
         if (len == sizeof(uint16_t))
             hsv_to_rgb(rand() % SCALE_FACTOR, SCALE_FACTOR, SCALE_FACTOR, &r_target);
@@ -89,7 +90,7 @@ void p_fade_to(int32_t t, uint8_t *data, uint8_t len)
         col.g = start_cols[i].g + (delta_g * step) / SCALE_FACTOR;
         col.b = start_cols[i].b + (delta_b * step) / SCALE_FACTOR;
 
-        set_pixel_color(i, &col);
+        set_led(i, &col);
     }
 }
 
@@ -102,25 +103,16 @@ void p_rainbow(int32_t t, uint8_t *data, uint8_t len)
     for(i = 0; i < NUM_LEDS; i++)
     {
         hsv_to_rgb((offset + (250 * i) + (g_random_seed % SCALE_FACTOR)) % SCALE_FACTOR, SCALE_FACTOR, SCALE_FACTOR, &col);
-        set_pixel_color(i, &col);
+        set_led(i, &col);
     }
 }
-
-#define mx(a,b) ((a) > (b) ? (a) : (b))
 
 void p_decay(int32_t t, uint8_t *data, uint8_t len)
 {
     int8_t decr = *data, i;
-    color_t col;
 
     for(i = 0; i < NUM_LEDS; i++)
-    {
-        get_pixel_color(i, &col);
-        col.r = mx(0, col.r - decr);
-        col.g = mx(0, col.g - decr);
-        col.b = mx(0, col.b - decr);
-        set_pixel_color(i, &col);
-    }
+        adjust_led_brightness(i, decr);
 }
 
 /// Fast 16-bit approximation of sin(x). This approximation never varies more than
@@ -214,10 +206,10 @@ void p_sine(int32_t t, uint8_t *data, uint8_t len)
         }
         else
         {
-            get_pixel_color(0, &orig_col[0]);
-            get_pixel_color(1, &orig_col[1]);
-            get_pixel_color(2, &orig_col[2]);
-            get_pixel_color(3, &orig_col[3]);
+            get_led(0, &orig_col[0]);
+            get_led(1, &orig_col[1]);
+            get_led(2, &orig_col[2]);
+            get_led(3, &orig_col[3]);
         }
     }
 
@@ -229,7 +221,7 @@ void p_sine(int32_t t, uint8_t *data, uint8_t len)
         col.g = orig_col[i].g * intensity / SCALE_FACTOR;
         col.b = orig_col[i].b * intensity / SCALE_FACTOR;
 
-        set_pixel_color(i, &col);
+        set_led(i, &col);
     }
 }
 
