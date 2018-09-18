@@ -59,9 +59,9 @@ uint32_t   g_ticks_per_frame; // setup later
 uint32_t   g_target = 0;
 
 // led/scaled color buffer
-uint8_t    COLOR_SHIFT = 8;
-uint32_t   g_color_buffer[3 * NUM_LEDS];
-uint8_t    g_led_buffer[3 * NUM_LEDS];
+uint8_t    COLOR_SHIFT = 7;
+color32_t  g_color_buffer[NUM_LEDS];
+color_t    g_led_buffer[NUM_LEDS];
 uint8_t    g_brightness = 100;
 
 // random seed
@@ -121,44 +121,30 @@ uint32_t ticks_to_ms(uint32_t ticks)
 
 void update_leds(void)
 {
-    ws2812_sendarray(g_led_buffer, 3 * NUM_LEDS);
+    ws2812_sendarray((uint8_t *)g_led_buffer, 3 * NUM_LEDS);
 }
 
 void clear_led(uint8_t index)
 {
-    g_color_buffer[index * 3] = 0;
-    g_led_buffer[index * 3] = 0;
-    g_color_buffer[(index * 3) + 1] = 0;
-    g_led_buffer[(index * 3) + 1] = 0;
-    g_color_buffer[(index * 3) + 2] = 0;
-    g_led_buffer[(index * 3) + 2] = 0;
+    g_color_buffer[index].r = 0;
+    g_color_buffer[index].g = 0;
+    g_color_buffer[index].b = 0;
+    g_led_buffer[index].r = 0;
+    g_led_buffer[index].g = 0;
+    g_led_buffer[index].b = 0;
 }
 
 void get_led(uint8_t index, color_t *col)
 {
-    col->r = g_led_buffer[(index * 3) + 1];
-    col->g = g_led_buffer[(index * 3)];
-    col->b = g_led_buffer[(index * 3) + 2];
+    *col = g_led_buffer[index];
 }
 
 void set_led(uint8_t index, color_t *col)
 {
-    uint32_t *c_ptr;
-    uint8_t *l_ptr;
-
-    c_ptr = (uint32_t *)&g_color_buffer[index * 3];
-    l_ptr = (uint8_t *)&g_led_buffer[index * 3];
-
-    *c_ptr = (int32_t)col->g << COLOR_SHIFT;
-    *l_ptr = (uint8_t)(((int32_t)col->g * (uint32_t)g_brightness) / (uint32_t)100);
-    c_ptr++; l_ptr++;
-
-    *c_ptr = (int32_t)col->r << COLOR_SHIFT;
-    *l_ptr = (uint8_t)(((int32_t)col->r * (uint32_t)g_brightness) / (uint32_t)100);
-    c_ptr++; l_ptr++;
-
-    *c_ptr = (int32_t)col->b << COLOR_SHIFT;
-    *l_ptr = (uint8_t)(((int32_t)col->b * (uint32_t)g_brightness) / (uint32_t)100);
+    g_color_buffer[index].r = col->r << COLOR_SHIFT;
+    g_color_buffer[index].g = col->g << COLOR_SHIFT;
+    g_color_buffer[index].b = col->b << COLOR_SHIFT;
+    g_led_buffer[index] = *col;
 }
 
 void set_led_rgb(uint8_t index, uint8_t r, uint8_t g, uint8_t b)
@@ -177,20 +163,19 @@ void set_brightness(int32_t brightness)
 }
 
 // Delta is a % of change. 0 = off, 50% half brightness, 100 no change, 200 twice is bright.
-void adjust_led_brightness(uint8_t index, uint8_t delta)
+void adjust_led_brightness(uint8_t delta)
 {
-    uint32_t *c_ptr;
-    uint8_t *l_ptr, j;
+    uint8_t  i;
 
-    c_ptr = (uint32_t *)&g_color_buffer[index * 3];
-    l_ptr = (uint8_t *)&g_led_buffer[index * 3];
-    for(j = 0; j < NUM_LEDS; j++)
+    for(i = 0; i < NUM_LEDS; i++)
     {
-        *c_ptr = (uint32_t)(((int32_t)(*c_ptr) * (uint32_t)delta) / (uint32_t)100);
-        *l_ptr = max(255, *c_ptr >> COLOR_SHIFT);
-//        *l_ptr = *l_ptr >> 1;
-        c_ptr++; 
-        l_ptr++;
+        g_color_buffer[i].r = g_color_buffer[i].r * delta / 100;
+        g_color_buffer[i].g = g_color_buffer[i].g * delta / 100;
+        g_color_buffer[i].b = g_color_buffer[i].b * delta / 100;
+
+        g_led_buffer[i].r = (g_color_buffer[i].r >> COLOR_SHIFT) & 0xFF;
+        g_led_buffer[i].g = (g_color_buffer[i].g >> COLOR_SHIFT) & 0xFF;
+        g_led_buffer[i].b = (g_color_buffer[i].b >> COLOR_SHIFT) & 0xFF;
     }
     update_leds();
 }
@@ -635,6 +620,18 @@ int main(void)
 
     serial_init(1);
     sei();
+    dprintf("yo, hippies\n");
+
+#if 0
+    color32_t c;
+
+    c.r = 255;
+    dprintf("%u\n", c.r);
+    c.r <<= COLOR_SHIFT;
+    dprintf("%u\n", c.r);
+    c.r = c.r * 90 / 100;
+    dprintf("%u\n", c.r);
+#endif
 
     set_output(DDRD, LED_PIN);
     panic_count = startup_animation();
@@ -690,7 +687,6 @@ int main(void)
     // Tell the bootloader that init completed ok, if that flag isn't set.
     if (!eeprom_read_byte((uint8_t *)ee_init_ok_offset))
         eeprom_write_byte((uint8_t *)ee_init_ok_offset, 1);
-
 
     for(;;)
         loop();

@@ -20,7 +20,7 @@ class Pattern(PatternBase):
     name = "sweep two colors"
 
     def pattern(self):
-        self.trap.send_decay(ALL, 10)
+        self.trap.send_decay(ALL, 90)
         self.trap.start_pattern(ALL)
 
         index = 0

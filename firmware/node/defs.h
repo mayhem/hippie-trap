@@ -3,7 +3,6 @@
 
 #include <stdint.h>
 
-#define HEAP_SIZE           256
 #define MAX_FUNCTIONS       256
 #define MAX_ARGS            8
 #define NUM_LEDS            4
@@ -15,8 +14,13 @@
 
 typedef struct 
 {
-    uint8_t r,g,b;
+    uint8_t g,r,b;
 } color_t;
+
+typedef struct 
+{
+    uint32_t g,r,b;
+} color32_t;
 
 extern uint8_t g_node_id;
 extern int16_t g_pos[3];

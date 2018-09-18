@@ -10,7 +10,7 @@ extern uint32_t  g_ticks_per_frame;
 extern uint32_t  g_random_seed;
 void set_led(uint8_t index, color_t *col);
 void get_led(uint8_t index, color_t *col);
-void adjust_led_brightness(uint8_t index, uint8_t delta);
+void adjust_led_brightness(uint8_t delta);
 
 void p_error(int32_t t, uint8_t *data, uint8_t len)
 {
@@ -109,10 +109,8 @@ void p_rainbow(int32_t t, uint8_t *data, uint8_t len)
 
 void p_decay(int32_t t, uint8_t *data, uint8_t len)
 {
-    int8_t decr = *data, i;
-
-    for(i = 0; i < NUM_LEDS; i++)
-        adjust_led_brightness(i, decr);
+    int8_t decr = *data;
+    adjust_led_brightness(decr);
 }
 
 /// Fast 16-bit approximation of sin(x). This approximation never varies more than

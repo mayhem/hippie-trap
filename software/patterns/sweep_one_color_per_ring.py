@@ -23,7 +23,7 @@ class Pattern(PatternBase):
     name = "sweep one color"
 
     def pattern(self):
-        self.trap.send_decay(ALL, 10)
+        self.trap.send_decay(ALL, 90)
         self.trap.start_pattern(ALL)
         stop = False
         while not stop:
