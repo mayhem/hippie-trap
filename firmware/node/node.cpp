@@ -144,7 +144,10 @@ void set_led(uint8_t index, color_t *col)
     g_color_buffer[index].r = col->r << COLOR_SHIFT;
     g_color_buffer[index].g = col->g << COLOR_SHIFT;
     g_color_buffer[index].b = col->b << COLOR_SHIFT;
-    g_led_buffer[index] = *col;
+
+    g_led_buffer[index].r = ((g_color_buffer[index].r * g_brightness / 100) >> COLOR_SHIFT) & 0xFF;
+    g_led_buffer[index].g = ((g_color_buffer[index].g * g_brightness / 100) >> COLOR_SHIFT) & 0xFF;
+    g_led_buffer[index].b = ((g_color_buffer[index].b * g_brightness / 100) >> COLOR_SHIFT) & 0xFF;
 }
 
 void set_led_rgb(uint8_t index, uint8_t r, uint8_t g, uint8_t b)
