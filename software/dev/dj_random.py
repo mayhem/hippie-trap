@@ -15,6 +15,12 @@ from time import sleep, time
 
 geo = HippieTrapGeometry()
 
+if len(sys.argv) == 2:
+    brightness = int(sys.argv[1])
+else:
+    brightness = 100
+
+
 def transition_drop_out(trap):
     bottles = [ i for i in range(1, NUM_NODES + 1) ]
     random.shuffle(bottles)
@@ -52,7 +58,7 @@ def main(transitions = True):
 
     with HippieTrap() as trap:
         trap.begin()
-        trap.set_brightness(ALL, 30)
+        trap.set_brightness(ALL, brightness)
 
         patterns = load_patterns("../patterns")
 
