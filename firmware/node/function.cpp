@@ -11,6 +11,8 @@ extern uint32_t  g_random_seed;
 void set_led(uint8_t index, color_t *col);
 void get_led(uint8_t index, color_t *col);
 void adjust_led_brightness(uint8_t delta);
+uint32_t ticks_to_ms(uint32_t ticks);
+uint32_t ms_to_ticks(uint32_t ms);
 
 void p_error(int32_t t, uint8_t *data, uint8_t len)
 {
@@ -51,7 +53,8 @@ void p_fade_to(int32_t t, uint8_t *data, uint8_t len)
         return;
     }
 
-    int32_t duration = *((uint16_t *)data);
+    int32_t duration_ms = *((uint16_t *)data);
+    int32_t duration = ms_to_ticks(duration_ms);
     data += sizeof(uint16_t);
 
     // If we're at the end of the pattern, bail

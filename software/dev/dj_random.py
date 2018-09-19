@@ -52,7 +52,7 @@ def main(transitions = True):
 
     with HippieTrap() as trap:
         trap.begin()
-        trap.set_brightness(ALL, 10)
+        trap.set_brightness(ALL, 30)
 
         patterns = load_patterns("../patterns")
 
@@ -63,7 +63,7 @@ def main(transitions = True):
                 print pattern.name
                 pattern.start()
                 try:
-                    sleep(3)
+                    sleep(10)
                 except KeyboardInterrupt:
                     pattern.stop()
                     pattern.join()

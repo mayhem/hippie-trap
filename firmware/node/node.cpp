@@ -119,6 +119,11 @@ uint32_t ticks_to_ms(uint32_t ticks)
     return ticks * SCALE_FACTOR / g_ticks_per_sec;
 }
 
+uint32_t ms_to_ticks(uint32_t ms)
+{
+    return g_ticks_per_sec * ms / SCALE_FACTOR;
+}
+
 void update_leds(void)
 {
     ws2812_sendarray((uint8_t *)g_led_buffer, 3 * NUM_LEDS);
@@ -176,9 +181,9 @@ void adjust_led_brightness(uint8_t delta)
         g_color_buffer[i].g = g_color_buffer[i].g * delta / 100;
         g_color_buffer[i].b = g_color_buffer[i].b * delta / 100;
 
-        g_led_buffer[i].r = (g_color_buffer[i].r >> COLOR_SHIFT) & 0xFF;
-        g_led_buffer[i].g = (g_color_buffer[i].g >> COLOR_SHIFT) & 0xFF;
-        g_led_buffer[i].b = (g_color_buffer[i].b >> COLOR_SHIFT) & 0xFF;
+        g_led_buffer[i].r = ((g_color_buffer[i].r * g_brightness / 100) >> COLOR_SHIFT) & 0xFF;
+        g_led_buffer[i].g = ((g_color_buffer[i].g * g_brightness / 100) >> COLOR_SHIFT) & 0xFF;
+        g_led_buffer[i].b = ((g_color_buffer[i].b * g_brightness / 100) >> COLOR_SHIFT) & 0xFF;
     }
     update_leds();
 }
@@ -642,8 +647,7 @@ int main(void)
     {
         enter_bootloader();
     }
-    _delay_ms(1000);
-    set_color_rgb(128, 28, 0);
+    _delay_ms(200);
 
     set_brightness(100);
     clear_color();
