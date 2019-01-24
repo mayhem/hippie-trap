@@ -13,7 +13,7 @@ from hippietrap.transition import transition_drop_out
 
 class Pattern(PatternBase):
 
-    PERIOD = 450 
+    PERIOD = 850 
     name = "random colors"
 
     def pattern(self):
