@@ -90,13 +90,13 @@ class HippieTrapMQTT(HippieTrap):
                 return
 
             return
-#
-#        if msg.topic == BRIGHTNESS_TOPIC:
-#            try:
-#                self.set_brightness(int(msg.payload))
-#            except ValueError:
-#                pass
-#            return
+
+        if msg.topic == BRIGHTNESS_TOPIC:
+            try:
+                self.set_brightness(ALL, int(msg.payload))
+            except ValueError:
+                pass
+            return
   
         if msg.topic == EFFECT_TOPIC:
             try:
@@ -129,16 +129,17 @@ class HippieTrapMQTT(HippieTrap):
                 "state_topic": STATE_TOPIC, 
                 "device_class": "light",
                 "assumed_state": "true",
-                "brightness" : "true",
-                "brightness_command_topic": BRIGHTNESS_TOPIC,
                 "rgb_color" : "true",
                 "rgb_command_topic" : RGB_COLOR_TOPIC,
                 "effect" : "true",
                 "effect_command_topic": EFFECT_TOPIC,
                 "effect_list": effect_name_list,
+                "brightness" : "true",
+                "brightness_scale" : "100",
+                "brightness_command_topic": BRIGHTNESS_TOPIC,
+#                "brightness_state_topic": BRIGHTNESS_STATE_TOPIC,
             }))
 
-#                "brightness_state_topic": BRIGHTNESS_STATE_TOPIC,
 
     def setup(self):
 
