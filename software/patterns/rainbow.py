@@ -13,7 +13,7 @@ from time import sleep, time
 
 STEPS = 500
 
-class Pattern(PatternBase):
+class RainbowPattern(PatternBase):
 
     name = "rainbow"
 

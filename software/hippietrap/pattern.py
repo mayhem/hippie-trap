@@ -44,7 +44,13 @@ class PatternBase(Thread):
         pass
 
 
+    @abc.abstractmethod
+    def set_color(self, color):
+        pass
+
+
     def run(self):
+        self.stop_thread = False
         while not self.stop_thread:
             self.pattern()
 
