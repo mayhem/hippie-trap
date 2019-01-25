@@ -55,7 +55,6 @@ class HippieTrapMQTT(HippieTrap):
             return
 
         self.current_pattern = new_pattern(self)
-        print "start new pattern"
         self.current_pattern.start()
 
 
@@ -70,7 +69,6 @@ class HippieTrapMQTT(HippieTrap):
 
     def _handle_message(self, mqttc, msg):
         payload = msg.payload # str(msg.payload, 'utf-8')
-        print "handle %s - %s" % (msg.topic, msg.payload) 
         if msg.topic == COMMAND_TOPIC:
             if msg.payload.lower() == b"on":
                 if not self.state:

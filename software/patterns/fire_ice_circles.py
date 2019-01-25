@@ -48,9 +48,15 @@ class FireIceCirclesPattern(PatternBase):
 
                     self.trap.start_pattern(bottle)
 
+                if self.stop_thread:
+                    stop = True
+                    break
                 bottle_base += BOTTLES_PER_RING[i]
                 color_offset += .1
 
+            if self.stop_thread:
+                stop = True
+                break
             color_shift += .01
 
         self.trap.stop_pattern(ALL)
