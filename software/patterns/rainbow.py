@@ -3,10 +3,9 @@
 import os
 import sys
 import math
-from colorsys import hsv_to_rgb
-from hippietrap.hippietrap import HippieTrap, ALL, NUM_NODES
-from hippietrap.pattern import PatternBase, run_pattern
-from hippietrap.color import Color, hue_to_color
+from hippietrap.hippietrap import HippieTrap, ALL
+from hippietrap.pattern import PatternBase
+from hippietrap.color import hue_to_color
 from hippietrap.transition import transition_drop_out
 from time import sleep, time
 
@@ -27,9 +26,3 @@ class RainbowPattern(PatternBase):
         if self.transition:
             sleep(.02)
             transition_drop_out(self.trap)
-
-if __name__ == "__main__":
-    with HippieTrap() as ch:
-        ch.begin()
-        run_pattern(ch, Pattern)
-        ch.clear(ALL)

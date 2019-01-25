@@ -11,6 +11,7 @@ from time import sleep
 from hippietrap.hippietrap import HippieTrap, ALL
 from hippietrap.patterns.rainbow import RainbowPattern
 from hippietrap.patterns.solid import SolidPattern
+from hippietrap.patterns.fire_ice_circles import FireIceCirclesPattern
 
 CLIENT_ID = socket.gethostname()
 DISCOVER_TOPIC = "homeassistant/light/hippietrap/config"
@@ -40,16 +41,13 @@ class HippieTrapMQTT(HippieTrap):
                 new_pattern = pattern
                 break
 
+        if self.current_pattern:
+            self.current_pattern.stop()
+            self.current_pattern.join()
+            self.clear(ALL)
+
         if not new_pattern:
             return
-
-        if self.current_pattern:
-            print "stop pattern"
-            self.current_pattern.stop()
-            print "join pattern"
-            self.current_pattern.join()
-            print "clear"
-            self.clear(ALL)
 
         self.current_pattern = new_pattern(self)
         print "start new pattern"
@@ -75,6 +73,7 @@ class HippieTrapMQTT(HippieTrap):
                     self.power_off()
                     sleep(.1)
                     self.power_on()
+                    sleep(2)
                 mqttc.publish(STATE_TOPIC, "ON")
                 return
 
@@ -104,7 +103,6 @@ class HippieTrapMQTT(HippieTrap):
         if msg.topic == RGB_COLOR_TOPIC:
             r,g,b = payload.split(",")
             color = (int(r),int(g),int(b))
-            print "set rgb", color
             self.current_pattern.set_color(color)
             return
            
@@ -157,6 +155,7 @@ class HippieTrapMQTT(HippieTrap):
 
 if __name__ == "__main__":
     with HippieTrapMQTT() as ht:
+        ht.add_pattern(FireIceCirclesPattern)
         ht.add_pattern(SolidPattern)
         ht.add_pattern(RainbowPattern)
         ht.setup()
@@ -164,6 +163,7 @@ if __name__ == "__main__":
             while True:
                 sleep(100)
         except KeyboardInterrupt:
+            ht.set_pattern("")
             ht.clear(ALL)
             ht.mqttc.publish(DISCOVER_TOPIC, "")
             ht.mqttc.disconnect()
