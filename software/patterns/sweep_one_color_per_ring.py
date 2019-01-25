@@ -18,7 +18,7 @@ from time import sleep, time
 # BOTTLES_PER_RING = (13, 17, 19, 23)
 
 
-class Pattern(PatternBase):
+class SweepOneColorPerRingPattern(PatternBase):
 
     geo = HippieTrapGeometry()
     cg = ColorGenerator()
@@ -32,13 +32,11 @@ class Pattern(PatternBase):
             for angle in range(180):
                 for bottle, bottle_angle in self.geo.get_near_bottles(angle, 1):
                     ring = self.geo.get_ring_from_bottle(bottle)
-#                    print "bottle: %d ring: %d" % (bottle, ring)
                     if ring % 2 == 1:
                         last_bottle_in_ring = 0
                         for ring in range(ring+1):
                             last_bottle_in_ring += BOTTLES_PER_RING[ring]
                         bottle = last_bottle_in_ring - (bottle - BOTTLES_PER_RING[ring - 1] - 1) 
-#                        print "last %d new bottle: %d" % (last_bottle_in_ring, bottle)
 
                     if bottle_angle >= angle:
                         color = self.cg.random_color()
@@ -54,9 +52,3 @@ class Pattern(PatternBase):
         if self.transition:
             sleep(.05)
             transition_sweep_out(self.trap)
-
-if __name__ == "__main__":
-    with HippieTrap() as trap:
-        trap.begin()
-        run_pattern(trap, Pattern)
-        trap.clear(ALL)

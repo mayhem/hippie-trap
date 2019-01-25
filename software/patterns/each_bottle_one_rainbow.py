@@ -13,7 +13,7 @@ from hippietrap.transition import transition_fade_out, transition_drop_out
 #       a grid effect on a circlar medium.
 
 
-class Pattern(PatternBase):
+class EachBottleOneRainbowPattern(PatternBase):
 
     name = "each bottle one rainbow"
 
@@ -29,9 +29,3 @@ class Pattern(PatternBase):
         self.trap.stop_pattern(ALL)
         if self.transition:
             transition_fade_out(self.trap)
-
-
-if __name__ == "__main__":
-    with HippieTrap() as trap:
-        trap.begin()
-        run_pattern(trap, Pattern)

@@ -12,7 +12,7 @@ from hippietrap.pattern import PatternBase, run_pattern
 from time import sleep, time
 from hippietrap.transition import transition_drop_out
 
-class Pattern(PatternBase):
+class SwappiesPattern(PatternBase):
 
     DELAY = 1.2 
     name = "swappies"
@@ -69,8 +69,3 @@ class Pattern(PatternBase):
         if self.transition:
             sleep(.05)
             transition_drop_out(self.trap)
-
-if __name__ == "__main__":
-    with HippieTrap() as trap:
-        trap.begin()
-        run_pattern(trap, Pattern)

@@ -12,6 +12,11 @@ from hippietrap.hippietrap import HippieTrap, ALL
 from hippietrap.patterns.rainbow import RainbowPattern
 from hippietrap.patterns.solid import SolidPattern
 from hippietrap.patterns.fire_ice_circles import FireIceCirclesPattern
+from hippietrap.patterns.each_bottle_one_rainbow import EachBottleOneRainbowPattern
+from hippietrap.patterns.random_colors import RandomColorsPattern
+from hippietrap.patterns.swappies import SwappiesPattern
+from hippietrap.patterns.sweep_one_color_per_ring import SweepOneColorPerRingPattern
+from hippietrap.patterns.sweep_two_color_shift import SweepTwoColorShiftPattern
 
 CLIENT_ID = socket.gethostname()
 DISCOVER_TOPIC = "homeassistant/light/hippietrap/config"
@@ -155,6 +160,11 @@ class HippieTrapMQTT(HippieTrap):
 
 if __name__ == "__main__":
     with HippieTrapMQTT() as ht:
+        ht.add_pattern(SweepTwoColorShiftPattern)
+        ht.add_pattern(SweepOneColorPerRingPattern)
+        ht.add_pattern(SwappiesPattern)
+        ht.add_pattern(RandomColorsPattern)
+        ht.add_pattern(EachBottleOneRainbowPattern)
         ht.add_pattern(FireIceCirclesPattern)
         ht.add_pattern(SolidPattern)
         ht.add_pattern(RainbowPattern)

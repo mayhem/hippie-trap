@@ -13,7 +13,7 @@ from time import sleep, time
 from hippietrap.transition import transition_sweep_out
 
 
-class Pattern(PatternBase):
+class SweepTwoColorShiftPattern(PatternBase):
 
     geo = HippieTrapGeometry()
     cg = ColorGenerator()
@@ -37,8 +37,8 @@ class Pattern(PatternBase):
                     break
 
             index += 1
-            hue_offset = math.fmod(hue_offset + .1, 1.0)
-            shift = math.sin(index / .5) / 2.0 + .50
+            hue_offset = math.fmod(hue_offset + .02, 1.0)
+            shift = math.sin(index / .04) / 2.0 + .50
             new_offset = math.fmod(shift, 1.0)
             color_rings.pop()
             color_rings.insert(0, hue_to_color(new_offset))
@@ -47,10 +47,3 @@ class Pattern(PatternBase):
         if self.transition:
             sleep(.02)
             transition_sweep_out(self.trap)
-
-
-if __name__ == "__main__":
-    with HippieTrap() as trap:
-        trap.begin()
-        run_pattern(trap, Pattern, clear=True)
-        trap.clear(ALL)

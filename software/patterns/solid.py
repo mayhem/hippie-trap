@@ -27,6 +27,10 @@ class SolidPattern(PatternBase):
         while not self.stop_thread:
             sleep(.1)
 
+        if self.transition:
+            sleep(.02)
+            transition_drop_out(self.trap)
+
 
     def set_color(self, color):
         print "set color: ", color

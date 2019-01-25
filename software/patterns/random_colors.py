@@ -11,7 +11,7 @@ from random import random
 from hippietrap.transition import transition_drop_out
 
 
-class Pattern(PatternBase):
+class RandomColorsPattern(PatternBase):
 
     PERIOD = 850 
     name = "random colors"
@@ -31,9 +31,3 @@ class Pattern(PatternBase):
         if self.transition:
             sleep(.02)
             transition_drop_out(self.trap)
-
-if __name__ == "__main__":
-    with HippieTrap() as trap:
-        trap.begin()
-        run_pattern(trap, Pattern)
-        trap.clear(ALL)
