@@ -19,6 +19,8 @@ class SweepTwoColorShiftPattern(PatternBase):
     cg = ColorGenerator()
     name = "sweep two colors"
 
+    color_shift_between_rings = .045
+
     def pattern(self):
         self.trap.send_decay(ALL, 90)
         self.trap.start_pattern(ALL)
@@ -38,7 +40,7 @@ class SweepTwoColorShiftPattern(PatternBase):
 
             index += 1
             hue_offset = math.fmod(hue_offset + .02, 1.0)
-            shift = math.sin(index / .04) / 2.0 + .50
+            shift = math.sin(index / self.color_shift_between_rings) / 2.0 + .50
             new_offset = math.fmod(shift, 1.0)
             color_rings.pop()
             color_rings.insert(0, hue_to_color(new_offset))
