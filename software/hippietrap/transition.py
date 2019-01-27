@@ -36,9 +36,9 @@ def transition_fade_out(trap):
 
 
 def transition_lateral_sweep(trap):
-
     bottles = geo.calculate_bottle_locations()
-    bottles.sort(key = lambda bottles: bottles[0])
-    for bottle in bottles:
+    bottles = zip(range(1, NUM_NODES+1), bottles)
+    bottles.sort(key = lambda bottles: bottles[1][0])
+    for bottle, coord in bottles:
         trap.set_color(bottle, Color(0,0,0))
-        sleep(.02)
+        sleep(.001)

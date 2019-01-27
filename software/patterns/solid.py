@@ -7,7 +7,7 @@ from colorsys import hsv_to_rgb
 from hippietrap.hippietrap import HippieTrap, ALL, NUM_NODES
 from hippietrap.pattern import PatternBase, run_pattern
 from hippietrap.color import Color, hue_to_color
-from hippietrap.transition import transition_drop_out
+from hippietrap.transition import transition_lateral_sweep
 from time import sleep, time
 
 
