@@ -34,3 +34,11 @@ def transition_fade_out(trap):
     sleep(.2)
     trap.stop_pattern(ALL)
 
+
+def transition_lateral_sweep(trap):
+
+    bottles = geo.calculate_bottle_locations()
+    bottles.sort(key = lambda bottles: bottles[0])
+    for bottle in bottles:
+        trap.set_color(bottle, Color(0,0,0))
+        sleep(.02)

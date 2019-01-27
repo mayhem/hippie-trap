@@ -29,7 +29,7 @@ class SolidPattern(PatternBase):
 
         if self.transition:
             sleep(.02)
-            transition_drop_out(self.trap)
+            transition_lateral_sweep(self.trap)
 
 
     def set_color(self, color):
