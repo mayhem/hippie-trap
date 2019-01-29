@@ -81,7 +81,6 @@ class HippieTrapGeometry(object):
         locs = []
         bottle = 1
         for ring, angles in enumerate(self.angles):
-            print ring, angles
             for angle in angles:
                 r_angle = math.radians(float(angle))
                 x = -math.cos(r_angle) * RING_RADII[ring]

@@ -17,6 +17,7 @@ from hippietrap.patterns.random_colors import RandomColorsPattern
 from hippietrap.patterns.swappies import SwappiesPattern
 from hippietrap.patterns.sweep_one_color_per_ring import SweepOneColorPerRingPattern
 from hippietrap.patterns.sweep_two_color_shift import SweepTwoColorShiftPattern
+from hippietrap.patterns.texture import TexturePattern
 
 CLIENT_ID = socket.gethostname()
 DISCOVER_TOPIC = "homeassistant/light/hippietrap/config"
@@ -54,6 +55,7 @@ class HippieTrapMQTT(HippieTrap):
         if not new_pattern:
             return
 
+
         self.current_pattern = new_pattern(self)
         self.current_pattern.start()
 
@@ -64,7 +66,7 @@ class HippieTrapMQTT(HippieTrap):
             mqttc.__ht._handle_message(mqttc, msg)
         except Exception, err:
             print "exception!", err
-            traceback.print_exc()
+            print traceback.format_exc()
 
 
     def _handle_message(self, mqttc, msg):
@@ -159,6 +161,7 @@ class HippieTrapMQTT(HippieTrap):
 
 if __name__ == "__main__":
     with HippieTrapMQTT() as ht:
+        ht.add_pattern(TexturePattern)
         ht.add_pattern(SweepTwoColorShiftPattern)
         ht.add_pattern(SweepOneColorPerRingPattern)
         ht.add_pattern(SwappiesPattern)
