@@ -141,7 +141,12 @@ void clear_led(uint8_t index)
 
 void get_led(uint8_t index, color_t *col)
 {
-    *col = g_led_buffer[index];
+    if (index >= NUM_LEDS)
+        return;
+
+    col->r = (uint8_t)(g_color_buffer[index].r >> COLOR_SHIFT);
+    col->g = (uint8_t)(g_color_buffer[index].g >> COLOR_SHIFT);
+    col->b = (uint8_t)(g_color_buffer[index].b >> COLOR_SHIFT);
 }
 
 void set_led(uint8_t index, color_t *col)

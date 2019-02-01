@@ -84,6 +84,7 @@ class HippieTrapMQTT(HippieTrap):
 
             if msg.payload.lower() == b"off":
                 if self.state:
+                    self.set_pattern("")
                     self.state = False
                     self.power_off()
                 mqttc.publish(STATE_TOPIC, "OFF")
