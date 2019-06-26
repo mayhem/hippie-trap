@@ -4,6 +4,7 @@ import os
 import sys
 import math
 import socket
+import random
 import paho.mqtt.client as mqtt
 import json
 from time import sleep
@@ -33,7 +34,7 @@ class HippieTrapMQTT(HippieTrap):
 
     def __init__(self):
         HippieTrap.__init__(self)
-        self.state = False
+        self.state = True
         self.patterns = []
         self.current_pattern = None
 
@@ -162,22 +163,23 @@ class HippieTrapMQTT(HippieTrap):
 
 if __name__ == "__main__":
     with HippieTrapMQTT() as ht:
-        ht.add_pattern(TexturePattern)
         ht.add_pattern(SweepTwoColorShiftPattern)
         ht.add_pattern(SweepOneColorPerRingPattern)
         ht.add_pattern(SwappiesPattern)
         ht.add_pattern(RandomColorsPattern)
         ht.add_pattern(EachBottleOneRainbowPattern)
         ht.add_pattern(FireIceCirclesPattern)
-        ht.add_pattern(SolidPattern)
         ht.add_pattern(RainbowPattern)
+#        ht.add_pattern(TexturePattern)
         ht.setup()
+        ht.set_brightness(ALL,50)
         try:
             while True:
-                sleep(100)
+                ht.set_pattern(ht.patterns[random.randint(0, len(ht.patterns) - 1)].name)
+                sleep(30)
+     
         except KeyboardInterrupt:
             ht.set_pattern("")
             ht.clear(ALL)
-            ht.mqttc.publish(DISCOVER_TOPIC, "")
             ht.mqttc.disconnect()
             ht.mqttc.loop_stop()

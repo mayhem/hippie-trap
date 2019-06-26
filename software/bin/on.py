@@ -5,4 +5,5 @@ import sys
 import math
 from hippietrap.hippietrap import HippieTrap
 
-HippieTrap.power_on()
+with HippieTrap() as ht:
+    ht.power_on()

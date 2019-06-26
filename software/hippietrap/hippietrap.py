@@ -123,8 +123,22 @@ class HippieTrap(object):
             self.ser.write('M')
             sleep(.0005)
 
-    @staticmethod    
-    def power_on():
+
+    def begin(self):
+
+        print "basic setup..."
+        self.set_brightness(BROADCAST, 100)
+        self.stop_pattern(BROADCAST)
+        self.clear(BROADCAST)
+        sleep(.1)
+
+
+    def power_on(self):
+
+        if not self.ser or not self.ser.is_open:
+            raise "Hippie trap not opened."
+
+        print "Turning on power..."
         try:
             for pin in POWER_GPIO_PINS:
                 check_call(["gpio", "-1", "write", "%d" % pin, "1"])
@@ -134,10 +148,17 @@ class HippieTrap(object):
             print "Is wiringpi installed? error: ", err
             sys.exit(-1)
 
-        sleep(2)
+        print "wait 3 seconds for bottle startup"
+        sleep(3)
 
-    @staticmethod    
-    def power_off():
+        print "done"
+
+
+    def power_off(self):
+        if not self.ser or not self.ser.is_open:
+            raise "Hippie trap not opened."
+
+        print "Turning off power..."
         try:
             for pin in POWER_GPIO_PINS:
                 check_call(["gpio", "-1", "write", "%d" % pin, "0"])
@@ -146,15 +167,13 @@ class HippieTrap(object):
             print "Is wiringpi installed? error: ", err
             sys.exit(-1)
 
+        print "done"
+
+
     def clear_cruft(self):
         for i in range(32):
             self.ser.write(chr(0))
 
-    def begin(self):
-        self.set_brightness(BROADCAST, 100)
-        self.stop_pattern(BROADCAST)
-        self.clear(BROADCAST)
-        sleep(.1)
 
     def _send_packet(self, dest, type, data):
         if not self.ser:

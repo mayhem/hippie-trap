@@ -13,6 +13,16 @@ from hippietrap.pattern import PatternBase, run_pattern
 from hippietrap.geometry import HippieTrapGeometry
 from time import sleep, time
 
+from hippietrap.patterns.rainbow import RainbowPattern
+from hippietrap.patterns.solid import SolidPattern
+from hippietrap.patterns.fire_ice_circles import FireIceCirclesPattern
+from hippietrap.patterns.each_bottle_one_rainbow import EachBottleOneRainbowPattern
+from hippietrap.patterns.random_colors import RandomColorsPattern
+from hippietrap.patterns.swappies import SwappiesPattern
+from hippietrap.patterns.sweep_one_color_per_ring import SweepOneColorPerRingPattern
+from hippietrap.patterns.sweep_two_color_shift import SweepTwoColorShiftPattern
+from hippietrap.patterns.texture import TexturePattern
+
 geo = HippieTrapGeometry()
 
 if len(sys.argv) == 2:
@@ -33,26 +43,6 @@ def transition_sweep_clear(trap):
         trap.set_color(bottle, Color(0,0,0))
         sleep(.02)
 
-def load_patterns(path):
-
-    try:
-        files = os.listdir(path)
-    except IOError as err:
-        print "Cannot open patterns dir '%s'" % path
-        return []
-
-    patterns = []
-    for f in files:
-        if f.endswith(".py") and not f.startswith("__"):
-            patterns.append(f[:-3])
-
-    ret = []
-    for p in patterns:
-        mod = importlib.import_module("hippietrap.patterns.%s" % p)
-        ret.append(mod.Pattern)
-
-    return ret
-
 
 def main(transitions = True):
 
@@ -60,7 +50,16 @@ def main(transitions = True):
         trap.begin()
         trap.set_brightness(ALL, brightness)
 
-        patterns = load_patterns("../patterns")
+        ht.add_pattern(SweepTwoColorShiftPattern)
+        ht.add_pattern(SweepOneColorPerRingPattern)
+        ht.add_pattern(SwappiesPattern)
+        ht.add_pattern(RandomColorsPattern)
+        ht.add_pattern(EachBottleOneRainbowPattern)
+        ht.add_pattern(FireIceCirclesPattern)
+        ht.add_pattern(SolidPattern)
+        ht.add_pattern(RainbowPattern)
+        ht.add_pattern(TexturePattern)
+        ht.setup()
 
         while True:
             random.shuffle(patterns)
