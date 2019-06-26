@@ -127,4 +127,4 @@ if __name__ == "__main__":
     c1 = Color(1,1,128)
     c2 = Color(2,2,128)
     c1 += c2
-    print c1.red, c1.green, c1.blue
+    print(c1.red, c1.green, c1.blue)

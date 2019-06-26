@@ -44,8 +44,3 @@ def pack_fixed(value):
 
 def pack_color(col):
     return bytearray(pack("<BBB", col[0], col[1], col[2]))
-
-def dump(ba):
-    for b in ba:
-        print "%02X " % b,
-    print

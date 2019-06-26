@@ -6,10 +6,10 @@ import math
 import serial
 from subprocess import check_call, CalledProcessError
 import struct
-import function
+from . import function
 import random
-import common
-from color import Color
+from . import common
+from .color import Color
 from time import sleep, time
 
 BAUD_RATE = 38400
@@ -56,7 +56,7 @@ POWER_GPIO_PINS = [ 35, 37, 38, 40 ]
 
 def crc16_update(crc, a):
     crc ^= a
-    for i in xrange(0, 8):
+    for i in range(0, 8):
         if crc & 1:
             crc = (crc >> 1) ^ 0xA001
         else:
@@ -85,7 +85,7 @@ class HippieTrap(object):
                 check_call(["gpio", "-1", "mode", "%d" % pin, "output"])
 
         except CalledProcessError as err:
-            print "Is wiringpi installed? error: ", err
+            print("Is wiringpi installed? error: ", err)
             sys.exit(-1)
 
         try:
@@ -94,9 +94,10 @@ class HippieTrap(object):
                                      bytesize=serial.EIGHTBITS, 
                                      parity=serial.PARITY_NONE, 
                                      stopbits=serial.STOPBITS_ONE,
-                                     timeout=.01)
-        except serial.serialutil.SerialException, e:
-            print "Cant open serial port: %s" % self.device
+                                     timeout=.01,
+                                     exclusive=True)
+        except serial.serialutil.SerialException as e:
+            print("Cant open serial port: %s" % self.device)
             sys.exit(-1)
 
         # Wait for things to settle, then pipe some characters through the line to get things going
@@ -115,7 +116,7 @@ class HippieTrap(object):
         try:
             check_call(["gpio", "-g", "mode", "14", "output"])
         except CalledProcessError as err:
-            print "Is wiringpi installed? error: ", err
+            print("Is wiringpi installed? error: ", err)
             sys.exit(-1)
 
     def send_panic(self):
@@ -126,7 +127,7 @@ class HippieTrap(object):
 
     def begin(self):
 
-        print "basic setup..."
+        print("basic setup...")
         self.set_brightness(BROADCAST, 100)
         self.stop_pattern(BROADCAST)
         self.clear(BROADCAST)
@@ -136,38 +137,38 @@ class HippieTrap(object):
     def power_on(self):
 
         if not self.ser or not self.ser.is_open:
-            raise "Hippie trap not opened."
+            raise IOError("Hippie trap not opened.")
 
-        print "Turning on power..."
+        print("Turning on power...")
         try:
             for pin in POWER_GPIO_PINS:
                 check_call(["gpio", "-1", "write", "%d" % pin, "1"])
                 sleep(.25)
 
         except CalledProcessError as err:
-            print "Is wiringpi installed? error: ", err
+            print("Is wiringpi installed? error: ", err)
             sys.exit(-1)
 
-        print "wait 3 seconds for bottle startup"
+        print("wait 3 seconds for bottle startup")
         sleep(3)
 
-        print "done"
+        print("done")
 
 
     def power_off(self):
         if not self.ser or not self.ser.is_open:
-            raise "Hippie trap not opened."
+            raise IOError("Hippie trap not opened.")
 
-        print "Turning off power..."
+        print("Turning off power...")
         try:
             for pin in POWER_GPIO_PINS:
                 check_call(["gpio", "-1", "write", "%d" % pin, "0"])
 
         except CalledProcessError as err:
-            print "Is wiringpi installed? error: ", err
+            print("Is wiringpi installed? error: ", err)
             sys.exit(-1)
 
-        print "done"
+        print("done")
 
 
     def clear_cruft(self):
@@ -175,28 +176,36 @@ class HippieTrap(object):
             self.ser.write(chr(0))
 
 
+    def dump(self, msg, p):
+        print("%s " % msg, end='')
+        for ch in p:
+            print("%02X " % ch, end=''),
+        print("")
+
+
     def _send_packet(self, dest, type, data):
         if not self.ser:
             return
 
-        if not isinstance(data, bytearray):
-            print "data argument to send_packet must be bytearray"
+        if not isinstance(data, bytes) and not isinstance(data, bytearray):
+            print("data argument to send_packet must be bytes or bytearray")
             return
 
-        packet = chr(dest) + chr(type) + data
+        packet = struct.pack("<BBs", dest, type, data)
         crc = 0
         for ch in packet:
             crc = crc16_update(crc, ch)
         packet = struct.pack("<BBB", 0xBE, 0xEF, len(packet) + 2) + packet + struct.pack("<H", crc)
         if len(packet) > MAX_PACKET_LEN:
             raise BufferError("Max packet len of %d exceeded. Make your pattern smaller." % MAX_PACKET_LEN)
+        self.dump("packet", packet)
         for ch in packet:
-            self.ser.write(chr(ch))
-#            print "%02X " % ch,
-#        print
+            self.ser.write(bytearray((ch,)))
+# TODO REMOVE 
+            sleep(.001)
 
     def send_entropy(self):
-        for dest in xrange(1, NUM_NODES + 1):
+        for dest in range(1, NUM_NODES + 1):
             self._send_packet(dest, PACKET_ENTROPY, bytearray(os.urandom(4)))
 
     def set_color(self, dest, col):
@@ -224,6 +233,7 @@ class HippieTrap(object):
         packet = bytearray(struct.pack("<BH", 0, steps))
         for col in colors:
             packet += bytearray((col[0], col[1], col[2]))
+        self.dump("fade", packet)
         self._send_packet(dest, PACKET_PATTERN, packet)
 
     def send_rainbow(self, dest, divisor):
@@ -288,7 +298,7 @@ class HippieTrap(object):
         if len(groups) > MAX_GROUPS:
             raise ValueError("Too many groups defined. Max %d allowed." % MAX_GROUPS)
 
-        nodes = [ [] for i in xrange(NUM_NODES+1) ]
+        nodes = [ [] for i in range(NUM_NODES+1) ]
         for i, grp in enumerate(groups):
             for node in grp:
                 nodes[node].append(i) 
@@ -300,7 +310,7 @@ class HippieTrap(object):
     def calibrate_timers(self, dest):
         self._send_packet(dest, PACKET_CALIBRATE, bytearray((CALIBRATION_DURATION,))) 
         sleep(1)
-        print "Start calibration..."
+        print("Start calibration...")
         self.ser.write(chr(1));
         sleep(CALIBRATION_DURATION);
         self.ser.write(chr(0));

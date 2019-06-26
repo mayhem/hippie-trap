@@ -6,10 +6,10 @@ import math
 import random
 import importlib
 from threading import Thread
-from color import Color
-from hippietrap import NUM_NODES, ALL
-from pattern import PatternBase, run_pattern
-from geometry import HippieTrapGeometry
+from .color import Color
+from .hippietrap import NUM_NODES, ALL
+from .pattern import PatternBase, run_pattern
+from .geometry import HippieTrapGeometry
 from time import sleep, time
 
 geo = HippieTrapGeometry()
@@ -37,7 +37,7 @@ def transition_fade_out(trap):
 
 def transition_lateral_sweep(trap):
     bottles = geo.calculate_bottle_locations()
-    bottles = zip(range(1, NUM_NODES+1), bottles)
+    bottles = list(zip(list(range(1, NUM_NODES+1)), bottles))
     bottles.sort(key = lambda bottles: bottles[1][0])
     for bottle, coord in bottles:
         trap.set_color(bottle, Color(0,0,0))

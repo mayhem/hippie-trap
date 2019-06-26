@@ -33,5 +33,5 @@ class SolidPattern(PatternBase):
 
 
     def set_color(self, color):
-        print "set color: ", color
+        print("set color: ", color)
         self.trap.set_color(ALL, color)

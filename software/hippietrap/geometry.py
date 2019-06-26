@@ -3,7 +3,7 @@
 import math
 from time import sleep, time
 
-from hippietrap import NUM_NODES, NUM_RINGS, BOTTLES_PER_RING, RING_RADII
+from .hippietrap import NUM_NODES, NUM_RINGS, BOTTLES_PER_RING, RING_RADII
 
 # nearest_bottles: given angle, ring or all, return nearest bottles
 
@@ -40,7 +40,7 @@ class HippieTrapGeometry(object):
 
     def enumerate_ring(self, ring, reverse=False):
 
-        if ring not in range(0, NUM_RINGS):
+        if ring not in list(range(0, NUM_RINGS)):
             return ()
 
         bottles = [ (self.offsets[ring]+bottle, angle) for bottle, angle in enumerate(self.angles[ring])]
@@ -94,4 +94,4 @@ class HippieTrapGeometry(object):
 if __name__ == "__main__":
     g = HippieTrapGeometry()
     for loc in g.calculate_bottle_locations():
-        print "%0.4f, %0.4f" % (loc[0], loc[1])
+        print("%0.4f, %0.4f" % (loc[0], loc[1]))

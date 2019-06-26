@@ -13,6 +13,6 @@ from color import Color
 
 g = generator.Abs(generator.Line())
 g = generator.Line(1,0,1, -1)
-for i in xrange(200):
+for i in range(200):
     t = i - 100
-    print "%d %.4f" % (t, g[t])
+    print("%d %.4f" % (t, g[t]))

@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 
 import os
 import sys
@@ -12,4 +12,4 @@ with HippieTrap() as ch:
     ch.clear(BROADCAST)
     ch.calibrate_timers(BROADCAST)
 
-    print "Calibration is complete."
+    print("Calibration is complete.")

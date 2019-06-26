@@ -65,7 +65,7 @@ def main(transitions = True):
             random.shuffle(patterns)
             for pattern_class in patterns:
                 pattern = pattern_class(trap)
-                print pattern.name
+                print(pattern.name)
                 pattern.start()
                 try:
                     sleep(10)

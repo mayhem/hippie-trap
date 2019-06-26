@@ -1,6 +1,6 @@
 #!/usr/bin/python
-from color import Color
-import common
+from .color import Color
+from . import common
 
 class Function(object):
 
@@ -38,7 +38,7 @@ class Pattern(object):
 def arg_convert(type, args):
 
     if len(args) > 4:
-        print "Too many arguments specified for function %d" % type
+        print("Too many arguments specified for function %d" % type)
         return []
 
     return args

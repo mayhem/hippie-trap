@@ -1,9 +1,9 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 
 import os
 import sys
 import math
-import thread
+import _thread
 from colorsys import hsv_to_rgb
 from hippietrap.hippietrap import HippieTrap, BROADCAST, NUM_NODES
 from hippietrap.color import Color
@@ -17,20 +17,20 @@ def send_panic():
 with HippieTrap() as ch:
     trap = ch
 
-    print "setup hippie trap"
+    print("setup hippie trap")
     ch.begin()
     sleep(1)
 
-    print "power off"
+    print("power off")
     ch.power_off()
     sleep(1)
 
-    print "send panic"
-    thread.start_new_thread(send_panic, ())
+    print("send panic")
+    _thread.start_new_thread(send_panic, ())
     sleep(1)
 
-    print "power on"
+    print("power on")
     ch.power_on()
     sleep(5)
 
-    print "done. hopefully it did the trick!"
+    print("done. hopefully it did the trick!")

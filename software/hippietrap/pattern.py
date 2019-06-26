@@ -5,7 +5,7 @@ import os
 import sys
 from threading import Thread
 from time import sleep, time
-from hippietrap import ALL
+from .hippietrap import ALL
 
 def run_pattern(ch, pattern, clear=False):
     r = pattern(ch)
@@ -14,7 +14,7 @@ def run_pattern(ch, pattern, clear=False):
         while True:
             sleep(100)
     except KeyboardInterrupt:
-        print "stopping ..."
+        print("stopping ...")
 
         if clear:
             ch.clear_cruft()
@@ -24,7 +24,7 @@ def run_pattern(ch, pattern, clear=False):
 
         r.stop()
         r.join()
-        print 
+        print() 
 
 
 class PatternBase(Thread):

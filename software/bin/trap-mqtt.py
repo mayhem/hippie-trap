@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 
 import os
 import sys
@@ -58,6 +58,7 @@ class HippieTrapMQTT(HippieTrap):
 
 
         self.current_pattern = new_pattern(self)
+        print("Start pattern '%s'" % self.current_pattern.name)
         self.current_pattern.start()
 
 
@@ -65,9 +66,9 @@ class HippieTrapMQTT(HippieTrap):
     def on_message(mqttc, user_data, msg):
         try:
             mqttc.__ht._handle_message(mqttc, msg)
-        except Exception, err:
-            print "exception!", err
-            print traceback.format_exc()
+        except Exception as err:
+            print(("exception!", err))
+            print(traceback.format_exc())
 
 
     def _handle_message(self, mqttc, msg):
@@ -163,12 +164,12 @@ class HippieTrapMQTT(HippieTrap):
 
 if __name__ == "__main__":
     with HippieTrapMQTT() as ht:
-        ht.add_pattern(SweepTwoColorShiftPattern)
-        ht.add_pattern(SweepOneColorPerRingPattern)
-        ht.add_pattern(SwappiesPattern)
-        ht.add_pattern(RandomColorsPattern)
-        ht.add_pattern(EachBottleOneRainbowPattern)
-        ht.add_pattern(FireIceCirclesPattern)
+#        ht.add_pattern(SweepTwoColorShiftPattern)
+#        ht.add_pattern(SweepOneColorPerRingPattern)
+#        ht.add_pattern(SwappiesPattern)
+#        ht.add_pattern(RandomColorsPattern)
+#        ht.add_pattern(EachBottleOneRainbowPattern)
+#        ht.add_pattern(FireIceCirclesPattern)
         ht.add_pattern(RainbowPattern)
 #        ht.add_pattern(TexturePattern)
         ht.setup()
@@ -176,7 +177,7 @@ if __name__ == "__main__":
         try:
             while True:
                 ht.set_pattern(ht.patterns[random.randint(0, len(ht.patterns) - 1)].name)
-                sleep(30)
+                sleep(10)
      
         except KeyboardInterrupt:
             ht.set_pattern("")

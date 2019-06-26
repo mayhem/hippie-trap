@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import sys
 import os
@@ -21,10 +21,10 @@ def send_firmware(filename):
 
             filesize = os.path.getsize(filename)
         except IOError as err:
-            print("Error loading hex file: %s" % err)
+            print(("Error loading hex file: %s" % err))
             return
 
-        print("filesize: %d bytes of max %d bytes" % (filesize, MAX_SIZE));
+        print(("filesize: %d bytes of max %d bytes" % (filesize, MAX_SIZE)));
         if filesize >= MAX_SIZE:
             print("hex file too large. Can't upload.");
             return
@@ -51,7 +51,7 @@ def send_firmware(filename):
                     return
                 sleep(.0001)
 
-            print("%03d/%03d\b\b\b\b\b\b\b\b" % (i, len(lines))),
+            print(("%03d/%03d\b\b\b\b\b\b\b\b" % (i, len(lines))), end=' ')
             sys.stdout.flush()
             sleep(.05)
 

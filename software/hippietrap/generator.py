@@ -2,7 +2,7 @@
 import abc
 import math
 import random
-import common
+from . import common
 
 def plot(g):
     import matplotlib.pyplot as plt

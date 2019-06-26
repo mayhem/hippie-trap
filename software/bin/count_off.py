@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 
 import os
 import sys
@@ -18,6 +18,6 @@ with HippieTrap() as ch:
         ch.set_color(id, Color(0,0,0))
 
     for id in range(start,NUM_NODES+1):
-        print id
+        print(id)
         ch.set_color(id, Color(0,0,255))
         sleep(.25)
