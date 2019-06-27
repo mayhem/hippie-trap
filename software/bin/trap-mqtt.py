@@ -165,12 +165,12 @@ class HippieTrapMQTT(HippieTrap):
 if __name__ == "__main__":
     with HippieTrapMQTT() as ht:
 #        ht.add_pattern(SweepTwoColorShiftPattern)
-#        ht.add_pattern(SweepOneColorPerRingPattern)
+        ht.add_pattern(SweepOneColorPerRingPattern)
 #        ht.add_pattern(SwappiesPattern)
 #        ht.add_pattern(RandomColorsPattern)
-#        ht.add_pattern(EachBottleOneRainbowPattern)
+        ht.add_pattern(EachBottleOneRainbowPattern)
 #        ht.add_pattern(FireIceCirclesPattern)
-        ht.add_pattern(RainbowPattern)
+#        ht.add_pattern(RainbowPattern)
 #        ht.add_pattern(TexturePattern)
         ht.setup()
         ht.set_brightness(ALL,50)

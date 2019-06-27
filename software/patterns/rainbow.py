@@ -25,4 +25,5 @@ class RainbowPattern(PatternBase):
 
         if self.transition:
             sleep(.02)
+            print("drop out transition")
             transition_drop_out(self.trap)

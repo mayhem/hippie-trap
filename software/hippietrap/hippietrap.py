@@ -187,32 +187,29 @@ class HippieTrap(object):
         if not self.ser:
             return
 
-        if not isinstance(data, bytes) and not isinstance(data, bytearray):
-            print("data argument to send_packet must be bytes or bytearray")
+        if not isinstance(data, bytearray):
+            print("data argument to send_packet must be bytearray")
             return
 
-        packet = struct.pack("<BBs", dest, type, data)
+        packet = bytearray(struct.pack("<BB", dest, type)) + data
         crc = 0
         for ch in packet:
             crc = crc16_update(crc, ch)
-        packet = struct.pack("<BBB", 0xBE, 0xEF, len(packet) + 2) + packet + struct.pack("<H", crc)
+        packet = bytearray(struct.pack("<BBB", 0xBE, 0xEF, len(packet) + 2)) + packet + struct.pack("<H", crc)
         if len(packet) > MAX_PACKET_LEN:
             raise BufferError("Max packet len of %d exceeded. Make your pattern smaller." % MAX_PACKET_LEN)
-        self.dump("packet", packet)
         for ch in packet:
             self.ser.write(bytearray((ch,)))
-# TODO REMOVE 
-            sleep(.001)
 
     def send_entropy(self):
         for dest in range(1, NUM_NODES + 1):
             self._send_packet(dest, PACKET_ENTROPY, bytearray(os.urandom(4)))
 
     def set_color(self, dest, col):
-        self._send_packet(dest, PACKET_SINGLE_COLOR, bytearray((col[0], col[1], col[2])))
+        self._send_packet(dest, PACKET_SINGLE_COLOR, bytearray(struct.pack("<BBB", col[0], col[1], col[2])))
 
     def set_single_led(self, dest, led, col):
-        self._send_packet(dest, PACKET_SINGLE_LED, bytearray((led, col[0], col[1], col[2])))
+        self._send_packet(dest, PACKET_SINGLE_LED, struct.pack("<BBB", col[0], col[1], col[2]))
 
     def set_random_color(self, dest):
         self._send_packet(dest, PACKET_RANDOM_COLOR, bytearray()) 
@@ -220,7 +217,7 @@ class HippieTrap(object):
     def set_color_array(self, dest, colors):
         packet = bytearray()
         for col in colors:
-            packet += bytearray((col[0], col[1], col[2]))
+            packet += struct.pack("<BBB", col[0], col[1], col[2])
         self._send_packet(dest, PACKET_COLOR_ARRAY, packet)
 
     def send_pattern(self, dest, id):
@@ -233,7 +230,6 @@ class HippieTrap(object):
         packet = bytearray(struct.pack("<BH", 0, steps))
         for col in colors:
             packet += bytearray((col[0], col[1], col[2]))
-        self.dump("fade", packet)
         self._send_packet(dest, PACKET_PATTERN, packet)
 
     def send_rainbow(self, dest, divisor):
