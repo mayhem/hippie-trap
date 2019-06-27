@@ -7,6 +7,7 @@ import socket
 import random
 import paho.mqtt.client as mqtt
 import json
+import copy
 from time import sleep
 
 from hippietrap.hippietrap import HippieTrap, ALL
@@ -36,6 +37,16 @@ class HippieTrapMQTT(HippieTrap):
         self.state = True
         self.patterns = []
         self.current_pattern = None
+        self.random_patterns = None
+
+    def set_random_pattern(self):
+        if not self.random_patterns:
+            self.random_patterns = copy.deepcopy(self.patterns)
+
+        index = random.randint(0, len(self.random_patterns) - 1)
+        self.set_pattern(ht.random_patterns[index].name)
+        del self.random_patterns[index]
+
 
     def add_pattern(self, pattern):
         self.patterns.append(pattern)
@@ -144,7 +155,7 @@ if __name__ == "__main__":
         ht.set_brightness(ALL,50)
         try:
             while True:
-                ht.set_pattern(ht.patterns[random.randint(0, len(ht.patterns) - 1)].name)
+                ht.set_random_pattern()
                 sleep(10)
      
         except KeyboardInterrupt:
