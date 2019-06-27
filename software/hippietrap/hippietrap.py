@@ -121,7 +121,7 @@ class HippieTrap(object):
 
     def send_panic(self):
         while True:
-            self.ser.write('M')
+            self.ser.write(bytearray('M'))
             sleep(.0005)
 
 
@@ -173,7 +173,7 @@ class HippieTrap(object):
 
     def clear_cruft(self):
         for i in range(32):
-            self.ser.write(chr(0))
+            self.ser.write(bytearray((chr(0),)))
 
 
     def dump(self, msg, p):
@@ -307,9 +307,9 @@ class HippieTrap(object):
         self._send_packet(dest, PACKET_CALIBRATE, bytearray((CALIBRATION_DURATION,))) 
         sleep(1)
         print("Start calibration...")
-        self.ser.write(chr(1));
+        self.ser.write(bytearray(bytes(chr(1), encoding="ascii")))
         sleep(CALIBRATION_DURATION);
-        self.ser.write(chr(0));
+        self.ser.write(bytearray(bytes(chr(0), encoding="ascii")))
         sleep(1)
         self.set_color(BROADCAST, (0,0,0))
 

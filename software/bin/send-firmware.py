@@ -30,7 +30,7 @@ def send_firmware(filename):
             return
 
         for i in range(16):
-            if not ch.ser.write(chr(0x45).encode('ascii')):
+            if not ch.ser.write(bytearray(chr(0x45).encode('ascii'))):
                 print("Cannot write programming header.")
                 return
         sleep(.1)
