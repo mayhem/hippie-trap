@@ -21,14 +21,13 @@ from hippietrap.patterns.sweep_two_color_shift import SweepTwoColorShiftPattern
 from hippietrap.patterns.texture import TexturePattern
 
 CLIENT_ID = socket.gethostname()
-DISCOVER_TOPIC = "homeassistant/light/hippietrap/config"
-COMMAND_TOPIC = "home/hippietrap/set"
-STATE_TOPIC = "home/hippietrap/state"
-BRIGHTNESS_TOPIC = "home/hippietrap/brightness"
-BRIGHTNESS_STATE_TOPIC = "home/hippietrap/brightness_state"
-RGB_COLOR_TOPIC = "home/hippietrap/rgb"
-EFFECT_TOPIC = "home/hippietrap/effect"
-REDISCOVER_TOPIC = "rediscover"
+COMMAND_TOPIC = "hippietrap/command"
+STATE_TOPIC = "hippietrap/state"
+BRIGHTNESS_TOPIC = "hippietrap/brightness"
+BRIGHTNESS_STATE_TOPIC = "hippietrap/brightness_state"
+COLOR_TOPIC = "hippietrap/color"
+COLOR_STATE_TOPIC = "hippietrap/color_state"
+EFFECT_TOPIC = "hippietrap/effect"
 
 class HippieTrapMQTT(HippieTrap):
 
@@ -108,41 +107,12 @@ class HippieTrapMQTT(HippieTrap):
                 pass
             return
         
-        if msg.topic == RGB_COLOR_TOPIC:
+        if msg.topic == COLOR_TOPIC:
             r,g,b = payload.split(",")
             color = (int(r),int(g),int(b))
             self.current_pattern.set_color(color)
             return
            
-        if msg.topic == REDISCOVER_TOPIC:
-            self.send_discover_msg()
-            return
-
-
-    def send_discover_msg(self):
-
-        effect_name_list = []
-        for pattern in self.patterns:
-            effect_name_list.append(pattern.name)
-
-        self.mqttc.publish(DISCOVER_TOPIC, json.dumps(
-            {
-                "name": "hippie trap",
-                "command_topic": COMMAND_TOPIC, 
-                "state_topic": STATE_TOPIC, 
-                "device_class": "light",
-                "assumed_state": "true",
-                "rgb_color" : "true",
-                "rgb_command_topic" : RGB_COLOR_TOPIC,
-                "effect" : "true",
-                "effect_command_topic": EFFECT_TOPIC,
-                "effect_list": effect_name_list,
-                "brightness" : "true",
-                "brightness_scale" : "100",
-                "brightness_command_topic": BRIGHTNESS_TOPIC,
-#                "brightness_state_topic": BRIGHTNESS_STATE_TOPIC,
-            }))
-
 
     def setup(self):
 
@@ -157,21 +127,19 @@ class HippieTrapMQTT(HippieTrap):
         self.mqttc.subscribe(COMMAND_TOPIC)
         self.mqttc.subscribe(BRIGHTNESS_TOPIC)
         self.mqttc.subscribe(EFFECT_TOPIC)
-        self.mqttc.subscribe(RGB_COLOR_TOPIC)
-        self.mqttc.subscribe(REDISCOVER_TOPIC)
-        self.send_discover_msg()
+        self.mqttc.subscribe(COLOR_TOPIC)
 
 
 if __name__ == "__main__":
     with HippieTrapMQTT() as ht:
-#        ht.add_pattern(SweepTwoColorShiftPattern)
+        ht.add_pattern(SweepTwoColorShiftPattern)
         ht.add_pattern(SweepOneColorPerRingPattern)
-#        ht.add_pattern(SwappiesPattern)
-#        ht.add_pattern(RandomColorsPattern)
+        ht.add_pattern(SwappiesPattern)
+        ht.add_pattern(RandomColorsPattern)
         ht.add_pattern(EachBottleOneRainbowPattern)
-#        ht.add_pattern(FireIceCirclesPattern)
-#        ht.add_pattern(RainbowPattern)
-#        ht.add_pattern(TexturePattern)
+        ht.add_pattern(FireIceCirclesPattern)
+        ht.add_pattern(RainbowPattern)
+        ht.add_pattern(TexturePattern)
         ht.setup()
         ht.set_brightness(ALL,50)
         try:
