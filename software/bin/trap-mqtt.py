@@ -8,7 +8,7 @@ import random
 import paho.mqtt.client as mqtt
 import json
 import copy
-from time import sleep
+from time import sleep, time
 
 from hippietrap.hippietrap import HippieTrap, ALL
 from hippietrap.patterns.rainbow import RainbowPattern
@@ -32,12 +32,38 @@ EFFECT_TOPIC = "hippietrap/effect"
 
 class HippieTrapMQTT(HippieTrap):
 
+    UPDATE_INTERVAL = 10
+
     def __init__(self):
         HippieTrap.__init__(self)
-        self.state = True
+        self.state = False
         self.patterns = []
         self.current_pattern = None
         self.random_patterns = None
+        self.next_update = 0
+
+
+    @property
+    def enabled(self):
+        return self.state
+
+
+    def enable(self, enabled):
+        if not self.state and enabled:
+            self.state = True
+            print("turn on power")
+            self.power_on()
+            if self.current_pattern:
+                print("start pattern")
+                self.current_pattern.enable(True)
+
+        if self.state and not enabled:
+            self.state = False
+            print("turn off power")
+            if self.current_pattern:
+                self.current_pattern.enable(False)
+            self.power_off()
+
 
     def set_random_pattern(self):
         if not self.random_patterns:
@@ -51,6 +77,7 @@ class HippieTrapMQTT(HippieTrap):
     def add_pattern(self, pattern):
         self.patterns.append(pattern)
 
+
     def set_pattern(self, pattern_name):
         new_pattern = None
         for pattern in self.patterns:
@@ -61,15 +88,16 @@ class HippieTrapMQTT(HippieTrap):
         if self.current_pattern:
             self.current_pattern.stop()
             self.current_pattern.join()
-            self.clear(ALL)
 
         if not new_pattern:
+            self.current_pattern = None
             return
 
-
         self.current_pattern = new_pattern(self)
-        print("Start pattern '%s'" % self.current_pattern.name)
+        print("start pattern '%s'" % self.current_pattern.name)
         self.current_pattern.start()
+        self.current_pattern.enable(True)
+        self.next_update = time() + self.UPDATE_INTERVAL
 
 
     @staticmethod
@@ -77,31 +105,24 @@ class HippieTrapMQTT(HippieTrap):
         try:
             mqttc.__ht._handle_message(mqttc, msg)
         except Exception as err:
-            print(("exception!", err))
-            print(traceback.format_exc())
+            print("exception!", err)
+            print(traceback.print_strack())
 
 
     def _handle_message(self, mqttc, msg):
         payload = msg.payload # str(msg.payload, 'utf-8')
         if msg.topic == COMMAND_TOPIC:
-            if msg.payload.lower() == b"on":
-                if not self.state:
-                    self.state = True
-                    self.power_off()
-                    sleep(.1)
-                    self.power_on()
-                    sleep(2)
-                mqttc.publish(STATE_TOPIC, "ON")
+            if msg.payload.lower() == b"1":
+                self.enable(True)
+                self.set_random_pattern()
+                mqttc.publish(STATE_TOPIC, "1")
                 return
 
-            if msg.payload.lower() == b"off":
-                if self.state:
-                    self.set_pattern("")
-                    self.state = False
-                    self.power_off()
-                mqttc.publish(STATE_TOPIC, "OFF")
+            if msg.payload.lower() == b"0":
+                self.enable(False)
+                self.set_pattern("")
+                mqttc.publish(STATE_TOPIC, "0")
                 return
-
             return
 
         if msg.topic == BRIGHTNESS_TOPIC:
@@ -140,6 +161,12 @@ class HippieTrapMQTT(HippieTrap):
         self.mqttc.subscribe(EFFECT_TOPIC)
         self.mqttc.subscribe(COLOR_TOPIC)
 
+    def loop(self):
+        if self.next_update and time() > self.next_update:
+            self.set_random_pattern()
+
+        sleep(.1)
+
 
 if __name__ == "__main__":
     with HippieTrapMQTT() as ht:
@@ -150,16 +177,16 @@ if __name__ == "__main__":
         ht.add_pattern(EachBottleOneRainbowPattern)
         ht.add_pattern(FireIceCirclesPattern)
         ht.add_pattern(RainbowPattern)
-        ht.add_pattern(TexturePattern)
+#        ht.add_pattern(TexturePattern)
         ht.setup()
         ht.set_brightness(ALL,50)
         try:
             while True:
-                ht.set_random_pattern()
-                sleep(10)
-     
+                ht.loop()
         except KeyboardInterrupt:
+            print("break! shutting down")
             ht.set_pattern("")
             ht.clear(ALL)
+            ht.power_off()
             ht.mqttc.disconnect()
             ht.mqttc.loop_stop()

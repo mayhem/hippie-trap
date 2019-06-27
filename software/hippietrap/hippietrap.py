@@ -127,7 +127,6 @@ class HippieTrap(object):
 
     def begin(self):
 
-        print("basic setup...")
         self.set_brightness(BROADCAST, 100)
         self.stop_pattern(BROADCAST)
         self.clear(BROADCAST)
@@ -139,7 +138,6 @@ class HippieTrap(object):
         if not self.ser or not self.ser.is_open:
             raise IOError("Hippie trap not opened.")
 
-        print("Turning on power...")
         try:
             for pin in POWER_GPIO_PINS:
                 check_call(["gpio", "-1", "write", "%d" % pin, "1"])
@@ -159,7 +157,6 @@ class HippieTrap(object):
         if not self.ser or not self.ser.is_open:
             raise IOError("Hippie trap not opened.")
 
-        print("Turning off power...")
         try:
             for pin in POWER_GPIO_PINS:
                 check_call(["gpio", "-1", "write", "%d" % pin, "0"])
