@@ -6,7 +6,7 @@ import math
 from colorsys import hsv_to_rgb
 from random import random
 from hippietrap.hippietrap import HippieTrap, ALL, NUM_NODES, NUM_RINGS, BOTTLES_PER_RING, group
-from hippietrap.color import Color, ColorGenerator
+from hippietrap.color import Color, ColorGenerator, random_color
 from hippietrap.geometry import HippieTrapGeometry
 from hippietrap.pattern import PatternBase, run_pattern
 from hippietrap.transition import transition_sweep_out
@@ -41,6 +41,7 @@ class SpreadOutwardPattern(PatternBase):
         stop = False
         while not stop:
 
+            color = random_color()
             for radius100 in range(-100, 100 * (NUM_RINGS + 1), 10):
                 radius = radius100 / 100.0 
                 for ring in range(-1, NUM_RINGS + 1):
@@ -54,9 +55,7 @@ class SpreadOutwardPattern(PatternBase):
                     if ring < 0:
                         continue
 
-                    value = int(255 * value)
-                    color = (value, 0, 0)
-                    self.trap.set_color(group(ring), color)
+                    self.trap.set_color(group(ring), (int(color[0] * value), int(color[1] * value), int(color[2] * value)))
                     sleep(.02)
 
             if self.stop_thread:
