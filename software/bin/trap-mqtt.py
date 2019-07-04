@@ -20,6 +20,7 @@ from hippietrap.patterns.swappies import SwappiesPattern
 from hippietrap.patterns.sweep_one_color_per_ring import SweepOneColorPerRingPattern
 from hippietrap.patterns.sweep_two_color_shift import SweepTwoColorShiftPattern
 from hippietrap.patterns.texture import TexturePattern
+from hippietrap.patterns.sweep_gradient import SweepGradientPattern
 
 CLIENT_ID = socket.gethostname()
 COMMAND_TOPIC = "hippietrap/command"
@@ -62,6 +63,7 @@ class HippieTrapMQTT(HippieTrap):
             print("turn off power")
             if self.current_pattern:
                 self.current_pattern.enable(False)
+                self.set_pattern("")
             self.power_off()
 
 
@@ -90,6 +92,7 @@ class HippieTrapMQTT(HippieTrap):
             self.current_pattern.join()
 
         if not new_pattern:
+            self.next_update = 0
             self.current_pattern = None
             return
 
@@ -160,6 +163,7 @@ class HippieTrapMQTT(HippieTrap):
         self.mqttc.subscribe(BRIGHTNESS_TOPIC)
         self.mqttc.subscribe(EFFECT_TOPIC)
         self.mqttc.subscribe(COLOR_TOPIC)
+        self.mqttc.publish(STATE_TOPIC, "%d" % self.state)
 
     def loop(self):
         if self.next_update and time() > self.next_update:
@@ -170,13 +174,14 @@ class HippieTrapMQTT(HippieTrap):
 
 if __name__ == "__main__":
     with HippieTrapMQTT() as ht:
-        ht.add_pattern(SweepTwoColorShiftPattern)
-        ht.add_pattern(SweepOneColorPerRingPattern)
-        ht.add_pattern(SwappiesPattern)
-        ht.add_pattern(RandomColorsPattern)
-        ht.add_pattern(EachBottleOneRainbowPattern)
-        ht.add_pattern(FireIceCirclesPattern)
-        ht.add_pattern(RainbowPattern)
+        ht.add_pattern(SweepGradientPattern)
+#        ht.add_pattern(SweepTwoColorShiftPattern)
+#        ht.add_pattern(SweepOneColorPerRingPattern)
+#        ht.add_pattern(SwappiesPattern)
+#        ht.add_pattern(RandomColorsPattern)
+#        ht.add_pattern(EachBottleOneRainbowPattern)
+#        ht.add_pattern(FireIceCirclesPattern)
+#        ht.add_pattern(RainbowPattern)
 #        ht.add_pattern(TexturePattern)
         ht.setup()
         ht.set_brightness(ALL,50)
@@ -188,5 +193,6 @@ if __name__ == "__main__":
             ht.set_pattern("")
             ht.clear(ALL)
             ht.power_off()
+            ht.mqttc.publish(STATE_TOPIC, "X")
             ht.mqttc.disconnect()
             ht.mqttc.loop_stop()

@@ -19,13 +19,21 @@ def transition_drop_out(trap):
     random.shuffle(bottles)
     for bottle in bottles:
         trap.clear(bottle)
-        sleep(.01)
+        sleep(.005)
 
 
 def transition_sweep_out(trap):
     for bottle, angle in geo.enumerate_all_bottles():
         trap.set_color(bottle, Color(0,0,0))
-        sleep(.02)
+        sleep(.005)
+
+
+def transition_sweep_in(trap):
+    bottles = geo.enumerate_all_bottles()
+    bottles.reverse()
+    for bottle, angle in bottles:
+        trap.set_color(bottle, Color(0,0,0))
+        sleep(.005)
 
 
 def transition_fade_out(trap):

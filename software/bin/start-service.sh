@@ -1,4 +1,4 @@
 #!/bin/bash
 
 cd /home/robert/hippie-trap/software/bin
-python ./thing.py
+python3 ./trap-mqtt.py

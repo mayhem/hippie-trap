@@ -10,7 +10,7 @@ from hippietrap.color import Color, ColorGenerator, random_color, hue_to_color
 from hippietrap.geometry import HippieTrapGeometry
 from hippietrap.pattern import PatternBase, run_pattern
 from time import sleep, time
-from hippietrap.transition import transition_sweep_out
+from hippietrap.transition import transition_sweep_in
 
 
 class SweepTwoColorShiftPattern(PatternBase):
@@ -48,4 +48,4 @@ class SweepTwoColorShiftPattern(PatternBase):
         self.trap.stop_pattern(ALL)
         if self.transition:
             sleep(.02)
-            transition_sweep_out(self.trap)
+            transition_sweep_in(self.trap)
