@@ -40,9 +40,9 @@ class SweepGradientPattern(PatternBase):
             for c in c1.range_to(c2, 181):
                 gradient.append((int(c.red * 255), int(c.green * 255), int(c.blue * 255)))
 
-            for angle in range(180):
+            for angle in range(181, 0, -1):
                 for bottle, bottle_angle in self.geo.get_near_bottles(angle, 1):
-                    if bottle_angle >= angle:
+                    if bottle_angle < angle:
                         self.trap.set_color(bottle, gradient[int(bottle_angle)])
                         sleep(.01)
 
