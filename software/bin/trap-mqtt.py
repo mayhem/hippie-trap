@@ -21,6 +21,7 @@ from hippietrap.patterns.sweep_one_color_per_ring import SweepOneColorPerRingPat
 from hippietrap.patterns.sweep_two_color_shift import SweepTwoColorShiftPattern
 from hippietrap.patterns.texture import TexturePattern
 from hippietrap.patterns.sweep_gradient import SweepGradientPattern
+from hippietrap.patterns.spread_outward import SpreadOutwardPattern
 
 CLIENT_ID = socket.gethostname()
 COMMAND_TOPIC = "hippietrap/command"
@@ -174,7 +175,8 @@ class HippieTrapMQTT(HippieTrap):
 
 if __name__ == "__main__":
     with HippieTrapMQTT() as ht:
-        ht.add_pattern(SweepGradientPattern)
+        ht.add_pattern(SpreadOutwardPattern)
+#        ht.add_pattern(SweepGradientPattern)
 #        ht.add_pattern(SweepTwoColorShiftPattern)
 #        ht.add_pattern(SweepOneColorPerRingPattern)
 #        ht.add_pattern(SwappiesPattern)
