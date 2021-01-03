@@ -25,11 +25,11 @@ BOTTLE_INDEXES = [
 ]
 
 
-class SweepOneColorPerRingPattern(PatternBase):
+class OpposingSweepPattern(PatternBase):
 
     geo = HippieTrapGeometry()
     cg = ColorGenerator()
-    name = "sweep one color"
+    name = "opposing sweep"
 
     def pattern(self):
 
@@ -68,5 +68,5 @@ if __name__ == "__main__":
         trap.begin()
         trap.set_brightness(ALL, 100)
 
-        p = SweepOneColorPerRingPattern(trap)
+        p = OpposingSweepPattern(trap)
         p.pattern()

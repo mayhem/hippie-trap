@@ -17,7 +17,7 @@ from hippietrap.patterns.fire_ice_circles import FireIceCirclesPattern
 from hippietrap.patterns.each_bottle_one_rainbow import EachBottleOneRainbowPattern
 from hippietrap.patterns.random_colors import RandomColorsPattern
 from hippietrap.patterns.swappies import SwappiesPattern
-from hippietrap.patterns.sweep_one_color_per_ring import SweepOneColorPerRingPattern
+from hippietrap.patterns.opposing_sweep import OpposingSweepPattern
 from hippietrap.patterns.sweep_two_color_shift import SweepTwoColorShiftPattern
 from hippietrap.patterns.texture import TexturePattern
 from hippietrap.patterns.sweep_gradient import SweepGradientPattern
@@ -178,7 +178,7 @@ if __name__ == "__main__":
         ht.add_pattern(SpreadOutwardPattern)
         ht.add_pattern(SweepGradientPattern)
         ht.add_pattern(SweepTwoColorShiftPattern)
-        ht.add_pattern(SweepOneColorPerRingPattern)
+        ht.add_pattern(OpposingSweepPattern)
         ht.add_pattern(SwappiesPattern)
         ht.add_pattern(RandomColorsPattern)
         ht.add_pattern(EachBottleOneRainbowPattern)

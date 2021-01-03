@@ -3,7 +3,7 @@
 import os
 import sys
 from time import sleep
-from hippietrap.hippietrap import HippieTrap, ALL
+from hippietrap.hippietrap import HippieTrap, ALL, NUM_NODES
 from hippietrap.pattern import PatternBase, run_pattern
 
 # TODO: Add sparkle. 
@@ -19,10 +19,20 @@ class EachBottleOneRainbowPattern(PatternBase):
     def pattern(self):
 
         self.trap.send_entropy()
-        self.trap.send_rainbow(ALL, 4)
-        self.trap.start_pattern(ALL)
+        for i in range(NUM_NODES):
+            self.trap.send_rainbow(i + 1, 4)
+            self.trap.start_pattern(i + 1)
+            sleep(.01)
 
         while not self.stop_thread:
             sleep(.1)
 
         self.trap.stop_pattern(ALL)
+
+if __name__ == "__main__":
+    with HippieTrap() as trap:
+        trap.begin()
+        trap.set_brightness(ALL, 100)
+
+        p = EachBottleOneRainbowPattern(trap)
+        p.pattern()
