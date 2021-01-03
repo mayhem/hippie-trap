@@ -45,3 +45,11 @@ class SweepTwoColorShiftPattern(PatternBase):
             color_rings.insert(0, hue_to_color(new_offset))
 
         self.trap.stop_pattern(ALL)
+
+if __name__ == "__main__":
+    with HippieTrap() as trap:
+        trap.begin()
+        trap.set_brightness(ALL, 100)
+
+        p = SweepTwoColorShiftPattern(trap)
+        p.pattern()

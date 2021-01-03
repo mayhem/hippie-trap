@@ -26,7 +26,7 @@ GAMMA_TABLE = [
 seed()
 
 def hue_to_color(hue):
-    col = colorsys.hsv_to_rgb(hue, 1, 1)
+    col = colorsys.hsv_to_rgb(math.fmod(hue, 1.0), 1, 1)
     return gamma(Color(int(col[0] * 255), int(col[1] * 255), int(col[2] * 255)))
 
 def random_color():
