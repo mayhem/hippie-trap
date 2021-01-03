@@ -9,7 +9,6 @@ from hippietrap.hippietrap import HippieTrap, ALL, NUM_NODES, NUM_RINGS, BOTTLES
 from hippietrap.color import Color, ColorGenerator
 from hippietrap.geometry import HippieTrapGeometry
 from hippietrap.pattern import PatternBase, run_pattern
-from hippietrap.transition import transition_sweep_out
 from time import sleep, time
 
 # TODO: ALternating rings come towards each other. 
@@ -54,6 +53,3 @@ class SweepOneColorPerRingPattern(PatternBase):
                 break
 
         self.trap.stop_pattern(ALL)
-        if self.transition:
-            sleep(.05)
-            transition_sweep_out(self.trap)

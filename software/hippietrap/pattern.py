@@ -33,7 +33,6 @@ class PatternBase(Thread):
         Thread.__init__(self)
         self.trap = trap
         self.stop_thread = False
-        self.transition = False
         self.enabled = False
 
 
@@ -41,9 +40,8 @@ class PatternBase(Thread):
         self.enabled = enabled
 
 
-    def stop(self, transition = True):
+    def stop(self):
         self.stop_thread = True
-        self.transition = transition
 
 
     @abc.abstractmethod

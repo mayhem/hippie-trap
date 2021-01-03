@@ -8,7 +8,6 @@ from hippietrap.color import hue_to_color
 from hippietrap.pattern import PatternBase
 from time import sleep
 from random import random
-from hippietrap.transition import transition_sweep_in
 
 class FireIceCirclesPattern(PatternBase):
 
@@ -60,6 +59,3 @@ class FireIceCirclesPattern(PatternBase):
             color_shift += .01
 
         self.trap.stop_pattern(ALL)
-        if self.transition:
-            sleep(.02)
-            transition_sweep_in(self.trap)

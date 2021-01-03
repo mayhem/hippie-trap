@@ -8,7 +8,6 @@ from hippietrap.hippietrap import HippieTrap, ALL, NUM_NODES
 from hippietrap.pattern import PatternBase, run_pattern
 from hippietrap.color import hue_to_color
 from time import sleep, time
-from hippietrap.transition import transition_fade_out
 
 class Pattern(PatternBase):
 
@@ -32,12 +31,3 @@ class Pattern(PatternBase):
                 break
 
         self.trap.stop_pattern(ALL)
-        if self.transition:
-            sleep(.02)
-            transition_fade_out(self.trap)
-
-if __name__ == "__main__":
-    with HippieTrap() as trap:
-        trap.begin()
-        run_pattern(trap, Pattern)
-        trap.clear(ALL)

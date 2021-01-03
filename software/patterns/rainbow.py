@@ -6,7 +6,6 @@ import math
 from hippietrap.hippietrap import HippieTrap, ALL
 from hippietrap.pattern import PatternBase
 from hippietrap.color import hue_to_color
-from hippietrap.transition import transition_drop_out
 from time import sleep, time
 
 
@@ -22,7 +21,3 @@ class RainbowPattern(PatternBase):
             sleep(.02)
             if self.stop_thread:
                 break
-
-        if self.transition:
-            sleep(.02)
-            transition_drop_out(self.trap)

@@ -10,19 +10,19 @@ from hippietrap.hippietrap import HippieTrap, ALL, NUM_NODES
 from hippietrap.color import Color, random_color
 from hippietrap.pattern import PatternBase, run_pattern
 from time import sleep, time
-from hippietrap.transition import transition_drop_out
 
 class SwappiesPattern(PatternBase):
 
     DELAY = 1.2 
+    FADE_DURATION = 1000
     name = "swappies"
 
     def flip(self, col1, col2):
-        self.trap.send_fade(ALL, 250, (col1, col2, col1, col2))
+        self.trap.send_fade(ALL, self.FADE_DURATION, (col1, col2, col1, col2))
         self.trap.start_pattern(ALL)
         sleep(self.DELAY)
 
-        self.trap.send_fade(ALL, 250, (col2, col1, col2, col1))
+        self.trap.send_fade(ALL, self.FADE_DURATION, (col2, col1, col2, col1))
         self.trap.start_pattern(ALL)
         sleep(self.DELAY)
 
@@ -66,6 +66,3 @@ class SwappiesPattern(PatternBase):
                 break
 
         self.trap.stop_pattern(ALL)
-        if self.transition:
-            sleep(.05)
-            transition_drop_out(self.trap)

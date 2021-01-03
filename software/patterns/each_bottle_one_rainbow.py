@@ -5,7 +5,6 @@ import sys
 from time import sleep
 from hippietrap.hippietrap import HippieTrap, ALL
 from hippietrap.pattern import PatternBase, run_pattern
-from hippietrap.transition import transition_fade_out, transition_drop_out
 
 # TODO: Add sparkle. 
 # TODO: Consider color pallete mapping. Map a sub-range to the whole.
@@ -27,5 +26,3 @@ class EachBottleOneRainbowPattern(PatternBase):
             sleep(.1)
 
         self.trap.stop_pattern(ALL)
-        if self.transition:
-            transition_fade_out(self.trap)

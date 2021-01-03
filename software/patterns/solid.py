@@ -7,7 +7,6 @@ from colorsys import hsv_to_rgb
 from hippietrap.hippietrap import HippieTrap, ALL, NUM_NODES
 from hippietrap.pattern import PatternBase, run_pattern
 from hippietrap.color import Color, hue_to_color
-from hippietrap.transition import transition_lateral_sweep
 from time import sleep, time
 
 
@@ -26,10 +25,6 @@ class SolidPattern(PatternBase):
     def pattern(self):
         while not self.stop_thread:
             sleep(.1)
-
-        if self.transition:
-            sleep(.02)
-            transition_lateral_sweep(self.trap)
 
 
     def set_color(self, color):

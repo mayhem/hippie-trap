@@ -9,7 +9,6 @@ from hippietrap.hippietrap import HippieTrap, ALL, NUM_NODES, NUM_RINGS, BOTTLES
 from hippietrap.color import Color, ColorGenerator, random_color
 from hippietrap.geometry import HippieTrapGeometry
 from hippietrap.pattern import PatternBase, run_pattern
-from hippietrap.transition import transition_sweep_out
 from time import sleep, time
 
 # BOTTLES_PER_RING = (13, 17, 19, 23)
@@ -61,7 +60,3 @@ class SpreadOutwardPattern(PatternBase):
             if self.stop_thread:
                 stop = True
                 break
-
-        if self.transition:
-            sleep(.05)
-            transition_sweep_out(self.trap)

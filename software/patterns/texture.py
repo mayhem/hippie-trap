@@ -8,7 +8,6 @@ from hippietrap.hippietrap import HippieTrap, ALL, NUM_NODES
 from hippietrap.pattern import PatternBase, run_pattern
 from time import sleep, time
 from random import random
-from hippietrap.transition import transition_lateral_sweep
 from hippietrap.geometry import HippieTrapGeometry
 from hippietrap.color import Color
 
@@ -66,7 +65,3 @@ class TexturePattern(PatternBase):
 
             scale += .01
             self.z_factor += .0005
-
-        if self.transition:
-            sleep(.02)
-            transition_lateral_sweep(self.trap)

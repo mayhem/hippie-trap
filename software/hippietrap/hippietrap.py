@@ -121,7 +121,7 @@ class HippieTrap(object):
 
     def send_panic(self):
         while True:
-            self.ser.write(bytearray('M'))
+            self.ser.write(bytearray((ord('M'),)))
             sleep(.0005)
 
 

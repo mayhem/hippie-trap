@@ -12,7 +12,6 @@ from hippietrap.hippietrap import HippieTrap, ALL, NUM_NODES, NUM_RINGS, BOTTLES
 from hippietrap.color import Color, ColorGenerator, random_color
 from hippietrap.geometry import HippieTrapGeometry
 from hippietrap.pattern import PatternBase, run_pattern
-from hippietrap.transition import transition_sweep_in
 from time import sleep, time
 
 BOTTLE_INDEXES = [
@@ -50,6 +49,3 @@ class SweepGradientPattern(PatternBase):
                 stop = True
                 break
 
-        if self.transition:
-            sleep(.05)
-            transition_sweep_in(self.trap)

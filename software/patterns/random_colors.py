@@ -8,7 +8,6 @@ from hippietrap.hippietrap import HippieTrap, ALL, NUM_NODES
 from hippietrap.pattern import PatternBase, run_pattern
 from time import sleep, time
 from random import random
-from hippietrap.transition import transition_drop_out
 
 
 class RandomColorsPattern(PatternBase):
@@ -28,6 +27,3 @@ class RandomColorsPattern(PatternBase):
                 break 
 
         self.trap.stop_pattern(ALL)
-        if self.transition:
-            sleep(.02)
-            transition_drop_out(self.trap)

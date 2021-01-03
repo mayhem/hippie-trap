@@ -34,7 +34,7 @@ EFFECT_TOPIC = "hippietrap/effect"
 
 class HippieTrapMQTT(HippieTrap):
 
-    UPDATE_INTERVAL = 10
+    UPDATE_INTERVAL = 30
 
     def __init__(self):
         HippieTrap.__init__(self)

@@ -16,7 +16,7 @@ MAX_SIZE = 0x7000
 def send_firmware(filename):
     with HippieTrap() as ch:
         try:
-            with open(filename, "r") as f:
+            with open(filename, "rb") as f:
                 lines = f.readlines()
 
             filesize = os.path.getsize(filename)
@@ -30,7 +30,7 @@ def send_firmware(filename):
             return
 
         for i in range(16):
-            if not ch.ser.write(bytearray(chr(0x45).encode('ascii'))):
+            if not ch.ser.write(bytearray((0x45,))):
                 print("Cannot write programming header.")
                 return
         sleep(.1)
@@ -45,11 +45,9 @@ def send_firmware(filename):
             if not line:
                 break
 
-            for char in line:
-                if not ch.ser.write(char.encode('ascii')):
-                    print("Cannot write to device.")
-                    return
-                sleep(.0001)
+            if not ch.ser.write(bytearray(line)):
+                print("Cannot write to device.")
+                return
 
             print(("%03d/%03d\b\b\b\b\b\b\b\b" % (i, len(lines))), end=' ')
             sys.stdout.flush()

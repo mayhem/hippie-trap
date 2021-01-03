@@ -68,23 +68,24 @@ enum response_t process_line(uint16_t *hex_file_received)
             ;
         else if (c == '\0')
             ;
-        else if (line_len < sizeof(line_buffer))
-            line_buffer[line_len++] = c;
+        else 
+            if (line_len < sizeof(line_buffer))
+                line_buffer[line_len++] = c;
+            else
+                return RSP_INVALID;
+
         c = serial_rx_nb();
         (*hex_file_received)++;
     }
 
     if (line_len < 2)
     {
-        dprintf("line_len: %d\n", line_len);
         return RSP_INVALID;
     }
 
     data_count = (HEX2DEC(line_buffer[0]) << 4) + HEX2DEC(line_buffer[1]);
     if (line_len != data_count * 2 + 10)
     {
-        dprintf("line_len: %d\n", line_len);
-        dprintf("data_count: %d\n", data_count);
         return RSP_INVALID;
     }
 
@@ -106,13 +107,14 @@ enum response_t process_line(uint16_t *hex_file_received)
     checksum = 0xFF - checksum + 1;
     recv_checksum = (HEX2DEC(line_buffer[line_pos]) << 4) + HEX2DEC(line_buffer[line_pos + 1]);
     if (checksum != recv_checksum)
+    {
         return RSP_CHECKSUM_FAIL;
+    }
 
     if (line_type == 1)
     {
         if (last_addr != 0xFFFFFFFF)
         {
-            serial_tx('.');
             boot_page_write (last_addr & SPM_PAGEMASK);
             boot_spm_busy_wait();
         }
@@ -128,7 +130,6 @@ enum response_t process_line(uint16_t *hex_file_received)
         {
             if (last_addr != 0xFFFFFFFF)
             {
-                serial_tx('.');
                 boot_page_write (last_addr & SPM_PAGEMASK);
                 boot_spm_busy_wait();
             }
@@ -142,6 +143,7 @@ enum response_t process_line(uint16_t *hex_file_received)
         }
         last_addr = full_addr;
     }
+
     return RSP_OK;
 }
 
@@ -179,25 +181,10 @@ int main()
     set_color(0, 0, 128);
     _delay_ms(500);
 
-//    for(j = 0; j < 500; j++)
-//    {
-//        if (serial_char_ready_nb())
-//        {
-//            if (serial_rx_nb() == 'M')
-//                force_bl_count++;
-//        }
-//
-//        _delay_ms(1);
-//    }
-
     valid_program = 0;
     init_ok = 0;
 
-//    if (force_bl_count)
-//        eeprom_write_byte((uint8_t *)ee_valid_program_offset, 0);
-//    else
-//    {
-        eeprom_busy_wait();
+    eeprom_busy_wait();
     valid_program = eeprom_read_byte((const uint8_t *)ee_valid_program_offset); 
     init_ok = eeprom_read_byte((const uint8_t *)ee_init_ok_offset); 
 
@@ -238,6 +225,11 @@ int main()
         hex_file_size |= serial_rx_nb() << 8;
         hex_file_received = 1;
 
+        if (hex_file_size > 28672)
+            set_color(16, 0, 16);
+        else
+            set_color(32, 16, 0);
+
         i = 0; step = 4;
         response = RSP_OK;
         while (response != RSP_FINISHED)
@@ -252,13 +244,13 @@ int main()
             }
             else 
             if (response != RSP_FINISHED)
+            {
                 break;
+            }
         }   
-        set_color(0, 0, 0);
 
         if (response == RSP_FINISHED && hex_file_size == hex_file_received)
         {
-            dprintf("programmed ok.\n");
             set_color(0, 64, 64);
             _delay_ms(2000);
             set_color(0, 0, 0);
@@ -282,23 +274,18 @@ int main()
 
             if (response == RSP_FINISHED && hex_file_size != hex_file_received)
             {
-                dprintf("received incorrect file size\n");
-                dprintf("rec %u of %u bytes.\n", hex_file_received, hex_file_size);
                 led.r = 0; led.g = 0; led.b = 128;
             }
             else if (response == RSP_CHECKSUM_FAIL)
             {
-                dprintf("checksum fail\n");
                 led.r = 128; led.g = 0; led.b = 0;
             }
             else if (response == RSP_INVALID)
             {
-                dprintf("upload invalid (size: %02X read: %02X)\n", hex_file_size, hex_file_received);
                 led.r = 128; led.g = 128; led.b = 0;
             }
             else 
             {
-                dprintf("other error\n");
                 led.r = 128; led.g = 0; led.b = 128;
             }
 
@@ -310,7 +297,6 @@ int main()
                 _delay_ms(200);
             }
         }
-        dprintf("reset!\n");
 
         boot_rww_enable ();
         boot_spm_busy_wait();
