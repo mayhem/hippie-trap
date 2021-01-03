@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 
 import os
 import sys
@@ -28,5 +28,4 @@ class SolidPattern(PatternBase):
 
 
     def set_color(self, color):
-        print("set color: ", color)
         self.trap.set_color(ALL, color)

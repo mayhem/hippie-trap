@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 
 import os
 import sys
@@ -6,7 +6,8 @@ import math
 from colorsys import hsv_to_rgb
 from random import random
 from hippietrap.hippietrap import HippieTrap, ALL, NUM_NODES, NUM_RINGS, BOTTLES_PER_RING, group
-from hippietrap.color import Color, ColorGenerator, random_color
+from hippietrap.color import Color, ColorGenerator, random_color, hue_to_color
+from hippietrap.gradient import Gradient
 from hippietrap.geometry import HippieTrapGeometry
 from hippietrap.pattern import PatternBase, run_pattern
 from time import sleep, time
@@ -19,6 +20,7 @@ BOTTLE_INDEXES = [
     [ 31, 50 ],
     [ 51, 72 ],
 ]
+
 
 class SpreadOutwardPattern(PatternBase):
 
@@ -37,10 +39,15 @@ class SpreadOutwardPattern(PatternBase):
         
 
     def pattern(self):
+        hue = random()
+        hue_offset = .05
+        gr = Gradient([(0.0, hue_to_color(hue)),
+                       (.3333, hue_to_color(hue + hue_offset)),
+                       (.6666, hue_to_color(hue + hue_offset * 2)),
+                       (1.0, hue_to_color(hue + hue_offset * 3))])
         stop = False
         while not stop:
 
-            color = random_color()
             for radius100 in range(-100, 100 * (NUM_RINGS + 1), 10):
                 radius = radius100 / 100.0 
                 for ring in range(-1, NUM_RINGS + 1):
@@ -54,9 +61,19 @@ class SpreadOutwardPattern(PatternBase):
                     if ring < 0:
                         continue
 
-                    self.trap.set_color(group(ring), (int(color[0] * value), int(color[1] * value), int(color[2] * value)))
-                    sleep(.02)
+                    color = gr.get_color(value)
+                    self.trap.set_color(group(ring), color) #(int(color[0] * value), int(color[1] * value), int(color[2] * value)))
+
+                sleep(.05)
 
             if self.stop_thread:
                 stop = True
                 break
+
+if __name__ == "__main__":
+    with HippieTrap() as trap:
+        trap.begin()
+        trap.set_brightness(ALL, 100)
+
+        p = SpreadOutwardPattern(trap)
+        p.pattern()

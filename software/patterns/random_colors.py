@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 
 import os
 import sys
@@ -16,6 +16,7 @@ class RandomColorsPattern(PatternBase):
     name = "random colors"
 
     def pattern(self):
+
         self.trap.send_entropy()
         while True:
             self.trap.send_fade(ALL, self.PERIOD, ())
@@ -27,3 +28,12 @@ class RandomColorsPattern(PatternBase):
                 break 
 
         self.trap.stop_pattern(ALL)
+
+
+if __name__ == "__main__":
+    with HippieTrap() as trap:
+        trap.begin()
+        trap.set_brightness(ALL, 100)
+
+        p = RandomColorsPattern(trap)
+        p.pattern()

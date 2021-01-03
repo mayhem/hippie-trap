@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import os
 import sys
@@ -19,10 +19,9 @@ with HippieTrap() as ch:
 
     try:
         while True:
-            for i in range(30):
-                ch.set_random_color(randint(1, 31))
-
-            sleep(.3)
+            for i in range(NUM_NODES):
+                ch.set_random_color(randint(1, NUM_NODES))
+                sleep(.003)
 
     except KeyboardInterrupt:
         ch.stop_pattern(BROADCAST)

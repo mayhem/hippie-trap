@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 
 import os
 import sys
@@ -40,27 +40,22 @@ class SwappiesPattern(PatternBase):
             if self.flip(col1, col2):
                 break
 
-            col2 = Color(255, 255, 0)
             col2 = random_color()
             if self.flip(col1, col2):
                 break
 
-            col2 = Color(0, 255, 0)
             col2 = random_color()
             if self.flip(col1, col2):
                 break
 
-            col2 = Color(0, 255, 255)
             col2 = random_color()
             if self.flip(col1, col2):
                 break
 
-            col2 = Color(0, 0, 255)
             col2 = random_color()
             if self.flip(col1, col2):
                 break
 
-            col2 = Color(255, 0, 255)
             col2 = random_color()
             if self.flip(col1, col2):
                 break

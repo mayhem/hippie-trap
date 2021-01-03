@@ -34,7 +34,7 @@ EFFECT_TOPIC = "hippietrap/effect"
 
 class HippieTrapMQTT(HippieTrap):
 
-    UPDATE_INTERVAL = 30
+    UPDATE_INTERVAL = 10
 
     def __init__(self):
         HippieTrap.__init__(self)
@@ -184,7 +184,6 @@ if __name__ == "__main__":
         ht.add_pattern(EachBottleOneRainbowPattern)
         ht.add_pattern(FireIceCirclesPattern)
         ht.add_pattern(RainbowPattern)
-#        ht.add_pattern(TexturePattern)
         ht.setup()
         ht.set_brightness(ALL,50)
         print("ready!")
