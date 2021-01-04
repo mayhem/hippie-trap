@@ -21,6 +21,7 @@ from hippietrap.patterns.opposing_sweep import OpposingSweepPattern
 from hippietrap.patterns.sweep_two_color_shift import SweepTwoColorShiftPattern
 from hippietrap.patterns.texture import TexturePattern
 from hippietrap.patterns.sweep_gradient import SweepGradientPattern
+from hippietrap.patterns.sweep_checker import SweepCheckerPattern
 from hippietrap.patterns.spread_outward import SpreadOutwardPattern
 
 CLIENT_ID = socket.gethostname()
@@ -34,7 +35,7 @@ EFFECT_TOPIC = "hippietrap/effect"
 
 class HippieTrapMQTT(HippieTrap):
 
-    UPDATE_INTERVAL = 10
+    UPDATE_INTERVAL = 30
 
     def __init__(self):
         HippieTrap.__init__(self)
@@ -178,6 +179,7 @@ if __name__ == "__main__":
         ht.add_pattern(SpreadOutwardPattern)
         ht.add_pattern(SweepGradientPattern)
         ht.add_pattern(SweepTwoColorShiftPattern)
+        ht.add_pattern(SweepCheckerPattern)
         ht.add_pattern(OpposingSweepPattern)
         ht.add_pattern(SwappiesPattern)
         ht.add_pattern(RandomColorsPattern)

@@ -40,7 +40,7 @@ class SpreadOutwardPattern(PatternBase):
 
     def pattern(self):
         hue = random()
-        hue_offset = .05
+        hue_offset = .08
         gr = Gradient([(0.0, hue_to_color(hue)),
                        (.3333, hue_to_color(hue + hue_offset)),
                        (.6666, hue_to_color(hue + hue_offset * 2)),
