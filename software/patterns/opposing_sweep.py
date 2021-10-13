@@ -25,7 +25,11 @@ BOTTLE_INDEXES = [
 ]
 
 
+def rf(offset, max_range):
+    return offset + (random() * max_range)
+
 class OpposingSweepPattern(PatternBase):
+
 
     geo = HippieTrapGeometry()
     cg = ColorGenerator()
@@ -34,16 +38,18 @@ class OpposingSweepPattern(PatternBase):
     def pattern(self):
 
         hue = random()
-        hue_offset = .02
+        hue2 = random()
+        hue_offset = rf(.01, .01)
+        hue_offset2 = rf(.01, .01)
 
         self.trap.send_decay(ALL, 95)
         self.trap.start_pattern(ALL)
         stop = False
         while not stop:
             color_rings = [ hue_to_color(hue),
-                            hue_to_color(hue + hue_offset + .5),
-                            hue_to_color(hue + hue_offset * 2),
-                            hue_to_color(hue + .5 +  hue_offset * 3) ]
+                            hue_to_color(hue + hue_offset + rf(.5, .15)),
+                            hue_to_color(hue2),
+                            hue_to_color(hue2 + hue_offset + rf(.5, .35)) ]
             for angle in range(180):
                 for bottle, bottle_angle in self.geo.get_near_bottles(angle, 1):
                     ring = self.geo.get_ring_from_bottle(bottle)
@@ -55,7 +61,8 @@ class OpposingSweepPattern(PatternBase):
                         self.trap.set_color(bottle, color)
                         
                         sleep(.01)
-            hue = math.fmod(hue + .03, 1.0)
+            hue = math.fmod(hue + rf(.05, .15), 1.0)
+            hue2 = math.fmod(hue + rf(.03, .15), 1.0)
 
             if self.stop_thread:
                 stop = True
