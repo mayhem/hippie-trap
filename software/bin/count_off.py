@@ -20,4 +20,4 @@ with HippieTrap() as ch:
     for id in range(start,NUM_NODES+1):
         print(id)
         ch.set_color(id, Color(0,0,255))
-        sleep(.25)
+        sleep(.5)

@@ -28,6 +28,8 @@ CLIENT_ID = socket.gethostname()
 COMMAND_TOPIC = "hippietrap/command"
 STATE_TOPIC = "hippietrap/state"
 BRIGHTNESS_TOPIC = "hippietrap/brightness"
+INCREASE_BRIGHTNESS_TOPIC = "hippietrap/incbrightness"
+DECREASE_BRIGHTNESS_TOPIC = "hippietrap/decbrightness"
 BRIGHTNESS_STATE_TOPIC = "hippietrap/brightness_state"
 COLOR_TOPIC = "hippietrap/color"
 COLOR_STATE_TOPIC = "hippietrap/color_state"
@@ -115,7 +117,7 @@ class HippieTrapMQTT(HippieTrap):
 
 
     def _handle_message(self, mqttc, msg):
-        payload = msg.payload # str(msg.payload, 'utf-8')
+        payload = msg.payload
         if msg.topic == COMMAND_TOPIC:
             if msg.payload.lower() == b"1":
                 self.enable(True)
@@ -133,6 +135,21 @@ class HippieTrapMQTT(HippieTrap):
         if msg.topic == BRIGHTNESS_TOPIC:
             try:
                 self.set_brightness(ALL, int(msg.payload))
+            except ValueError:
+                pass
+            return
+
+        if msg.topic == INCREASE_BRIGHTNESS_TOPIC:
+            print("inc brightness") 
+            try:
+                self.increase_brightness(ALL)
+            except ValueError:
+                pass
+            return
+
+        if msg.topic == DECREASE_BRIGHTNESS_TOPIC:
+            try:
+                self.decrease_brightness(ALL)
             except ValueError:
                 pass
             return
@@ -163,6 +180,8 @@ class HippieTrapMQTT(HippieTrap):
 
         self.mqttc.subscribe(COMMAND_TOPIC)
         self.mqttc.subscribe(BRIGHTNESS_TOPIC)
+        self.mqttc.subscribe(INCREASE_BRIGHTNESS_TOPIC)
+        self.mqttc.subscribe(DECREASE_BRIGHTNESS_TOPIC)
         self.mqttc.subscribe(EFFECT_TOPIC)
         self.mqttc.subscribe(COLOR_TOPIC)
         self.mqttc.publish(STATE_TOPIC, "%d" % self.state)
@@ -177,15 +196,15 @@ class HippieTrapMQTT(HippieTrap):
 if __name__ == "__main__":
     with HippieTrapMQTT() as ht:
         ht.add_pattern(OpposingSweepPattern)
-#        ht.add_pattern(SpreadOutwardPattern)
-#        ht.add_pattern(SweepGradientPattern)
-#        ht.add_pattern(SweepTwoColorShiftPattern)
-#        ht.add_pattern(SweepCheckerPattern)
-#        ht.add_pattern(SwappiesPattern)
-#        ht.add_pattern(RandomColorsPattern)
-#        ht.add_pattern(EachBottleOneRainbowPattern)
-#        ht.add_pattern(FireIceCirclesPattern)
-#        ht.add_pattern(RainbowPattern)
+        ht.add_pattern(SpreadOutwardPattern)
+        ht.add_pattern(SweepGradientPattern)
+        ht.add_pattern(SweepTwoColorShiftPattern)
+        ht.add_pattern(SweepCheckerPattern)
+        ht.add_pattern(SwappiesPattern)
+        ht.add_pattern(RandomColorsPattern)
+        ht.add_pattern(EachBottleOneRainbowPattern)
+        ht.add_pattern(FireIceCirclesPattern)
+        ht.add_pattern(RainbowPattern)
         ht.setup()
         ht.set_brightness(ALL,50)
         print("ready!")

@@ -74,6 +74,7 @@ class HippieTrap(object):
     def __init__(self, device = "/dev/serial0"):
         self.ser = None
         self.device = device
+        self.brightness = 100
 
 
     def __enter__(self):
@@ -283,7 +284,19 @@ class HippieTrap(object):
         self._send_packet(dest, PACKET_RESET, bytearray()) 
 
     def set_brightness(self, dest, brightness):
-        self._send_packet(dest, PACKET_BRIGHTNESS, bytearray(struct.pack("<B", brightness))) 
+        if self.brightness != brightness:
+            self.brightness = brightness
+            self._send_packet(dest, PACKET_BRIGHTNESS, bytearray(struct.pack("<B", brightness))) 
+
+    def increase_brightness(self, dest):
+        if self.brightness < 10:
+            brightness = 10
+        else:
+            brightness = min(self.brightness + 10, 100)
+        self.set_brightness(dest, brightness)
+
+    def decrease_brightness(self, dest):
+        self.set_brightness(dest, max(self.brightness - 10, 5))
 
     def set_groups(self, groups):
         if not isinstance(groups, list) and not isinstance(groups, tuple):
