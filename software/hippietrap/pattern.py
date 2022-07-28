@@ -35,7 +35,6 @@ class PatternBase(Thread):
         self.stop_thread = False
         self.enabled = False
 
-
     def enable(self, enabled):
         self.enabled = enabled
 

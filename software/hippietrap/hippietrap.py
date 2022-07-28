@@ -148,9 +148,8 @@ class HippieTrap(object):
             print("Is wiringpi installed? error: ", err)
             sys.exit(-1)
 
-        print("wait 3 seconds for bottle startup")
-        sleep(3)
-
+        print("wait 2 seconds for bottle startup")
+        sleep(2)
         print("done")
 
 

@@ -8,6 +8,7 @@ import random
 import paho.mqtt.client as mqtt
 import json
 import copy
+import traceback
 from time import sleep, time
 
 from hippietrap.hippietrap import HippieTrap, ALL
@@ -34,6 +35,8 @@ BRIGHTNESS_STATE_TOPIC = "hippietrap/brightness_state"
 COLOR_TOPIC = "hippietrap/color"
 COLOR_STATE_TOPIC = "hippietrap/color_state"
 EFFECT_TOPIC = "hippietrap/effect"
+REPEAT_PATTERN_TOPIC = "hippietrap/repeat-pattern"
+NEXT_PATTERN_TOPIC = "hippietrap/next-pattern"
 
 class HippieTrapMQTT(HippieTrap):
 
@@ -46,6 +49,7 @@ class HippieTrapMQTT(HippieTrap):
         self.current_pattern = None
         self.random_patterns = None
         self.next_update = 0
+        self.last_pattern_name = ""
 
 
     @property
@@ -56,15 +60,12 @@ class HippieTrapMQTT(HippieTrap):
     def enable(self, enabled):
         if not self.state and enabled:
             self.state = True
-            print("turn on power")
             self.power_on()
             if self.current_pattern:
-                print("start pattern")
                 self.current_pattern.enable(True)
 
         if self.state and not enabled:
             self.state = False
-            print("turn off power")
             if self.current_pattern:
                 self.current_pattern.enable(False)
                 self.set_pattern("")
@@ -72,17 +73,22 @@ class HippieTrapMQTT(HippieTrap):
 
 
     def set_random_pattern(self):
+        if self.current_pattern is not None:
+            self.last_pattern_name = self.current_pattern.name
         if not self.random_patterns:
             self.random_patterns = copy.deepcopy(self.patterns)
-
+        
         index = random.randint(0, len(self.random_patterns) - 1)
+        self.current_pattern_name = ht.random_patterns[index].name
         self.set_pattern(ht.random_patterns[index].name)
         del self.random_patterns[index]
 
+    def repeat_pattern(self):
+        if self.last_pattern_name is not None:
+            self.set_pattern(self.last_pattern_name)
 
     def add_pattern(self, pattern):
         self.patterns.append(pattern)
-
 
     def set_pattern(self, pattern_name):
         new_pattern = None
@@ -112,61 +118,74 @@ class HippieTrapMQTT(HippieTrap):
         try:
             mqttc.__ht._handle_message(mqttc, msg)
         except Exception as err:
-            print("exception!", err)
-            print(traceback.print_strack())
+            print("exception while handling message:", err)
+            print(traceback.format_exc())
 
 
     def _handle_message(self, mqttc, msg):
-        payload = msg.payload
-        if msg.topic == COMMAND_TOPIC:
-            if msg.payload.lower() == b"1":
-                self.enable(True)
+        try:
+            payload = msg.payload
+            if msg.topic == COMMAND_TOPIC:
+                if msg.payload.lower() == b"1":
+                    if not self.enabled:
+                        self.enable(True)
+                        mqttc.publish(STATE_TOPIC, "1")
+
+                    self.set_random_pattern()
+                    return
+
+                if msg.payload.lower() == b"0":
+                    self.enable(False)
+                    self.set_pattern("")
+                    mqttc.publish(STATE_TOPIC, "0")
+                    return
+                return
+
+            if msg.topic == BRIGHTNESS_TOPIC:
+                try:
+                    self.set_brightness(ALL, int(msg.payload))
+                except ValueError:
+                    pass
+                return
+
+            if msg.topic == INCREASE_BRIGHTNESS_TOPIC:
+                print("inc brightness") 
+                try:
+                    self.increase_brightness(ALL)
+                except ValueError:
+                    pass
+                return
+
+            if msg.topic == DECREASE_BRIGHTNESS_TOPIC:
+                try:
+                    self.decrease_brightness(ALL)
+                except ValueError:
+                    pass
+                return
+      
+            if msg.topic == NEXT_PATTERN_TOPIC:
                 self.set_random_pattern()
-                mqttc.publish(STATE_TOPIC, "1")
                 return
 
-            if msg.payload.lower() == b"0":
-                self.enable(False)
-                self.set_pattern("")
-                mqttc.publish(STATE_TOPIC, "0")
+            if msg.topic == REPEAT_PATTERN_TOPIC:
+                self.repeat_pattern()
                 return
-            return
 
-        if msg.topic == BRIGHTNESS_TOPIC:
-            try:
-                self.set_brightness(ALL, int(msg.payload))
-            except ValueError:
-                pass
-            return
-
-        if msg.topic == INCREASE_BRIGHTNESS_TOPIC:
-            print("inc brightness") 
-            try:
-                self.increase_brightness(ALL)
-            except ValueError:
-                pass
-            return
-
-        if msg.topic == DECREASE_BRIGHTNESS_TOPIC:
-            try:
-                self.decrease_brightness(ALL)
-            except ValueError:
-                pass
-            return
-  
-        if msg.topic == EFFECT_TOPIC:
-            try:
-                self.set_pattern(msg.payload)
-            except ValueError:
-                pass
-            return
-        
-        if msg.topic == COLOR_TOPIC:
-            r,g,b = payload.split(",")
-            color = (int(r),int(g),int(b))
-            self.current_pattern.set_color(color)
-            return
-           
+            if msg.topic == EFFECT_TOPIC:
+                try:
+                    self.set_pattern(msg.payload)
+                except ValueError:
+                    pass
+                return
+            
+            if msg.topic == COLOR_TOPIC:
+                r,g,b = payload.split(",")
+                color = (int(r),int(g),int(b))
+                self.current_pattern.set_color(color)
+                return
+        except Exception as err:
+            print("exception while handling message:", err)
+            print(traceback.format_exc())
 
     def setup(self):
 
@@ -184,6 +203,8 @@ class HippieTrapMQTT(HippieTrap):
         self.mqttc.subscribe(DECREASE_BRIGHTNESS_TOPIC)
         self.mqttc.subscribe(EFFECT_TOPIC)
         self.mqttc.subscribe(COLOR_TOPIC)
+        self.mqttc.subscribe(NEXT_PATTERN_TOPIC)
+        self.mqttc.subscribe(REPEAT_PATTERN_TOPIC)
         self.mqttc.publish(STATE_TOPIC, "%d" % self.state)
 
     def loop(self):
