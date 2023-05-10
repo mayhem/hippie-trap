@@ -1,7 +1,6 @@
 #include <stdlib.h>
 #include "colorspace.h"
 
-
 #if 0
 void print_col(color_t *c)
 {
@@ -87,6 +86,24 @@ uint8_t hsv_to_rgb(int32_t h, int32_t s, int32_t v, color_t *color)
     color->r = r;
     color->g = g;
     color->b = b;
+
+    return 1;
+}
+
+uint32_t clip_hue(uint32_t hue)
+{
+    return (hue + SCALE_FACTOR) % SCALE_FACTOR;
+}
+
+uint8_t hueshift_to_rgb(uint32_t hue_shift, int32_t h, int32_t s, int32_t v, color_t color[4])
+{
+    // Scale hue shift to half a distance between LEDs
+    hue_shift /= 2;
+
+    hsv_to_rgb(clip_hue(h - (hue_shift * 3)), s, v, &color[0]);
+    hsv_to_rgb(clip_hue(h - hue_shift), s, v, &color[1]);
+    hsv_to_rgb(clip_hue(h + hue_shift), s, v, &color[2]);
+    hsv_to_rgb(clip_hue(h + (hue_shift * 3)), s, v, &color[3]);
 
     return 1;
 }

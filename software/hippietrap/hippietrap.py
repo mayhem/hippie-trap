@@ -223,8 +223,8 @@ class HippieTrap(object):
         # Give the bottles a moment to parse the packet before we go on
         sleep(.05)
 
-    def send_fade(self, dest, steps, colors):
-        packet = bytearray(struct.pack("<BH", 0, steps))
+    def send_fade(self, dest, steps, colors, hue_shift=0):
+        packet = bytearray(struct.pack("<BHB", 0, steps, hue_shift))
         for col in colors:
             packet += bytearray((col[0], col[1], col[2]))
         self._send_packet(dest, PACKET_PATTERN, packet)
