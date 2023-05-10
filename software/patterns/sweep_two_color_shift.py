@@ -31,7 +31,9 @@ class SweepTwoColorShiftPattern(PatternBase):
         color_rings = [ random_color(), random_color(), random_color() , random_color() ]
         while not stop:
             for bottle, angle in self.geo.enumerate_all_bottles(index % 2 == 0):
-                self.trap.set_color(bottle, color_rings[self.geo.get_ring_from_bottle(bottle)])
+                self.trap.set_color(bottle,
+                                    color_rings[self.geo.get_ring_from_bottle(bottle)],
+                                    8);
                 sleep(.01)
                 if self.stop_thread:
                     stop = True

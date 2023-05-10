@@ -62,7 +62,7 @@ class SpreadOutwardPattern(PatternBase):
                         continue
 
                     color = gr.get_color(value)
-                    self.trap.set_color(group(ring), color) #(int(color[0] * value), int(color[1] * value), int(color[2] * value)))
+                    self.trap.set_color(group(ring), color, 6) #(int(color[0] * value), int(color[1] * value), int(color[2] * value)))
 
                 sleep(.05)
 

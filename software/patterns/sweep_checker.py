@@ -51,9 +51,9 @@ class SweepCheckerPattern(PatternBase):
                 for bottle, bottle_angle in self.geo.get_near_bottles(angle, 1):
                     if bottle_angle < angle:
                         if bottle_states[bottle]: 
-                            self.trap.set_color(bottle, gradient[int(bottle_angle)])
+                            self.trap.set_color(bottle, gradient[int(bottle_angle)], 8)
                         else:
-                            self.trap.set_color(bottle, gradient[int(180 - bottle_angle)])
+                            self.trap.set_color(bottle, gradient[int(180 - bottle_angle)], 8)
                         bottle_states[bottle] =  not bottle_states[bottle]
                         sleep(.03)
 

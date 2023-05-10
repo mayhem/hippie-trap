@@ -19,7 +19,7 @@ class RandomColorsPattern(PatternBase):
 
         self.trap.send_entropy()
         while True:
-            self.trap.send_fade(ALL, self.PERIOD, ())
+            self.trap.send_fade(ALL, self.PERIOD, (), 13)
             self.trap.start_pattern(ALL)
             sleep(self.PERIOD / 1000.0)
             self.trap.stop_pattern(ALL)

@@ -58,7 +58,7 @@ class OpposingSweepPattern(PatternBase):
 
                     if bottle_angle >= angle:
                         color = color_rings[ring]
-                        self.trap.set_color(bottle, color)
+                        self.trap.set_color(bottle, color, 6)
                         
                         sleep(.01)
             hue = math.fmod(hue + rf(.05, .15), 1.0)
