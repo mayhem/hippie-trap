@@ -202,8 +202,8 @@ class HippieTrap(object):
         for dest in range(1, NUM_NODES + 1):
             self._send_packet(dest, PACKET_ENTROPY, bytearray(os.urandom(4)))
 
-    def set_color(self, dest, col):
-        self._send_packet(dest, PACKET_SINGLE_COLOR, bytearray(struct.pack("<BBB", col[0], col[1], col[2])))
+    def set_color(self, dest, col, hue_shift = 0):
+        self._send_packet(dest, PACKET_SINGLE_COLOR, bytearray(struct.pack("<BBBB", col[0], col[1], col[2], hue_shift)))
 
     def set_single_led(self, dest, led, col):
         self._send_packet(dest, PACKET_SINGLE_LED, struct.pack("<BBB", col[0], col[1], col[2]))

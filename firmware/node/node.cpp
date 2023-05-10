@@ -203,6 +203,31 @@ void set_color(color_t *col)
     update_leds();
 }
 
+void set_color_with_hue_shift(color_t *col, uint8_t hue_shift)
+{
+    int32_t h, s, v;
+    color_t color;
+
+    rgb_to_hsv(col, &h, &s, &v);
+
+    // convert to 1/2 hue shift scaled 
+    hue_shift = (uint32_t)(hue_shift / 2) * SCALE_FACTOR / 255;
+
+    hsv_to_rgb(clip_hue(h - (hue_shift * 3)), s, v, &color);
+    set_led(0, &color);
+
+    hsv_to_rgb(clip_hue(h - hue_shift), s, v, &color);
+    set_led(1, &color);
+
+    hsv_to_rgb(clip_hue(h + hue_shift), s, v, &color);
+    set_led(2, &color);
+
+    hsv_to_rgb(clip_hue(h + (hue_shift * 3)), s, v, &color);
+    set_led(3, &color);
+
+    update_leds();
+}
+
 void clear_color(void)
 {
     uint8_t j;
@@ -369,12 +394,15 @@ void handle_packet(uint16_t len, uint8_t *packet)
         case PACKET_SINGLE_COLOR:
             {
                 color_t col;
+                uint8_t hue_shift;
+
                 col.r = data[0];
                 col.g = data[1];
                 col.b = data[2];
+                hue_shift = data[3];
 
                 for(int j=0; j < NUM_LEDS; j++)
-                    set_color(&col);
+                    set_color_with_hue_shift(&col, hue_shift);
 
                 break;
             } 
