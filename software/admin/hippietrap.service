@@ -1,0 +1,13 @@
+[Unit]
+Description=The Hippie Trap
+After=multi-user.target
+
+[Service]
+Type=idle
+ExecStart=/home/robert/hippie-trap/software/bin/start-service.sh
+User=robert
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target
