@@ -6,7 +6,7 @@ import math
 from colorsys import hsv_to_rgb
 from random import random
 from hippietrap import HippieTrap, ALL, NUM_NODES
-from hippietrap.color import Color, ColorGenerator, random_color, hue_to_color
+from hippietrap.color import Color, ColorGenerator, SystemColors
 from hippietrap.geometry import HippieTrapGeometry
 from hippietrap.pattern import PatternBase, run_pattern
 from time import sleep, time
@@ -20,6 +20,10 @@ class SweepTwoColorShiftPattern(PatternBase):
 
     color_shift_between_rings = .045
 
+    def __init__(self, trap):
+        PatternBase.__init__(self, trap)
+        self.colors = SystemColors()
+
     def pattern(self):
         self.trap.send_decay(ALL, 90)
         self.trap.start_pattern(ALL)
@@ -28,12 +32,15 @@ class SweepTwoColorShiftPattern(PatternBase):
         hue_offset = 0.0
         stop = False
 
-        color_rings = [ random_color(), random_color(), random_color() , random_color() ]
+        color_rings = [
+            self.colors.random_color(),
+            self.colors.random_color(),
+            self.colors.random_color(),
+            self.colors.random_color()
+        ]
         while not stop:
             for bottle, angle in self.geo.enumerate_all_bottles(index % 2 == 0):
-                self.trap.set_color(bottle,
-                                    color_rings[self.geo.get_ring_from_bottle(bottle)],
-                                    8);
+                self.trap.set_color(bottle, color_rings[self.geo.get_ring_from_bottle(bottle)], 8)
                 sleep(.01)
                 if self.stop_thread:
                     stop = True
@@ -44,9 +51,10 @@ class SweepTwoColorShiftPattern(PatternBase):
             shift = math.sin(index / self.color_shift_between_rings) / 2.0 + .50
             new_offset = math.fmod(shift, 1.0)
             color_rings.pop()
-            color_rings.insert(0, hue_to_color(new_offset))
+            color_rings.insert(0, self.colors.hue_to_color(new_offset))
 
         self.trap.stop_pattern(ALL)
+
 
 if __name__ == "__main__":
     with HippieTrap() as trap:

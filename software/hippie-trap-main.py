@@ -11,7 +11,7 @@ import copy
 import traceback
 from time import sleep, time
 
-from hippietrap import HippieTrap, ALL
+from hippietrap import HippieTrap, ALL, log
 from hippietrap.patterns.rainbow import RainbowPattern
 from hippietrap.patterns.solid import SolidPattern
 from hippietrap.patterns.fire_ice_circles import FireIceCirclesPattern
@@ -40,7 +40,7 @@ NEXT_PATTERN_TOPIC = "hippietrap/next-pattern"
 
 class HippieTrapMQTT(HippieTrap):
 
-    UPDATE_INTERVAL = 30
+    UPDATE_INTERVAL = 5
 
     def __init__(self):
         HippieTrap.__init__(self)
@@ -107,7 +107,7 @@ class HippieTrapMQTT(HippieTrap):
             return
 
         self.current_pattern = new_pattern(self)
-        print("start pattern '%s'" % self.current_pattern.name)
+        log("start pattern '%s'" % self.current_pattern.name)
         self.current_pattern.start()
         self.current_pattern.enable(True)
         self.next_update = time() + self.UPDATE_INTERVAL
@@ -118,8 +118,8 @@ class HippieTrapMQTT(HippieTrap):
         try:
             mqttc.__ht._handle_message(mqttc, msg)
         except Exception as err:
-            print("exception while handling message:", err)
-            print(traceback.format_exc())
+            log("exception while handling message:", err)
+            log(traceback.format_exc())
 
 
     def _handle_message(self, mqttc, msg):
@@ -149,7 +149,7 @@ class HippieTrapMQTT(HippieTrap):
                 return
 
             if msg.topic == INCREASE_BRIGHTNESS_TOPIC:
-                print("inc brightness") 
+                log("inc brightness") 
                 try:
                     self.increase_brightness(ALL)
                 except ValueError:
@@ -184,8 +184,8 @@ class HippieTrapMQTT(HippieTrap):
                 self.current_pattern.set_color(color)
                 return
         except Exception as err:
-            print("exception while handling message:", err)
-            print(traceback.format_exc())
+            log("exception while handling message:", err)
+            log(traceback.format_exc())
 
     def setup(self):
 
@@ -216,20 +216,19 @@ class HippieTrapMQTT(HippieTrap):
 
 if __name__ == "__main__":
     with HippieTrapMQTT() as ht:
-        ht.add_pattern(SweepCheckerPattern)
-#        ht.add_pattern(SpreadOutwardPattern)
-#        ht.add_pattern(RainbowPattern)
-#        ht.add_pattern(FireIceCirclesPattern)
-#        ht.add_pattern(OpposingSweepPattern)
-#        ht.add_pattern(SweepTwoColorShiftPattern)
-#        ht.add_pattern(SwappiesPattern)
-#        ht.add_pattern(SweepGradientPattern)
-
-#        ht.add_pattern(RandomColorsPattern)
-#        ht.add_pattern(EachBottleOneRainbowPattern)
+#        ht.add_pattern(SweepCheckerPattern)
+        ht.add_pattern(SpreadOutwardPattern)
+        ht.add_pattern(RainbowPattern)
+        ht.add_pattern(FireIceCirclesPattern)
+        ht.add_pattern(OpposingSweepPattern)
+        ht.add_pattern(SweepTwoColorShiftPattern)
+        ht.add_pattern(SwappiesPattern)
+        ht.add_pattern(SweepGradientPattern)
+        ht.add_pattern(RandomColorsPattern)
+        ht.add_pattern(EachBottleOneRainbowPattern)
         ht.setup()
         ht.set_brightness(ALL,50)
-        print("ready!")
+        log("hippie trap ready for action!")
         try:
             while True:
                 ht.loop()

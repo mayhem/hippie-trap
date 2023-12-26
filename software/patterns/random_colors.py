@@ -12,7 +12,7 @@ from random import random
 
 class RandomColorsPattern(PatternBase):
 
-    PERIOD = 850 
+    PERIOD = 850
     name = "random colors"
 
     def pattern(self):
@@ -25,7 +25,7 @@ class RandomColorsPattern(PatternBase):
             self.trap.stop_pattern(ALL)
 
             if self.stop_thread:
-                break 
+                break
 
         self.trap.stop_pattern(ALL)
 

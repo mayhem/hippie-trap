@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 import os
 import sys
 import math
@@ -7,15 +5,20 @@ import random
 import abc
 from threading import Thread
 from hippietrap import HippieTrap, ALL, NUM_NODES
-from hippietrap.color import Color, random_color
+from hippietrap.color import Color, SystemColors
 from hippietrap.pattern import PatternBase, run_pattern
 from time import sleep, time
 
+
 class SwappiesPattern(PatternBase):
 
-    DELAY = 1.2 
+    DELAY = 1.2
     FADE_DURATION = 1000
     name = "swappies"
+
+    def __init__(self, trap):
+        PatternBase.__init__(self, trap)
+        self.colors = SystemColors()
 
     def flip(self, col1, col2):
         self.trap.send_fade(ALL, self.FADE_DURATION, (col1, col2, col1, col2))
@@ -34,29 +37,29 @@ class SwappiesPattern(PatternBase):
     def pattern(self):
 
         while True:
-            col1 = random_color()
+            col1 = self.colors.random_color()
 
-            col2 = random_color()
+            col2 = self.colors.random_color()
             if self.flip(col1, col2):
                 break
 
-            col2 = random_color()
+            col2 = self.colors.random_color()
             if self.flip(col1, col2):
                 break
 
-            col2 = random_color()
+            col2 = self.colors.random_color()
             if self.flip(col1, col2):
                 break
 
-            col2 = random_color()
+            col2 = self.colors.random_color()
             if self.flip(col1, col2):
                 break
 
-            col2 = random_color()
+            col2 = self.colors.random_color()
             if self.flip(col1, col2):
                 break
 
-            col2 = random_color()
+            col2 = self.colors.random_color()
             if self.flip(col1, col2):
                 break
 

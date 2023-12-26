@@ -1,5 +1,3 @@
-#!/usr/bin/python
-
 import abc
 import colorsys
 import math
@@ -7,22 +5,6 @@ from random import random, seed
 import hippietrap
 
 seed()
-
-
-def hue_to_color(hue):
-    col = colorsys.hsv_to_rgb(math.fmod(hue, 1.0), 1, 1)
-    if hippietrap.bedtime_mode:
-        return Color(int(col[0] * 255), int(col[1] * 255), 0)
-    else:
-        return Color(int(col[0] * 255), int(col[1] * 255), int(col[2] * 255))
-
-
-def random_color():
-    col = colorsys.hsv_to_rgb(random(), 1, 1)
-    if hippietrap.bedtime_mode:
-        return Color(int(col[0] * 255), int(col[1] * 255), 0)
-    else:
-        return Color(int(col[0] * 255), int(col[1] * 255), int(col[2] * 255))
 
 
 class Color(object):
@@ -78,6 +60,39 @@ class Color(object):
         return NotImplemented
 
 
+class SystemColors:
+    def __init__(self):
+        self.bedtime_gradient = Gradient([(0.0, (255, 0, 0)), (.30, (255, 255, 0)), (.5, (0, 255, 0)), (.70, (255, 255, 0)),
+                                          (1.0, (255, 0, 0))])
+
+    def hue_to_color(self, hue):
+
+        # Many algs assume that hue simply wraps, so fmod it here
+        hue = math.fmod(hue, 1.0)
+
+        if hippietrap.color_scheme == "full-color":
+            col = colorsys.hsv_to_rgb(hue, 1, 1)
+            col = (col[0] * 255, col[1] * 255, col[2] * 255)
+        elif hippietrap.color_scheme == "bedtime":
+            col = self.bedtime_gradient.get_color(hue)
+        else:
+            return Color(64, 32, 32)
+
+        return Color(col[0], col[1], col[2])
+
+    def random_color(self):
+
+        if hippietrap.color_scheme == "full-color":
+            col = colorsys.hsv_to_rgb(random(), 1, 1)
+            col = (col[0] * 255, col[1] * 255, col[2] * 255)
+        elif hippietrap.color_scheme == "bedtime":
+            col = self.bedtime_gradient.get_color(random())
+        else:
+            return Color(64, 32, 32)
+
+        return Color(col[0], col[1], col[2])
+
+
 class ColorGenerator(object):
     def __init__(self):
         self.last_hues = []
@@ -110,12 +125,11 @@ class ColorGenerator(object):
 
 
 class Gradient(object):
-    def __init__(self, palette, num_leds=1):
+    def __init__(self, palette):
 
         # palletes are in format [ (.345, (128, 0, 128)) ]
         self._validate_palette(palette)
         self.palette = palette
-        self.num_leds = num_leds
         self.led_scale = 1.0
         self.led_offset = 0.0
 
@@ -136,13 +150,12 @@ class Gradient(object):
     def set_offset(self, offset):
         self.led_offset = offset
 
-    def get_color_by_offset(self, offset):
+    def get_color(self, offset):
 
         if offset < 0.0 or offset > 1.0:
             raise IndexError("Invalid offset.")
 
         for index in range(len(self.palette)):
-
             # skip the first item
             if index == 0:
                 continue
@@ -161,3 +174,21 @@ class Gradient(object):
                 return (min(new_color[0], 255), min(new_color[1], 255), min(new_color[2], 255))
 
         assert False
+
+    def write_png_gradient(self, out_file):
+        from PIL import Image, ImageDraw
+
+        width = 1000
+        height = 200
+        g = Image.new(mode="RGB", size=(width, height), color=(0, 0, 0))
+        d = ImageDraw.Draw(g)
+
+        for i, x in enumerate(range(width)):
+            d.line(((x, 0), (x, height)), fill=self.get_color(i / width))
+
+        g.save(out_file)
+
+
+if __name__ == "__main__":
+    g = Gradient([(0.0, (255, 0, 0)), (.30, (255, 255, 0)), (.5, (0, 255, 0)), (.70, (255, 255, 0)), (1.0, (255, 0, 0))])
+    g.write_png_gradient("out.png")

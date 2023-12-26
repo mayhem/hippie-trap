@@ -13,9 +13,10 @@ from hippietrap.color import Color
 
 geo = HippieTrapGeometry()
 
+
 class TexturePattern(PatternBase):
 
-    PERIOD = 850 
+    PERIOD = 850
     name = "texture"
 
     def __init__(self, trap):
@@ -24,25 +25,25 @@ class TexturePattern(PatternBase):
         self.z_factor = .02
         self.xy_factor = .01
 
-    def circle (self, x, y):
+    def circle(self, x, y):
         return (int)(self.z_factor * (x * x + y * y))
 
-    def circle2 (self, x, y):
+    def circle2(self, x, y):
         return (int)(self.z_factor * (3 * x * x + y * y))
 
-    def anticircle (self, x, y):
+    def anticircle(self, x, y):
         return (int)(self.z_factor * (x * x - y * y))
 
-    def xyfun (self, x, y):
+    def xyfun(self, x, y):
         return (int)(self.z_factor * (x * x + self.xy_factor * x * y + y * y))
 
-    def x3y3 (self, x, y):
+    def x3y3(self, x, y):
         return (int)(self.z_factor * (x * x * x + y * y * y))
 
-    def x4y4 (self, x, y):
+    def x4y4(self, x, y):
         return (int)(self.z_factor * (x * x * x * x + y * y * y * y))
 
-    def x3y3_xy (self, x, y):
+    def x3y3_xy(self, x, y):
         try:
             return (int)(self.z_factor * (x * x * x + y * y * y) / (x * y))
         except:
@@ -58,10 +59,10 @@ class TexturePattern(PatternBase):
             for bottle, coord in enumerate(bottles):
                 z = self.circle(coord[0], coord[1])
                 y = self.circle2(coord[0], coord[1])
-                self.trap.set_color(bottle + 1, Color(z % 255, 0 , y % 255))
+                self.trap.set_color(bottle + 1, Color(z % 255, 0, y % 255))
 
             if self.stop_thread:
-                break 
+                break
 
             scale += .01
             self.z_factor += .0005

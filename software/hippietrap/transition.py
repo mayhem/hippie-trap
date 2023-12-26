@@ -14,8 +14,9 @@ from time import sleep, time
 
 geo = HippieTrapGeometry()
 
+
 def transition_drop_out(trap):
-    bottles = [ i for i in range(1, NUM_NODES + 1) ]
+    bottles = [i for i in range(1, NUM_NODES + 1)]
     random.shuffle(bottles)
     for bottle in bottles:
         trap.clear(bottle)
@@ -24,7 +25,7 @@ def transition_drop_out(trap):
 
 def transition_sweep_out(trap):
     for bottle, angle in geo.enumerate_all_bottles():
-        trap.set_color(bottle, Color(0,0,0))
+        trap.set_color(bottle, Color(0, 0, 0))
         sleep(.005)
 
 
@@ -32,7 +33,7 @@ def transition_sweep_in(trap):
     bottles = geo.enumerate_all_bottles()
     bottles.reverse()
     for bottle, angle in bottles:
-        trap.set_color(bottle, Color(0,0,0))
+        trap.set_color(bottle, Color(0, 0, 0))
         sleep(.005)
 
 
@@ -45,8 +46,8 @@ def transition_fade_out(trap):
 
 def transition_lateral_sweep(trap):
     bottles = geo.calculate_bottle_locations()
-    bottles = list(zip(list(range(1, NUM_NODES+1)), bottles))
-    bottles.sort(key = lambda bottles: bottles[1][0])
+    bottles = list(zip(list(range(1, NUM_NODES + 1)), bottles))
+    bottles.sort(key=lambda bottles: bottles[1][0])
     for bottle, coord in bottles:
-        trap.set_color(bottle, Color(0,0,0))
+        trap.set_color(bottle, Color(0, 0, 0))
         sleep(.001)

@@ -9,6 +9,7 @@ from hippietrap.pattern import PatternBase, run_pattern
 from hippietrap.color import hue_to_color
 from time import sleep, time
 
+
 class Pattern(PatternBase):
 
     name = "sparkle fuck you"

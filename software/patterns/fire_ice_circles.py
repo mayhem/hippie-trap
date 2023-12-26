@@ -4,16 +4,21 @@ import os
 import sys
 import math
 from hippietrap import HippieTrap, NUM_NODES, ALL, BOTTLES_PER_RING
-from hippietrap.color import hue_to_color
+from hippietrap.color import SystemColors
 from hippietrap.pattern import PatternBase
 from time import sleep
 from random import random
+
 
 class FireIceCirclesPattern(PatternBase):
 
     PERIOD = 1500
     angle = .08
     name = "fire ice circles"
+
+    def __init__(self, trap):
+        PatternBase.__init__(self, trap)
+        self.colors = SystemColors()
 
     def pattern(self):
 
@@ -31,11 +36,11 @@ class FireIceCirclesPattern(PatternBase):
                     array = []
 
                     #                                   This last part makes each ring distinct
-                    hue = color_shift + (random() / 4) + color_offset  + (i * .1)
-                    array.append(hue_to_color(min(1.0, math.fmod(hue, 1.0))))
-                    array.append(hue_to_color(min(1.0, math.fmod(hue + self.angle, 1.0))))
-                    array.append(hue_to_color(min(1.0, math.fmod(hue + (self.angle * 2), 1.0))))
-                    array.append(hue_to_color(min(1.0, math.fmod(hue + (self.angle * 3), 1.0))))
+                    hue = color_shift + (random() / 4) + color_offset + (i * .1)
+                    array.append(self.colors.hue_to_color(min(1.0, math.fmod(hue, 1.0))))
+                    array.append(self.colors.hue_to_color(min(1.0, math.fmod(hue + self.angle, 1.0))))
+                    array.append(self.colors.hue_to_color(min(1.0, math.fmod(hue + (self.angle * 2), 1.0))))
+                    array.append(self.colors.hue_to_color(min(1.0, math.fmod(hue + (self.angle * 3), 1.0))))
 
                     self.trap.stop_pattern(bottle)
                     self.trap.send_fade(bottle, self.PERIOD, array)

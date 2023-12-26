@@ -7,6 +7,7 @@ from threading import Thread
 from time import sleep, time
 from hippietrap import ALL
 
+
 def run_pattern(ch, pattern, clear=False):
     r = pattern(ch)
     r.start()
@@ -24,11 +25,10 @@ def run_pattern(ch, pattern, clear=False):
 
         r.stop()
         r.join()
-        print() 
+        print()
 
 
 class PatternBase(Thread):
-
     def __init__(self, trap):
         Thread.__init__(self)
         self.trap = trap
@@ -38,20 +38,16 @@ class PatternBase(Thread):
     def enable(self, enabled):
         self.enabled = enabled
 
-
     def stop(self):
         self.stop_thread = True
-
 
     @abc.abstractmethod
     def pattern(self):
         pass
 
-
     @abc.abstractmethod
     def set_color(self, color):
         pass
-
 
     def run(self):
         self.stop_thread = False
