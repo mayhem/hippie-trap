@@ -5,7 +5,7 @@ import sys
 import math
 import _thread
 from colorsys import hsv_to_rgb
-from hippietrap.hippietrap import HippieTrap, BROADCAST, NUM_NODES
+from hippietrap import HippieTrap, BROADCAST, NUM_NODES
 from hippietrap.color import Color
 from time import sleep, time
 

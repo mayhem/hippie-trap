@@ -5,7 +5,7 @@ import sys
 import math
 from colorsys import hsv_to_rgb
 from random import random
-from hippietrap.hippietrap import HippieTrap, ALL, NUM_NODES, NUM_RINGS, BOTTLES_PER_RING
+from hippietrap import HippieTrap, ALL, NUM_NODES, NUM_RINGS, BOTTLES_PER_RING
 from hippietrap.color import Color, ColorGenerator, hue_to_color
 from hippietrap.geometry import HippieTrapGeometry
 from hippietrap.pattern import PatternBase, run_pattern

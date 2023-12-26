@@ -3,7 +3,7 @@
 import math
 from time import sleep, time
 
-from .hippietrap import NUM_NODES, NUM_RINGS, BOTTLES_PER_RING, RING_RADII
+from hippietrap import NUM_NODES, NUM_RINGS, BOTTLES_PER_RING, RING_RADII
 
 # nearest_bottles: given angle, ring or all, return nearest bottles
 

@@ -1,9 +1,9 @@
 import os
 import sys
 import math
-from .color import Color
+from color import Color
 from time import sleep, time
-from .hippietrap import NUM_NODES 
+from hippietrap import NUM_NODES 
 
 
 class FrameBuffer(object):

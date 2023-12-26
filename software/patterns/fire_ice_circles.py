@@ -3,7 +3,7 @@
 import os
 import sys
 import math
-from hippietrap.hippietrap import HippieTrap, NUM_NODES, ALL, BOTTLES_PER_RING
+from hippietrap import HippieTrap, NUM_NODES, ALL, BOTTLES_PER_RING
 from hippietrap.color import hue_to_color
 from hippietrap.pattern import PatternBase
 from time import sleep

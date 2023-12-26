@@ -6,7 +6,7 @@ import math
 import random
 import abc
 from threading import Thread
-from hippietrap.hippietrap import HippieTrap, ALL, NUM_NODES
+from hippietrap import HippieTrap, ALL, NUM_NODES
 from hippietrap.color import Color, random_color
 from hippietrap.pattern import PatternBase, run_pattern
 from time import sleep, time

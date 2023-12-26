@@ -6,7 +6,7 @@ import math
 import random
 
 from time import sleep, time
-from hippietrap.hippietrap import HippieTrap, BROADCAST, NUM_NODES
+from hippietrap import HippieTrap, BROADCAST, NUM_NODES
 from hippietrap.color import Color
 
 with HippieTrap() as ch:

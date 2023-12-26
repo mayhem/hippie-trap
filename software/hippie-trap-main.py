@@ -11,7 +11,7 @@ import copy
 import traceback
 from time import sleep, time
 
-from hippietrap.hippietrap import HippieTrap, ALL
+from hippietrap import HippieTrap, ALL
 from hippietrap.patterns.rainbow import RainbowPattern
 from hippietrap.patterns.solid import SolidPattern
 from hippietrap.patterns.fire_ice_circles import FireIceCirclesPattern

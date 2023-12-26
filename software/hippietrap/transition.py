@@ -6,10 +6,10 @@ import math
 import random
 import importlib
 from threading import Thread
-from .color import Color
-from .hippietrap import NUM_NODES, ALL
-from .pattern import PatternBase, run_pattern
-from .geometry import HippieTrapGeometry
+from color import Color
+from hippietrap import NUM_NODES, ALL
+from pattern import PatternBase, run_pattern
+from geometry import HippieTrapGeometry
 from time import sleep, time
 
 geo = HippieTrapGeometry()

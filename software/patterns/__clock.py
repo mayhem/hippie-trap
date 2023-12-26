@@ -6,7 +6,7 @@ import math
 import datetime
 from colorsys import hsv_to_rgb
 from random import random
-from hippietrap.hippietrap import HippieTrap, BROADCAST, NUM_NODES, NUM_RINGS
+from hippietrap import HippieTrap, BROADCAST, NUM_NODES, NUM_RINGS
 from hippietrap.color import Color, ColorGenerator
 from hippietrap.geometry import HippieTrapGeometry
 from hippietrap.pattern import PatternBase, run_pattern

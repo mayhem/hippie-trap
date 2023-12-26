@@ -3,7 +3,7 @@
 import os
 import sys
 import math
-from hippietrap.hippietrap import HippieTrap, BROADCAST
+from hippietrap import HippieTrap, BROADCAST
 from time import sleep, time
 
 with HippieTrap() as ch:

@@ -5,7 +5,7 @@ import os
 import sys
 from threading import Thread
 from time import sleep, time
-from .hippietrap import ALL
+from hippietrap import ALL
 
 def run_pattern(ch, pattern, clear=False):
     r = pattern(ch)

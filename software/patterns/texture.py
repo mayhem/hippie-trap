@@ -4,7 +4,7 @@ import os
 import sys
 import math
 from colorsys import hsv_to_rgb
-from hippietrap.hippietrap import HippieTrap, ALL, NUM_NODES
+from hippietrap import HippieTrap, ALL, NUM_NODES
 from hippietrap.pattern import PatternBase, run_pattern
 from time import sleep, time
 from random import random

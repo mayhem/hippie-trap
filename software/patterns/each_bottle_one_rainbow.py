@@ -3,7 +3,7 @@
 import os
 import sys
 from time import sleep
-from hippietrap.hippietrap import HippieTrap, ALL, NUM_NODES
+from hippietrap import HippieTrap, ALL, NUM_NODES
 from hippietrap.pattern import PatternBase, run_pattern
 
 # TODO: Add sparkle. 

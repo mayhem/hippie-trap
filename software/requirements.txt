@@ -1,3 +1,4 @@
 pyserial==3.4
 paho-mqtt
 git+https://github.com/vaab/colour
+RPI-GPIO

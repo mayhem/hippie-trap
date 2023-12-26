@@ -4,7 +4,8 @@ After=multi-user.target
 
 [Service]
 Type=idle
-ExecStart=/home/robert/hippie-trap/software/bin/start-service.sh
+ChDir=/home/robert/hippie-trap/software
+ExecStart=/home/robert/hippie-trap/software/.ve/bin/python ./hippie-trap-main.py
 User=robert
 Restart=always
 RestartSec=3

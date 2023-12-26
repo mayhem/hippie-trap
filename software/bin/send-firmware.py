@@ -3,7 +3,7 @@
 import sys
 import os
 import struct
-from hippietrap.hippietrap import HippieTrap, BROADCAST
+from hippietrap import HippieTrap, BROADCAST
 
 import click
 from time import sleep
