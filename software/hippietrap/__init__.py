@@ -81,7 +81,7 @@ def log(*args):
 
 class HippieTrap(object):
 
-    COLOR_SCHEMES = ["full-color", "bedtime", "mayhem"]
+    COLOR_SCHEMES = ["full-color", "bedtime"]
 
     def __init__(self, device="/dev/serial0"):
         global ht
@@ -173,13 +173,10 @@ class HippieTrap(object):
         if not self.ser or not self.ser.is_open:
             raise IOError("Hippie trap not opened.")
 
-        try:
-            for pin in POWER_GPIO_PINS:
-                GPIO.output(pin, GPIO.LOW)
+        for pin in POWER_GPIO_PINS:
+            GPIO.output(pin, GPIO.LOW)
 
-        except CalledProcessError as err:
-            print("Is wiringpi installed? error: ", err)
-            sys.exit(-1)
+        log("power off")
 
     def clear_cruft(self):
         for i in range(32):
@@ -221,6 +218,12 @@ class HippieTrap(object):
 
         log("set scheme %s" % scheme)
         self.color_scheme = scheme
+
+    def next_color_scheme(self):
+        i = self.COLOR_SCHEMES.index(self.color_scheme)
+        i = (i + 1) % len(self.COLOR_SCHEMES)
+        self.color_scheme = self.COLOR_SCHEMES[i]
+        log("next scheme is %s" % self.color_scheme)
 
     def get_color_scheme(self):
         return self.color_scheme

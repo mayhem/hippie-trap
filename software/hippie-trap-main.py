@@ -41,7 +41,7 @@ COLOR_SCHEME_TOPIC = "hippietrap/color-scheme"
 
 class HippieTrapMQTT(HippieTrap):
 
-    UPDATE_INTERVAL = 5
+    UPDATE_INTERVAL = 30
 
     def __init__(self):
         HippieTrap.__init__(self)
@@ -125,9 +125,9 @@ class HippieTrapMQTT(HippieTrap):
 
     def _handle_message(self, mqttc, msg):
         try:
-            payload = msg.payload
+            payload = str(msg.payload, "ascii")
             if msg.topic == COMMAND_TOPIC:
-                if msg.payload.lower() == b"1":
+                if payload == "1":
                     if not self.enabled:
                         self.enable(True)
                         mqttc.publish(STATE_TOPIC, "1")
@@ -135,7 +135,7 @@ class HippieTrapMQTT(HippieTrap):
                     self.set_random_pattern()
                     return
 
-                if msg.payload.lower() == b"0":
+                if payload == "0":
                     self.enable(False)
                     self.set_pattern("")
                     mqttc.publish(STATE_TOPIC, "0")
@@ -144,13 +144,12 @@ class HippieTrapMQTT(HippieTrap):
 
             if msg.topic == BRIGHTNESS_TOPIC:
                 try:
-                    self.set_brightness(ALL, int(msg.payload))
+                    self.set_brightness(ALL, int(payload))
                 except ValueError:
                     pass
                 return
 
             if msg.topic == INCREASE_BRIGHTNESS_TOPIC:
-                log("inc brightness") 
                 try:
                     self.increase_brightness(ALL)
                 except ValueError:
@@ -174,7 +173,7 @@ class HippieTrapMQTT(HippieTrap):
 
             if msg.topic == EFFECT_TOPIC:
                 try:
-                    self.set_pattern(msg.payload)
+                    self.set_pattern(payload)
                 except ValueError:
                     pass
                 return
@@ -186,7 +185,15 @@ class HippieTrapMQTT(HippieTrap):
                 return
 
             if msg.topic == COLOR_SCHEME_TOPIC:
-                self.set_color_scheme(payload)
+                if payload == "":
+                    self.next_color_scheme()
+                else:
+                    self.set_color_scheme(payload)
+
+                # Move to the next pattern for it to take effect, if we're on
+                if self.enabled:
+                    self.set_random_pattern()
+
                 return
 
         except Exception as err:
