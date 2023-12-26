@@ -4,6 +4,7 @@ import abc
 import colorsys
 import math
 from random import random, seed
+import hippietrap
 
 GAMMA_TABLE = [
     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
@@ -27,16 +28,22 @@ seed()
 
 def hue_to_color(hue):
     col = colorsys.hsv_to_rgb(math.fmod(hue, 1.0), 1, 1)
-    return gamma(Color(int(col[0] * 255), int(col[1] * 255), int(col[2] * 255)))
+    if hippietrap.bedtime_mode:
+        return gamma(Color(int(col[0] * 255), int(col[1] * 255), 0))
+    else:
+        return gamma(Color(int(col[0] * 255), int(col[1] * 255), int(col[2] * 255)))
 
 def random_color():
     col = colorsys.hsv_to_rgb(random(), 1, 1)
-    return gamma(Color(int(col[0] * 255), int(col[1] * 255), int(col[2] * 255)))
+    if hippietrap.bedtime_mode:
+        return gamma(Color(int(col[0] * 255), int(col[1] * 255), 0))
+    else:
+        return gamma(Color(int(col[0] * 255), int(col[1] * 255), int(col[2] * 255)))
 
 def gamma(col):
-#    col[0] = gamma[col[0]]
-#    col[1] = gamma[col[0]]
-#    col[2] = gamma[col[0]]
+    col[0] = gamma[col[0]]
+    col[1] = gamma[col[1]]
+    col[2] = gamma[col[2]]
     return col
 
 class Color(object):
