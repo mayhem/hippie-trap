@@ -10,8 +10,8 @@ from time import sleep, time, asctime
 
 import RPi.GPIO as GPIO
 
-color_schemes = ["full-color", "bedtime", "mayhem"]
-color_scheme = "full-color"
+# This is the global HippieTrap object
+ht = None
 
 BAUD_RATE = 38400
 NUM_PIXELS = 4
@@ -80,13 +80,21 @@ def log(*args):
 
 
 class HippieTrap(object):
+
+    COLOR_SCHEMES = ["full-color", "bedtime", "mayhem"]
+
     def __init__(self, device="/dev/serial0"):
+        global ht
+
         self.ser = None
         self.device = device
         self.brightness = 100
+        self.color_scheme = self.COLOR_SCHEMES[0]
 
         GPIO.setmode(GPIO.BOARD)
         GPIO.setwarnings(False)
+
+        ht = self
 
     def __enter__(self):
 
@@ -204,6 +212,18 @@ class HippieTrap(object):
     def send_entropy(self):
         for dest in range(1, NUM_NODES + 1):
             self._send_packet(dest, PACKET_ENTROPY, bytearray(os.urandom(4)))
+
+    def set_color_scheme(self, scheme):
+        scheme = str(scheme, "ascii")
+        if scheme not in self.COLOR_SCHEMES:
+            log("Ignore bad scheme %s" % scheme)
+            return
+
+        log("set scheme %s" % scheme)
+        self.color_scheme = scheme
+
+    def get_color_scheme(self):
+        return self.color_scheme
 
     def set_color(self, dest, col, hue_shift=0):
         self._send_packet(dest, PACKET_SINGLE_COLOR, bytearray(struct.pack("<BBBB", col[0], col[1], col[2], hue_shift)))

@@ -37,6 +37,7 @@ COLOR_STATE_TOPIC = "hippietrap/color_state"
 EFFECT_TOPIC = "hippietrap/effect"
 REPEAT_PATTERN_TOPIC = "hippietrap/repeat-pattern"
 NEXT_PATTERN_TOPIC = "hippietrap/next-pattern"
+COLOR_SCHEME_TOPIC = "hippietrap/color-scheme"
 
 class HippieTrapMQTT(HippieTrap):
 
@@ -183,6 +184,11 @@ class HippieTrapMQTT(HippieTrap):
                 color = (int(r),int(g),int(b))
                 self.current_pattern.set_color(color)
                 return
+
+            if msg.topic == COLOR_SCHEME_TOPIC:
+                self.set_color_scheme(payload)
+                return
+
         except Exception as err:
             log("exception while handling message:", err)
             log(traceback.format_exc())
@@ -205,6 +211,7 @@ class HippieTrapMQTT(HippieTrap):
         self.mqttc.subscribe(COLOR_TOPIC)
         self.mqttc.subscribe(NEXT_PATTERN_TOPIC)
         self.mqttc.subscribe(REPEAT_PATTERN_TOPIC)
+        self.mqttc.subscribe(COLOR_SCHEME_TOPIC)
         self.mqttc.publish(STATE_TOPIC, "%d" % self.state)
 
     def loop(self):
@@ -216,7 +223,7 @@ class HippieTrapMQTT(HippieTrap):
 
 if __name__ == "__main__":
     with HippieTrapMQTT() as ht:
-#        ht.add_pattern(SweepCheckerPattern)
+        ht.add_pattern(SweepCheckerPattern)
         ht.add_pattern(SpreadOutwardPattern)
         ht.add_pattern(RainbowPattern)
         ht.add_pattern(FireIceCirclesPattern)

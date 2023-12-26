@@ -2,7 +2,6 @@ import abc
 import colorsys
 import math
 from random import random, seed
-import hippietrap
 
 seed()
 
@@ -70,10 +69,11 @@ class SystemColors:
         # Many algs assume that hue simply wraps, so fmod it here
         hue = math.fmod(hue, 1.0)
 
-        if hippietrap.color_scheme == "full-color":
+        from hippietrap import ht
+        if ht.get_color_scheme() == "full-color":
             col = colorsys.hsv_to_rgb(hue, 1, 1)
             col = (col[0] * 255, col[1] * 255, col[2] * 255)
-        elif hippietrap.color_scheme == "bedtime":
+        elif ht.get_color_scheme() == "bedtime":
             col = self.bedtime_gradient.get_color(hue)
         else:
             return Color(64, 32, 32)
@@ -82,10 +82,11 @@ class SystemColors:
 
     def random_color(self):
 
-        if hippietrap.color_scheme == "full-color":
+        from hippietrap import ht
+        if ht.get_color_scheme() == "full-color":
             col = colorsys.hsv_to_rgb(random(), 1, 1)
             col = (col[0] * 255, col[1] * 255, col[2] * 255)
-        elif hippietrap.color_scheme == "bedtime":
+        elif ht.get_color_scheme() == "bedtime":
             col = self.bedtime_gradient.get_color(random())
         else:
             return Color(64, 32, 32)
