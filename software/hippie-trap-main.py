@@ -126,6 +126,7 @@ class HippieTrapMQTT(HippieTrap):
     def _handle_message(self, mqttc, msg):
         try:
             payload = str(msg.payload, "ascii")
+            print("%s: %s" % (msg.topic, payload))
             if msg.topic == COMMAND_TOPIC:
                 if payload == "1":
                     if not self.enabled:

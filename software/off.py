@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-
 import os
 from time import sleep
 from hippietrap import HippieTrap, BROADCAST

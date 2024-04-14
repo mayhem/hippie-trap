@@ -15,7 +15,7 @@ with HippieTrap() as ch:
     start = int(sys.argv[1])
 
     for id in range(start,NUM_NODES+1):
-        ch.set_color(id, Color(0,0,0))
+        ch.set_color(id, Color(255,0,0))
 
     for id in range(start,NUM_NODES+1):
         print(id)
