@@ -19,7 +19,7 @@ ID_CALL = ["sudo", "avrdude", "-p", "m328p", "-P", "usb", "-c", "avrispmkII", "-
 
 def write_node_id(file_name, id):
     try:
-        id_file = open(file_name, "w")
+        id_file = open(file_name, "wb")
         id_file.write(struct.pack("LLLLB", 0,0,0,0,id)) # 16 bytes of zeros for bootloader + ID
     except IOError:
         print("Failed to save node id to %s" % file_name)

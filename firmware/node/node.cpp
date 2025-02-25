@@ -313,9 +313,9 @@ uint16_t error_animation(void)
     col1.r = 128;
     col1.g = 0;
     col1.b = 0;
-    col2.r = 128;
-    col2.g = 128;
-    col2.b = 128;
+    col2.r = 0;
+    col2.g = 0;
+    col2.b = 0;
     return flash_animation(&col1, &col2);
 }
 

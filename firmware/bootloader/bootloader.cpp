@@ -206,7 +206,7 @@ int main()
         }
         else
         {
-            set_color(0, 128, 0);
+            set_color(128, 0, 0);
         }
 
         for(start_ch_count = 0; start_ch_count < 16;)
